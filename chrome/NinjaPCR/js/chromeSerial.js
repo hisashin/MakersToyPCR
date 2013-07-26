@@ -12,6 +12,9 @@ var STATUS_RESP = 0x80;
 var START_CODE = 0xFF;
 var END_CODE = 0xFE;
 
+/**
+ * Search for a device
+ */
 Serial.prototype.scan = function (callbackExternal, _wait) {
 	var wait = _wait || 100;
 	if (this.locked) {
@@ -42,9 +45,39 @@ Serial.prototype.scan = function (callbackExternal, _wait) {
 		}
 	});
 };
+
+/**
+ * Search for a working device
+ */
 Serial.prototype.scanOngoingExperiment = function (callback) {
-	Log.d("TODO scanOngoingExperiment");
-	//TODO getPorts -> Open -> (callback) -> getList -> sendRequest -> read -> ...
+	this.locked = true;
+	var self = this;
+	chrome.serial.getPorts(function (_ports) {
+		var ports = [];
+		for (var i=0, l=_ports.length; i<l; i++) {
+			var port = _ports[i];
+			if (port.match(PORT_TO_IGNORE)) {
+				Log.d("Serial.scanOngoingExperiment: Ignore port " + port);
+			}
+			else {
+				ports.push(port);
+			}
+		}
+		self.latestPorts = ports;
+		if (ports.length>0) {
+			//TODO Open -> (callback) -> getList -> sendRequest -> read -> ...
+			Log.d("Serial.scanOngoingExperiment: TODO scan ports");
+			new SerialReconnectScanner(ports).findWorkingPort(function (port, connectionId) {
+				self.port = port;
+				self.connectionId = connectionId;
+				callback(ports);
+				
+			});
+		}
+		else {
+			callback(null);
+		}
+	});
 	callback();
 };
 Serial.prototype._getScanFunc = function (callbackExternal, portsToSearch) {

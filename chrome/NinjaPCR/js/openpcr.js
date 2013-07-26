@@ -77,15 +77,14 @@ function scanAndDisplay (delay) {
 		} else {
 			// Not plugged in.
 			// Send "request_status" command and check ongoing experiment
-			chromeSerial.scanOngoingExperiment (function () {
+			chromeSerial.scanOngoingExperiment (function (param) {
+				Log.d("scanOngoingExperiment DONE. param=" + param);
 				//if (!window.checkPlugInterval) {window.checkPlugInterval = setInterval(checkPlug, 2000); }
 				});
 		}
 		$("#pcrForm").validate();
 	}, delay);
 }
-
-
 function checkFirmwareVersion (version) {
 	Log.v("Firmware version=" + version + ", Latest version=" + LATEST_FIRMWARE_VERSION);
 	if (version==LATEST_FIRMWARE_VERSION) {
