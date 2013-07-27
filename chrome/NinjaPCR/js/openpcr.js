@@ -12,7 +12,7 @@
  * Extra. Buttons
  */
 
-var LATEST_FIRMWARE_VERSION = "1.0.6";
+var LATEST_FIRMWARE_VERSION = "1.0.5";
 
 /**************
  * Home screen*
@@ -214,7 +214,7 @@ function reRunButtons() {
 	// Start with the edit button shown
 	$("#editButton").show();
 	// Start with the edit buttons hidden
-	$(".edit").hide();
+	$(".edit").show();
 	// hide the lid temp fields
 	$("#lidContainer").hide();
 	// all fields locked
@@ -875,7 +875,7 @@ function onReceiveStatus(message) {
 		if (status["d"] == window.command_id) {
 			window.command_id_counter = 0;
 		}
-		//if (Math.random()<0.1) status["s"]="complete"; //TODO debug
+		if (Math.random()<0.1) status["s"]="complete"; //TODO debug
 
 		var statusLid = status["x"].toFixed(1);
 		var statusPeltier = status["y"].toFixed(1);
@@ -1640,6 +1640,7 @@ $('#save_form').on('keyup', function(e) {
 });
 
 function createCSV () {
+	Log.d("createCSV");
 	var TAB = encodeURIComponent("\t");
 	var RET = encodeURIComponent("\n");
 	content = 
@@ -1666,6 +1667,7 @@ function createCSV () {
 	$("#download")[0].href = "data:application/octet-stream," + content;
 	var fileName = pcrStorage.getLogFileName();
 	$("#download")[0].download = fileName;
+	Log.d("download filename=" + fileName);
 	$("#download").show();
 }
 

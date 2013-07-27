@@ -29,6 +29,7 @@ class ProgramComponent;
 class Cycle;
 class Step;
 struct SCommand;
+struct SStatus;
 
 typedef enum {
     SEND_CMD       = 0x10,

@@ -29,10 +29,10 @@ public:
     EStep = 0,
     ECycle
   };
-  
+
   virtual void Reset() = 0;
   virtual TType GetType() = 0;
-  
+
   // iteration
   virtual void BeginIteration() = 0;
   virtual Step* GetNextStep() = 0;
@@ -40,24 +40,43 @@ public:
 
 ////////////////////////////////////////////////////////////////////
 // Class Step
-class Step: public ProgramComponent {
+class Step: 
+public ProgramComponent {
 public:  
   // accessors
-  char* GetName() { return iName; }
-  unsigned int GetStepDurationS() { return iStepDurationS; }
-  unsigned long GetRampDurationS() { return iRampDurationS; }
-  float GetTemp() { return iTemp; }
-  virtual TType GetType() { return EStep; }
-  boolean IsFinal() { return iStepDurationS == 0; }
+  char* GetName() { 
+    return iName; 
+  }
+  unsigned int GetStepDurationS() { 
+    return iStepDurationS; 
+  }
+  unsigned long GetRampDurationS() { 
+    return iRampDurationS; 
+  }
+  float GetTemp() { 
+    return iTemp; 
+  }
+  virtual TType GetType() { 
+    return EStep; 
+  }
+  boolean IsFinal() { 
+    return iStepDurationS == 0; 
+  }
 
   // mutators
-  void SetStepDurationS(unsigned long stepDurationS) { iStepDurationS = stepDurationS; }
-  void SetRampDurationS(unsigned long rampDurationS) { iRampDurationS = rampDurationS; }
-  void SetTemp(float temp) { iTemp = temp; }
+  void SetStepDurationS(unsigned long stepDurationS) { 
+    iStepDurationS = stepDurationS; 
+  }
+  void SetRampDurationS(unsigned long rampDurationS) { 
+    iRampDurationS = rampDurationS; 
+  }
+  void SetTemp(float temp) { 
+    iTemp = temp; 
+  }
   void SetName(const char* szName);
-  
+
   virtual void Reset();
-  
+
   // iteration
   virtual void BeginIteration();
   virtual Step* GetNextStep();
@@ -72,24 +91,35 @@ private:
 
 ////////////////////////////////////////////////////////////////////
 // Class Cycle
-class Cycle: public ProgramComponent {
+class Cycle: 
+public ProgramComponent {
 public:
   // accessors
-  virtual TType GetType() { return ECycle; }
-  int GetCurrentCycle() { return iCurrentCycle + 1; } //add 1 because cycles start at 0
-  int GetNumCycles() { return iNumCycles; }
-  int GetNumComponents() { return iNumComponents; }
+  virtual TType GetType() { 
+    return ECycle; 
+  }
+  int GetCurrentCycle() { 
+    return iCurrentCycle + 1; 
+  } //add 1 because cycles start at 0
+  int GetNumCycles() { 
+    return iNumCycles; 
+  }
+  int GetNumComponents() { 
+    return iNumComponents; 
+  }
   ProgramComponent* GetComponent(int index);
-  
+
   // mutators
-  void SetNumCycles(int numCycles) { iNumCycles = numCycles; }
+  void SetNumCycles(int numCycles) { 
+    iNumCycles = numCycles; 
+  }
   PcrStatus AddComponent(ProgramComponent* pComponent); //takes ownership
   virtual void Reset();
-  
+
   // iteration
   virtual void BeginIteration();
   virtual Step* GetNextStep();
-  
+
 private:
   void RestartCycle();
 
@@ -97,7 +127,7 @@ private:
   ProgramComponent* iComponents[MAX_CYCLE_ITEMS];
   int iNumComponents;
   int iNumCycles;
-  
+
   int iCurrentCycle;
   int iCurrentComponent; // -1 means no component
 };
@@ -107,19 +137,23 @@ private:
 template <class T, int N>
 class ProgramComponentPool {
 public:
-  ProgramComponentPool() { iAllocatedComponents = 0; }
+  ProgramComponentPool() { 
+    iAllocatedComponents = 0; 
+  }
 
   T* AllocateComponent() { 
     if (iAllocatedComponents == N)
       return NULL;
-      
+
     T* pComponent = &iComponents[iAllocatedComponents++];
     pComponent->Reset();
     return pComponent;
   }
-  
-  void ResetPool() { iAllocatedComponents = 0; }
-  
+
+  void ResetPool() { 
+    iAllocatedComponents = 0; 
+  }
+
 private:
   int iAllocatedComponents;
   T iComponents[N];
@@ -135,12 +169,17 @@ struct SCommand {
     EStart,
     EStop,
     EConfig
-  } command;
+  } 
+  command;
   int lidTemp;
   uint8_t contrast;
   Cycle* pProgram;
 };
-
+struct SStatus {
+  int currentCycle;
+  int currentStep;
+  int step;
+};
 ////////////////////////////////////////////////////////////////////
 // Class CommandParser
 class CommandParser {
@@ -164,8 +203,11 @@ public:
 
   //writing
   static void StoreContrast(uint8_t contrast);
+  static void RetrieveStatus(char* pBuffer);
   static void StoreProgram(const char* szProgram);
+  static void StoreStatus(const char* szStatus);
 };
-  
+
 
 #endif
+

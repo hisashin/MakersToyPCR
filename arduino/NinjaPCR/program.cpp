@@ -120,12 +120,7 @@ void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
     pParam = strtok(NULL, "&");
   }
 }
-/*
-const char STATUS_START[] PROGMEM = "start";
-const char STATUS_STOP[] PROGMEM = "stop";
-const char STATUS_CFG[] PROGMEM = "cfg";
-const char PAREHTHESES[] PROGMEM = "()";
-*/
+
 void CommandParser::AddComponent(SCommand* pCommand, char key, char* szValue) {
   switch(key) {
   case 'n':
@@ -242,13 +237,22 @@ uint8_t ProgramStore::RetrieveContrast() {
 
 //#define PROG_START_STR "&c=start"
 const char PROG_START_STR[] PROGMEM = "&c=start";
+const char PROG_HEAD[] = "s=ACGTC";
 //const char PROG_START_STR[] PROGMEM = "&c=start";
 //const char PROG_START_STR_P[] PROGMEM = PROG_START_STR;
 boolean ProgramStore::RetrieveProgram(SCommand& command, char* pBuffer) {
   for (int i = 0; i < MAX_COMMAND_SIZE; i++)
     pBuffer[i] = EEPROM.read(i + 1);
-  
+  bool matched = true;
+  for (int i=0; i<7; i++) {
+	  if (pBuffer[i]!=PROG_HEAD[i])
+		  matched = false;
+  }
+  if (! matched) return false;
 //  if (strncmp_P(pBuffer, PROG_START_STR_P, strlen(PROG_START_STR)) == 0) {
+  CommandParser::ParseCommand(command, pBuffer);
+  return true;
+  /*
   if (strncmp_P(pBuffer, PROG_START_STR, strlen(PROG_START_STR)) == 0) {
     //previous program stored
     CommandParser::ParseCommand(command, pBuffer);   
@@ -257,8 +261,13 @@ boolean ProgramStore::RetrieveProgram(SCommand& command, char* pBuffer) {
   } else {
     return false;
   }
+  */
 }
 
+void ProgramStore::RetrieveStatus(char* pBuffer) {
+  for (int i = 0; i < MAX_COMMAND_SIZE; i++)
+    pBuffer[i] = EEPROM.read(i + 1 + MAX_COMMAND_SIZE);
+}
 
 
 void ProgramStore::StoreContrast(uint8_t contrast) {
@@ -268,6 +277,10 @@ void ProgramStore::StoreContrast(uint8_t contrast) {
 void ProgramStore::StoreProgram(const char* szProgram) {
   for (int i = 0; i < MAX_COMMAND_SIZE; i++)
     EEPROM.write(i + 1, szProgram[i]);
+}
+void ProgramStore::StoreStatus(const char* szStatus) {
+  for (int i = 0; i < MAX_STATUS_SIZE; i++)
+    EEPROM.write(i + MAX_COMMAND_SIZE + 1, szStatus[i]);
 }
 
 

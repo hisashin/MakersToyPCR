@@ -43,6 +43,7 @@ extern "C" void __cxa_pure_virtual(void);
 #define STEP_NAME_LENGTH       14
 #define MAX_CYCLE_ITEMS        16
 #define MAX_COMMAND_SIZE      256
+#define MAX_STATUS_SIZE      64
 
 enum PcrStatus {
   ESuccess = 0,

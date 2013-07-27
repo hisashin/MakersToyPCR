@@ -196,12 +196,9 @@ void Thermocycler::Stop() {
 }
 
 PcrStatus Thermocycler::Start() {
-	//Serial.print("st");
   if (ipProgram == NULL) {
-	//Serial.print("nu");
     return ENoProgram;
   }
-	//Serial.print("ok");
 
   //advance to lid wait state
   iProgramState = ELidWait;
@@ -209,18 +206,38 @@ PcrStatus Thermocycler::Start() {
   return ESuccess;
 }
 
+byte* prevStatus[MAX_STATUS_SIZE+1];
 // internal
 void Thermocycler::Loop() {
+
+	/*
+	ProgramStore::StoreProgram("s=ACGTC&c=start&d=40056&l=110&n=Simple test&p=(1[30|95|Initial Step|0])(2[30|95|Denaturing|0][30|55|Annealing|0][60|72|Extending|0])(1[0|20|Final Hold|0])");
+	ProgramStore::StoreStatus("StatusStoreTest");
+    SCommand command;
+    bool result = ProgramStore::RetrieveProgram(command, (char*)ipSerialControl->GetBuffer()) ;
+    ProgramStore::RetrieveStatus((char*)ipSerialControl->GetBuffer()); // <-- this statement will fail.
+    if (result) {
+    	while (true) {
+    		Serial.println((char*)(ipSerialControl->GetBuffer()));
+    		Serial.println((char*)prevStatus);
+    		if (result)
+    			Serial.println("T");
+    		else
+    			Serial.println("F");
+    		delay(3000);
+    	}
+    }
+    */
   switch (iProgramState) {
   case EStartup:
     if (millis() > STARTUP_DELAY) {
       iProgramState = EStopped;
-      	iRestarted = false;
       if (!iRestarted && !ipSerialControl->CommandReceived()) {
         //check for stored program
         SCommand command;
-        if (ProgramStore::RetrieveProgram(command, (char*)ipSerialControl->GetBuffer()))
+        if (ProgramStore::RetrieveProgram(command, (char*)ipSerialControl->GetBuffer())) {
           ProcessCommand(command);
+        }
       }
     }
     break;
@@ -265,7 +282,7 @@ void Thermocycler::Loop() {
 
         //check for program completion
         if (ipCurrentStep == NULL || ipCurrentStep->IsFinal()) {
-          iProgramState = EComplete;        
+          iProgramState = EComplete;
         }
       }
     }
@@ -481,7 +498,6 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm) {
 }
 
 void Thermocycler::ProcessCommand(SCommand& command) {
-	Serial.print("LOG");
   if (command.command == SCommand::EStart) {
     //find display cycle
     Cycle* pProgram = command.pProgram;
