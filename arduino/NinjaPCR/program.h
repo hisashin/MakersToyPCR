@@ -176,9 +176,9 @@ struct SCommand {
   Cycle* pProgram;
 };
 struct SStatus {
-  uint8_t currentCycle;
-  uint8_t currentStep;
-  uint8_t step;
+  int currentCycle;
+  int currentStep;
+  int step;
 };
 ////////////////////////////////////////////////////////////////////
 // Class CommandParser
