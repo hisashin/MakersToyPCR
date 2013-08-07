@@ -48,6 +48,16 @@
 			<!-- Rerun an experiment -->
 			<a href="#" id="listSubmitButton"><img src="images/rerun.png" style="vertical-align:middle;">
 				<span class="home_title pcr_localize_reRunExperiment">Re-run an experiment</span></a>
+				
+			<!-- Resume Button -->
+			<div id="resumeSection" style="display:none;">
+				<div class="pcr_localize_resumeMessage">A suspended experiment was found on the device. Do you want to resume the experiment?</div>
+				<div>
+					<input type="button" id="Resume" value="Resume" class="small_button pcr_localize_resume"/>
+					<input type="button" id="Abort" value="Abort" class="small_button pcr_localize_abort"/>
+				</div>
+			</div>
+				
 			<div id="reRun" align="right"></div>
 			<div id="portLabel" class="pcr_localize_searching">Searching for a device...</div>
 			<div id="update_dialog" style="display:none">

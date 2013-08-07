@@ -78,5 +78,8 @@
 	"stepInitialStep":{"message":"初期ステップ"},
 	"stepFinalStep":{"message":"最終ステップ"},
 	"temperature":{"message":"温度"},
+	"resumeMessage":{"message":"中断された実験がデバイス上にあります。再開しますか?"},
+	"resume":{"message":"再開する"},
+	"abort":{"message":"実験を破棄"},
 	"TODO":{"message":"TODO"}
 }

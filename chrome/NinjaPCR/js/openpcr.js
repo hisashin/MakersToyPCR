@@ -55,8 +55,13 @@ function checkPlug () {
 	scanPortsAndDisplay(2500);
 };
 function scanPortsAndDisplay (delay) {
-	chromeSerial.scan(function(port) {
+	chromeSerial.scan(function(port, resume) {
 		var deviceFound = !!port;
+		Log.d("Resume=" + resume);
+		// Show resume & abort section
+		if (resume) {
+			document.getElementById('resumeSection').style.display = 'block';
+		}
 		
 		var portMessage = (deviceFound)?
 				(chrome.i18n.getMessage('deviceFound').replace('___PORT___',port)):chrome.i18n.getMessage('deviceNotFound');

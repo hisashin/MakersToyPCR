@@ -51,12 +51,13 @@ Serial.prototype._getScanFunc = function (callbackExternal, portsToSearch) {
 	var self = this;
 	return function () {
 		new SerialPortScanner(portsToSearch).findPcrPort(
-				function (port, connectionId, firmwareVersion) {
+				function (port, connectionId, firmwareVersion, resume) {
 					self.port = port;
 					self.firmwareVersion = firmwareVersion;
 					self.connectionId = connectionId;
 					self.locked = false;
-					callbackExternal(port);
+					self.resume = resume;
+					callbackExternal(port, resume);
 				});
 		
 	}

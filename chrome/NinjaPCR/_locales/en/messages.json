@@ -78,6 +78,9 @@
 	"stepInitialStep":{"message":"Initial Step"},
 	"stepFinalStep":{"message":"Final Step"},
 	"temperature":{"message":"Temperature"},
+	"resumeMessage":{"message":"A suspended experiment was found on the device. Do you want to resume the experiment?"},
+	"resume":{"message":"Resume"},
+	"abort":{"message":"Abort"},
 	"TODO":{"message":"TODO"},
 	"TODO":{"message":"TODO"}
 }
