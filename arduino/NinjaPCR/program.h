@@ -140,6 +140,21 @@ struct SCommand {
   uint8_t contrast;
   Cycle* pProgram;
 };
+////////////////////////////////////////////////////////////////////
+// Struct SStatus
+struct SStatus {
+  char name[21];
+  uint16_t commandId;
+  enum TCommandType {
+    ENone = 0,
+    EStart,
+    EStop,
+    EConfig
+  } command;
+  int lidTemp;
+  uint8_t contrast;
+  Cycle* pProgram;
+};
 
 ////////////////////////////////////////////////////////////////////
 // Class CommandParser
@@ -161,10 +176,13 @@ public:
   //reading
   static uint8_t RetrieveContrast();
   static boolean RetrieveProgram(SCommand& command, char* pBuffer);
+  static boolean RetrieveStatus(/*SStatus& status, char* pBuffer*/ void);
+  static boolean EraseStatus(void);
 
   //writing
   static void StoreContrast(uint8_t contrast);
   static void StoreProgram(const char* szProgram);
+  static void StoreStatus(const char* szStatus);
 };
   
 

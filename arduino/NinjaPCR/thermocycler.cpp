@@ -270,7 +270,8 @@ void Thermocycler::Loop() {
 
         //check for program completion
         if (ipCurrentStep == NULL || ipCurrentStep->IsFinal()) {
-          iProgramState = EComplete;        
+          iProgramState = EComplete;
+          ProgramStore::EraseStatus();
         }
       }
     }
@@ -297,12 +298,15 @@ void Thermocycler::Loop() {
 
 }
 
+const char DUMMY_STATUS[] = "dummystatus";
 //private
 void Thermocycler::AdvanceToNextStep() {
   ipPreviousStep = ipCurrentStep;
   ipCurrentStep = ipProgram->GetNextStep();
   if (ipCurrentStep == NULL)
     return;
+
+  ProgramStore::StoreStatus(DUMMY_STATUS);
 
   //update eta calc params
   if (ipPreviousStep == NULL || ipPreviousStep->GetTemp() != ipCurrentStep->GetTemp()) {

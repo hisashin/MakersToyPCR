@@ -33,6 +33,7 @@ boolean InitialStart() {
   
   return true;
 }
+bool resume = false;
 
 void setup() {
   pinMode(5,OUTPUT);
@@ -50,11 +51,13 @@ void setup() {
   gpThermocycler = new Thermocycler(restarted);
   Serial.begin(4800);
   digitalWrite(5, HIGH);
+  resume = ProgramStore::RetrieveStatus();
 }
  
 bool connected = false;
 bool initDone = false;
 short INTERVAL_MSEC = 500;
+
 void loop() {
   if (connected) {
     gpThermocycler->Loop();
@@ -65,8 +68,13 @@ void loop() {
 
 bool startLamp = false;
 void checkPlugged () {
-    Serial.print("pcr1.0.5");
-    Serial.print("\n");
+  	if (resume){
+    	Serial.print("pcrx");
+    	Serial.print("\n");
+  	} else {
+    	Serial.print("pcr1.0.5");
+    	Serial.print("\n");
+  	}
     digitalWrite(5, (startLamp)?HIGH:LOW);
     startLamp = !startLamp;
     int timeStart = millis();

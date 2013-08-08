@@ -244,6 +244,7 @@ uint8_t ProgramStore::RetrieveContrast() {
 const char PROG_START_STR[] PROGMEM = "&c=start";
 //const char PROG_START_STR[] PROGMEM = "&c=start";
 //const char PROG_START_STR_P[] PROGMEM = PROG_START_STR;
+
 boolean ProgramStore::RetrieveProgram(SCommand& command, char* pBuffer) {
   for (int i = 0; i < MAX_COMMAND_SIZE; i++)
     pBuffer[i] = EEPROM.read(i + 1);
@@ -260,6 +261,29 @@ boolean ProgramStore::RetrieveProgram(SCommand& command, char* pBuffer) {
 }
 
 
+boolean ProgramStore::RetrieveStatus(/*SStatus& status, char* pBuffer*/void) {
+  for (int i = 0; i < MAX_STATUS_SIZE; i++) {
+    //pBuffer[i] = EEPROM.read(i + 1 + MAX_PROGRAM_SIZE);
+    if ('d'==EEPROM.read(i + 1 + MAX_COMMAND_SIZE)) return true;
+  }
+  return false;
+/*
+//  if (strncmp_P(pBuffer, PROG_START_STR_P, strlen(PROG_START_STR)) == 0) {
+  if (strncmp_P(pBuffer, PROG_START_STR, strlen(PROG_START_STR)) == 0) {
+    //previous program stored
+    CommandParser::ParseCommand(command, pBuffer);
+    return true;
+
+  } else {
+    return false;
+  }
+  */
+}
+
+boolean ProgramStore::EraseStatus(void) {
+	  for (int i = 0; i < MAX_STATUS_SIZE; i++)
+	    EEPROM.write(i + (1+MAX_STATUS_SIZE), 0x01);
+}
 
 void ProgramStore::StoreContrast(uint8_t contrast) {
   EEPROM.write(0, contrast);
@@ -268,6 +292,10 @@ void ProgramStore::StoreContrast(uint8_t contrast) {
 void ProgramStore::StoreProgram(const char* szProgram) {
   for (int i = 0; i < MAX_COMMAND_SIZE; i++)
     EEPROM.write(i + 1, szProgram[i]);
+}
+void ProgramStore::StoreStatus(const char* szStatus) {
+  for (int i = 0; i < MAX_STATUS_SIZE; i++)
+    EEPROM.write(i + (1 + MAX_COMMAND_SIZE), szStatus[i]);
 }
 
 
