@@ -282,7 +282,7 @@ boolean ProgramStore::RetrieveStatus(/*SStatus& status, char* pBuffer*/void) {
 
 boolean ProgramStore::EraseStatus(void) {
 	  for (int i = 0; i < MAX_STATUS_SIZE; i++)
-	    EEPROM.write(i + (1+MAX_STATUS_SIZE), 0x01);
+	    EEPROM.write(i + (1+MAX_COMMAND_SIZE), 0x01);
 }
 
 void ProgramStore::StoreContrast(uint8_t contrast) {

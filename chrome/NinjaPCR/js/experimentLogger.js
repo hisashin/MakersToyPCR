@@ -17,7 +17,6 @@ ExperimentLogger.prototype.displayElapsedSec = function (elapsedSec) {
 };
 ExperimentLogger.prototype.log = function (status) {
 	if (!status) return;
-	Log.d("Elapsed time(msec)=" + (new Date().getTime()-this.startTime.getTime()));
 	var elapsedSec = (new Date().getTime()-this.startTime.getTime())/1000;
 	this.displayElapsedSec(elapsedSec);
 	// make sure the status isn't blank
