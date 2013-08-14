@@ -85,6 +85,32 @@ Serial.prototype.startWithCommand = function (commandBody) {
 		});
 	}
 };
+Serial.prototype.resumeWithCommand = function (commandBody) {
+	Log.i("Serial.resume");
+	this.lastResponseTime = null;
+	this.complete = false;
+	Log.d("------------------------------------------------");
+	Log.d("Start Communication");
+	Log.d("------------------------------------------------");
+	Log.d("Program=" + commandBody);
+	var port = this.port;
+	var options = {
+			bitrate:BAUD_RATE
+	};
+	var self = this;
+	var connectionId = self.connectionId;
+	if (connectionId<0) {
+		Log.e("Connection error.");
+	} else {
+		var data = getFullCommand(commandBody, SEND_CMD);
+		chrome.serial.write(connectionId, data, function (sendInfo){
+			self.startListeningStatus(port, connectionId);
+		});
+	}
+};
+Serial.prototype.abort = function () {
+	Log.i("Serial.abort");
+}
 
 /**
  * Complete

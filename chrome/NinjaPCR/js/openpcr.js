@@ -397,6 +397,28 @@ function startPCR() {
 	// also, reset the command_id_counter
 	window.command_id_counter = 0;
 }
+function resumePCR () {
+	Log.d("resumePCR");
+	chromeSerial.resumeWithCommand('s=ACGTC&c=resume');
+	experimentLogger = new ExperimentLogger();
+	experimentLog = [];
+	experimentLogger.start();
+	running();
+	// then close windows it after 1 second
+	setTimeout(function() {
+		$('#starting').dialog('close');
+	}, 5000);
+	setTimeout(function() {
+		$('#ex2_p3').show();
+	}, 100);
+	// also, reset the command_id_counter
+	window.command_id_counter = 0;
+}
+
+function abortPCR () {
+	Log.i("TODO abortPCR");
+	chromeSerial.abort();
+}
 
 /*****************
  * Running screen *
@@ -573,6 +595,20 @@ function prepareButtons() {
 		startPCR();
 	});
 
+	/*  "Resume" button on the NinjaPCR Form page
+	 * Sends a "resume" command and switches to the Running page
+	 */
+	$('#Resume').on('click', function() {
+		Log.d("#Resume.click");
+		resumePCR();
+	});
+	/*  "Abort" button on the NinjaPCR Form page
+	 * Sends a "abort" command
+	 */
+	$('#Abort').on('click', function() {
+		Log.d("#Abort.click");
+		abortPCR();
+	});
 	/*  "Save" button on the OpenPCR Form
 	 * Ask for a "name" and save the protocol to name.pcr in the user's Experiments folder
 	 */
