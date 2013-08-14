@@ -261,10 +261,11 @@ boolean ProgramStore::RetrieveProgram(SCommand& command, char* pBuffer) {
 }
 
 
-boolean ProgramStore::RetrieveStatus(/*SStatus& status, char* pBuffer*/void) {
+boolean ProgramStore::RetrieveStatus(SStatus& status) {
   for (int i = 0; i < MAX_STATUS_SIZE; i++) {
     //pBuffer[i] = EEPROM.read(i + 1 + MAX_PROGRAM_SIZE);
     if ('d'==EEPROM.read(i + 1 + MAX_COMMAND_SIZE)) return true;
+    //TODO retrieve & set
   }
   return false;
 /*
@@ -293,9 +294,24 @@ void ProgramStore::StoreProgram(const char* szProgram) {
   for (int i = 0; i < MAX_COMMAND_SIZE; i++)
     EEPROM.write(i + 1, szProgram[i]);
 }
-void ProgramStore::StoreStatus(const char* szStatus) {
+void ProgramStore::StoreStatus(SStatus& szStatus) {
+	int index = 1+MAX_COMMAND_SIZE;
+	EEPROM.write(index, 'd'); //Start token
+	index++;
+	EEPROM.write(index, szStatus.currentCycleNum);
+	index++;
+	EEPROM.write(index, szStatus.elapsedTime & 0xFF);
+	index++;
+	EEPROM.write(index, szStatus.elapsedTime>>8);
+	index++;
+	for (int i=0; i<16; i++) {
+	    EEPROM.write(index, szStatus.currentStepName[i]);
+	    index++;
+	}
+	/*
   for (int i = 0; i < MAX_STATUS_SIZE; i++)
     EEPROM.write(i + (1 + MAX_COMMAND_SIZE), szStatus[i]);
+    */
 }
 
 

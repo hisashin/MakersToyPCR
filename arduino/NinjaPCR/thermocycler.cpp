@@ -298,15 +298,24 @@ void Thermocycler::Loop() {
 
 }
 
-const char DUMMY_STATUS[] = "dummystatus";
 //private
 void Thermocycler::AdvanceToNextStep() {
   ipPreviousStep = ipCurrentStep;
   ipCurrentStep = ipProgram->GetNextStep();
   if (ipCurrentStep == NULL)
     return;
+  SStatus szStatus;
+  /*
+  strncpy(szStatus.currentStepName, "HOGE", 4);
+  szStatus.currentCycleNum ='A';
+  szStatus.elapsedTime = 'B'<<8|'C';
+  */
+  strncpy(szStatus.currentStepName, GetCurrentStep()->GetName(), 16);
+  szStatus.currentCycleNum = GetCurrentCycleNum();
+  uint16_t time = (uint16_t)GetElapsedTimeS();
+  szStatus.elapsedTime = 0x1111|time;
 
-  ProgramStore::StoreStatus(DUMMY_STATUS);
+  ProgramStore::StoreStatus(szStatus);
 
   //update eta calc params
   if (ipPreviousStep == NULL || ipPreviousStep->GetTemp() != ipCurrentStep->GetTemp()) {

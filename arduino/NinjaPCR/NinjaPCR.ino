@@ -51,7 +51,8 @@ void setup() {
   gpThermocycler = new Thermocycler(restarted);
   Serial.begin(4800);
   digitalWrite(5, HIGH);
-  resume = ProgramStore::RetrieveStatus();
+  SStatus status;
+  resume = ProgramStore::RetrieveStatus(status);
 }
  
 bool connected = false;
