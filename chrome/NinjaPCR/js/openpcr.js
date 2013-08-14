@@ -416,7 +416,10 @@ function resumePCR () {
 }
 
 function abortPCR () {
-	chromeSerial.abort('s=ACGTC&c=abort');
+	chromeSerial.abort('s=ACGTC&c=abort', function () {
+		chromeUtil.alert(chrome.i18n.getMessage('abortDoneMessage'));
+		document.getElementById('resumeSection').style.display = 'none';
+	});
 }
 
 /*****************

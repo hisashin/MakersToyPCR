@@ -81,6 +81,6 @@
 	"resumeMessage":{"message":"A suspended experiment was found on the device. Do you want to resume the experiment?"},
 	"resume":{"message":"Resume"},
 	"abort":{"message":"Abort"},
-	"TODO":{"message":"TODO"},
+	"abortDoneMessage":{"message":"The ongoing experiment has been aborted."},
 	"TODO":{"message":"TODO"}
 }

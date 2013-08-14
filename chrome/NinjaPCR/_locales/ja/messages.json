@@ -81,5 +81,5 @@
 	"resumeMessage":{"message":"中断された実験がデバイス上にあります。再開しますか?"},
 	"resume":{"message":"再開する"},
 	"abort":{"message":"実験を破棄"},
-	"TODO":{"message":"TODO"}
+	"abortDoneMessage":{"message":"実験を破棄しました。"}
 }
