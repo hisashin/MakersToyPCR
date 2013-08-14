@@ -416,8 +416,7 @@ function resumePCR () {
 }
 
 function abortPCR () {
-	Log.i("TODO abortPCR");
-	chromeSerial.abort();
+	chromeSerial.abort('s=ACGTC&c=abort');
 }
 
 /*****************

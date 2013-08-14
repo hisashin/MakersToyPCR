@@ -89,9 +89,6 @@ Serial.prototype.resumeWithCommand = function (commandBody) {
 	Log.i("Serial.resume");
 	this.lastResponseTime = null;
 	this.complete = false;
-	Log.d("------------------------------------------------");
-	Log.d("Start Communication");
-	Log.d("------------------------------------------------");
 	Log.d("Program=" + commandBody);
 	var port = this.port;
 	var options = {
@@ -108,8 +105,24 @@ Serial.prototype.resumeWithCommand = function (commandBody) {
 		});
 	}
 };
-Serial.prototype.abort = function () {
+Serial.prototype.abort = function (commandBody, callback) {
 	Log.i("Serial.abort");
+	Log.d("Program=" + commandBody);
+	var port = this.port;
+	var options = {
+			bitrate:BAUD_RATE
+	};
+	var self = this;
+	var connectionId = self.connectionId;
+	if (connectionId<0) {
+		Log.e("Connection error.");
+	} else {
+		var data = getFullCommand(commandBody, SEND_CMD);
+		chrome.serial.write(connectionId, data, function (sendInfo){
+			Log.d("Abort command sent.");
+			callback();
+		});
+	}
 }
 
 /**

@@ -91,6 +91,8 @@ public:
   void SetProgram(Cycle* pProgram, Cycle* pDisplayCycle, const char* szProgName, int lidTemp); //takes ownership of cycles
   void Stop();
   PcrStatus Start();
+  PcrStatus Abort();
+  PcrStatus Resume();
   void ProcessCommand(SCommand& command);
   
   // internal
