@@ -216,8 +216,8 @@ PcrStatus Thermocycler::Resume() {
 }
 
 PcrStatus Thermocycler::Abort() {
-	//TODO
     ProgramStore::EraseStatus();
+    iProgramState = EStopped;
     return ESuccess;
 }
 static boolean lamp = false;
