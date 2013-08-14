@@ -209,6 +209,17 @@ PcrStatus Thermocycler::Start() {
   return ESuccess;
 }
 
+PcrStatus Thermocycler::Resume() {
+	//TODO
+	// Retrieve ongoing experiment & create experiment object
+  return ESuccess;
+}
+
+PcrStatus Thermocycler::Abort() {
+	//TODO
+    ProgramStore::EraseStatus();
+    return ESuccess;
+}
 static boolean lamp = false;
 
 // internal
@@ -519,6 +530,13 @@ void Thermocycler::ProcessCommand(SCommand& command) {
     GetThermocycler().Start();
 
   } 
+  else if (command.command == SCommand::EResume) {
+	    GetThermocycler().Resume();
+  }
+  else if (command.command == SCommand::EAbort) {
+	    GetThermocycler().Abort();
+
+  }
   else if (command.command == SCommand::EStop) {
     GetThermocycler().Stop(); //redundant as we already stopped during parsing
 

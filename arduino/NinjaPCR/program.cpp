@@ -120,12 +120,6 @@ void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
     pParam = strtok(NULL, "&");
   }
 }
-/*
-const char STATUS_START[] PROGMEM = "start";
-const char STATUS_STOP[] PROGMEM = "stop";
-const char STATUS_CFG[] PROGMEM = "cfg";
-const char PAREHTHESES[] PROGMEM = "()";
-*/
 void CommandParser::AddComponent(SCommand* pCommand, char key, char* szValue) {
   switch(key) {
   case 'n':
@@ -135,6 +129,10 @@ void CommandParser::AddComponent(SCommand* pCommand, char key, char* szValue) {
   case 'c':
     if (strcmp(szValue, "start") == 0)
       pCommand->command = SCommand::EStart;
+    else if (strcmp(szValue, "resume") == 0)
+      pCommand->command = SCommand::EResume;
+    else if (strcmp(szValue, "abort") == 0)
+      pCommand->command = SCommand::EAbort;
     else if (strcmp(szValue, "stop") == 0)
       pCommand->command = SCommand::EStop;
     else if (strcmp(szValue, "cfg") == 0)

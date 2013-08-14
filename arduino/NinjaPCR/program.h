@@ -133,6 +133,8 @@ struct SCommand {
   enum TCommandType {
     ENone = 0,
     EStart,
+    EResume,
+    EAbort,
     EStop,
     EConfig
   } command;
