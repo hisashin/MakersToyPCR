@@ -306,10 +306,10 @@ void ProgramStore::StoreStatus(SStatus& szStatus) {
 	    EEPROM.write(index, szStatus.currentStepName[i]);
 	    index++;
 	}
-	/*
-  for (int i = 0; i < MAX_STATUS_SIZE; i++)
-    EEPROM.write(i + (1 + MAX_COMMAND_SIZE), szStatus[i]);
-    */
 }
 
+void ProgramStore::StoreDebug(const char* debugMessage) {
+  for (int i = 0; i < MAX_DEBUG_SIZE; i++)
+    EEPROM.write(i + 1+MAX_COMMAND_SIZE+MAX_STATUS_SIZE, debugMessage[i]);
+}
 
