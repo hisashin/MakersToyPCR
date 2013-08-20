@@ -210,8 +210,18 @@ PcrStatus Thermocycler::Start() {
 }
 
 PcrStatus Thermocycler::Resume() {
-	//TODO
+        //ProgramStore::StoreDebug("Resume");
 	// Retrieve ongoing experiment & create experiment object
+    SCommand command;
+    byte* pBuffer[256];
+    boolean retrieveSuccess = ProgramStore::RetrieveProgram(command, /*(char*)ipSerialControl->GetBuffer()*/(char*)pBuffer);
+
+    if (retrieveSuccess) {
+        ProgramStore::StoreDebug("ResumeOK");
+        ProcessCommand(command);
+    } else {
+        ProgramStore::StoreDebug("ResumeOK");
+    }
   return ESuccess;
 }
 

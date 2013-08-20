@@ -177,7 +177,7 @@ public:
   static void StoreContrast(uint8_t contrast);
   static void StoreProgram(const char* szProgram);
   static void StoreStatus(SStatus& szStatus);
-  static void StoreDebug(const char* debugMessage) {
+  static void StoreDebug(const char* debugMessage);
 };
   
 

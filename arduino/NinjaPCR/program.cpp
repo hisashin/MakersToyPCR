@@ -34,7 +34,7 @@ void Step::Reset() {
   iStepDurationS = 0;
   iRampDurationS = 0;
   iTemp = 0;
-  iName[0] = '\0'; 
+  iName[0] = '\0';
 }
 
 void Step::BeginIteration() {
@@ -59,7 +59,7 @@ ProgramComponent* Cycle::GetComponent(int index) {
 PcrStatus Cycle::AddComponent(ProgramComponent* pComponent) {
   if (iNumComponents >= MAX_CYCLE_ITEMS)
     return ETooManySteps;
-  
+
   iComponents[iNumComponents++] = pComponent;
   return ESuccess;
 }
@@ -80,25 +80,25 @@ void Cycle::BeginIteration() {
 Step* Cycle::GetNextStep() {
   //check for next step of existing component
   Step* pNextStep = iComponents[iCurrentComponent]->GetNextStep();
-  
+
   //advance to next component if current component done
   if (pNextStep == NULL && ++iCurrentComponent < iNumComponents)
     pNextStep = iComponents[iCurrentComponent]->GetNextStep(); //should never be NULL
-  
+
   //advance to next cycle if current cycle done
   if (pNextStep == NULL && ++iCurrentCycle < iNumCycles) {
     RestartCycle();
-  
+
     //return first component of that cycle
     pNextStep = iComponents[iCurrentComponent]->GetNextStep(); //should never be NULL
   }
-      
+
   return pNextStep;
 }
 
 void Cycle::RestartCycle() {
   iCurrentComponent = 0;
-  
+
   for (int i = 0; i < iNumComponents; i++)
     iComponents[i]->BeginIteration();
 }
@@ -111,9 +111,9 @@ void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
   char buf[32];
 
   gpThermocycler->Stop(); //need to stop here to reset program pools
-    
+
   char* pParam = strtok(pCommandBuf, "&");
-  while (pParam) {  
+  while (pParam) {
     pValue = strchr(pParam, '=');
     *pValue++ = '\0';
     AddComponent(&command, pParam[0], pValue);
@@ -155,31 +155,31 @@ void CommandParser::AddComponent(SCommand* pCommand, char key, char* szValue) {
 Cycle* CommandParser::ParseProgram(char* pBuffer) {
   Cycle* pProgram = gpThermocycler->GetCyclePool().AllocateComponent();
   pProgram->SetNumCycles(1);
-	
+
   char* pCycBuf = strtok(pBuffer, "()");
   while (pCycBuf != NULL) {
     pProgram->AddComponent(ParseCycle(pCycBuf));
     pCycBuf = strtok(NULL, "()");
   }
-  
+
   return pProgram;
 }
 
 ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
   char countBuf[5];
-	
+
   //find first step
   char* pStep = strchr(pBuffer, '[');
-	
+
   //get cycle count
   int countLen = pStep - pBuffer;
   strncpy(countBuf, pBuffer, countLen);
   countBuf[countLen] = '\0';
   int cycCount = atoi(countBuf);
-  
+
   Cycle* pCycle = gpThermocycler->GetCyclePool().AllocateComponent();
   pCycle->SetNumCycles(cycCount);
-	
+
   //add steps
   while (pStep != NULL) {
     *pStep++ = '\0';
@@ -198,11 +198,11 @@ Step* CommandParser::ParseStep(char* pBuffer) {
   //parse temp
   char* pTemp = strchr(pBuffer, '|');
   *pTemp++ = '\0';
-  
+
   //parse name
   char* pName = strchr(pTemp, '|');
   *pName++ = '\0';
-  
+
   //parse ramp duration if exists
   char* pEnd;
   char* pRampDuration = strchr(pName, '|');
@@ -213,13 +213,13 @@ Step* CommandParser::ParseStep(char* pBuffer) {
     pEnd = strchr(pName, '|');
   }
   *pEnd = '\0';
-	
+
   unsigned long stepDuration = atol(pBuffer);
   unsigned long rampDuration = pRampDuration == NULL ? 0 : atol(pRampDuration);
   float temp = atof(pTemp);
 
   Step* pStep = gpThermocycler->GetStepPool().AllocateComponent();
-  
+
   pStep->SetName(pName);
   pStep->SetStepDurationS(stepDuration);
   pStep->SetRampDurationS(rampDuration);
@@ -246,27 +246,7 @@ const char PROG_START_STR[] PROGMEM = "&c=start";
 boolean ProgramStore::RetrieveProgram(SCommand& command, char* pBuffer) {
   for (int i = 0; i < MAX_COMMAND_SIZE; i++)
     pBuffer[i] = EEPROM.read(i + 1);
-  
-//  if (strncmp_P(pBuffer, PROG_START_STR_P, strlen(PROG_START_STR)) == 0) {
-  if (strncmp_P(pBuffer, PROG_START_STR, strlen(PROG_START_STR)) == 0) {
-    //previous program stored
-    CommandParser::ParseCommand(command, pBuffer);   
-    return true;
-    
-  } else {
-    return false;
-  }
-}
 
-
-boolean ProgramStore::RetrieveStatus(SStatus& status) {
-  for (int i = 0; i < MAX_STATUS_SIZE; i++) {
-    //pBuffer[i] = EEPROM.read(i + 1 + MAX_PROGRAM_SIZE);
-    if ('d'==EEPROM.read(i + 1 + MAX_COMMAND_SIZE)) return true;
-    //TODO retrieve & set
-  }
-  return false;
-/*
 //  if (strncmp_P(pBuffer, PROG_START_STR_P, strlen(PROG_START_STR)) == 0) {
   if (strncmp_P(pBuffer, PROG_START_STR, strlen(PROG_START_STR)) == 0) {
     //previous program stored
@@ -276,7 +256,28 @@ boolean ProgramStore::RetrieveStatus(SStatus& status) {
   } else {
     return false;
   }
-  */
+}
+
+
+boolean ProgramStore::RetrieveStatus(SStatus& status) {
+  for (int i = 0; i < MAX_STATUS_SIZE; i++) {
+    //pBuffer[i] = EEPROM.read(i + 1 + MAX_PROGRAM_SIZE);
+	int index = i + 1 + MAX_COMMAND_SIZE;
+    if ('d'==EEPROM.read(index)) return true;
+    index++;
+    status.currentCycleNum = EEPROM.read(index);
+    index++;
+    byte elapsed0 = EEPROM.read(index);
+    index++;
+    byte elapsed1 = EEPROM.read(index);
+    status.elapsedTime = elapsed0 || elapsed1<<8;
+    index++;
+	for (int i=0; i<16; i++) {
+	    status.currentStepName[i] =EEPROM.read(i);
+	    index++;
+	}
+  }
+  return false;
 }
 
 boolean ProgramStore::EraseStatus(void) {
@@ -309,7 +310,8 @@ void ProgramStore::StoreStatus(SStatus& szStatus) {
 }
 
 void ProgramStore::StoreDebug(const char* debugMessage) {
-  for (int i = 0; i < MAX_DEBUG_SIZE; i++)
+  for (int i = 0; i < MAX_DEBUG_SIZE; i++) {
     EEPROM.write(i + 1+MAX_COMMAND_SIZE+MAX_STATUS_SIZE, debugMessage[i]);
+  }
 }
 

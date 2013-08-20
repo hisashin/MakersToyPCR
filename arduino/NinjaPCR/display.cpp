@@ -26,7 +26,7 @@
 #define RESET_INTERVAL 30000 //ms
 
 //progmem strings
-const char HEATING_STR[] PROGMEM = "Heating";
+const char HEATING_STR[]  = "Heating";
 const char COOLING_STR[] PROGMEM = "Cooling";
 const char LIDWAIT_STR[] PROGMEM = "Heating Lid";
 const char STOPPED_STR[] PROGMEM = "Ready";
