@@ -12,7 +12,7 @@
  * Extra. Buttons
  */
 
-var LATEST_FIRMWARE_VERSION = "1.0.6";
+var LATEST_FIRMWARE_VERSION = "1.0.5";
 var MIN_FINAL_HOLD_TEMP = 16;
 
 
