@@ -1,5 +1,7 @@
 NinjaPCR
 ============
+![image](https://raw.github.com/hisashin/NinjaPCR/master/img/logo.png)
+
 NinjaPCR is Opensource(GPLv3) DNA Amplifier,Thermocycler Implementation for [Polymerase Chain Reaction](http://en.wikipedia.org/wiki/Polymerase_chain_reaction) developed by [Toriningen Inc.](http://www.tori.st) ([Shingo Hisakawa](https://www.facebook.com/hisakawa) and [Mariko Hisakawa](https://www.facebook.com/maripo)) in Tokyo,Japan.<br />
 
 [Photos](https://www.facebook.com/hisakawa/media_set?set=a.10151895843079481.663784480&type=3)
