@@ -11,19 +11,19 @@ NinjaPCR is Opensource(GPLv3) DNA Amplifier,Thermocycler Implementation for [Pol
 
 Forked from [OpenPCR](https://github.com/jperfetto/OpenPCR).
 
-Major differences from OpenPCR:<br />
-01. Smaller by changing from PC power supply to AC adapter<br />
-02. Platform changed from AdobeAIR to ChromeApp<br />
-03. Support multi OS (Windows,Mac,Linux,ChromeOS)<br />
-04. Software empowered(ex.temperature graph)<br />
-05. Software auto update for new features<br />
-06. Reusable Arduino UNO (firmware not overwritten)<br />
+Major changes from OpenPCR:<br />
+01. Get smaller by using AC adapter<br />
+02. Platform changed from AdobeAIR to [ChromeApp](https://chrome.google.com/webstore/detail/makerstoy-pcr/hoeafinlaiemkjnkakfbdpobhpicjbmb/details)<br />
+03. Support [Multi OS (Windows,Mac,Linux,ChromeOS)](https://support.google.com/chrome/answer/95411?hl=en)<br />
+04. LCD removed,Software riched (ex.Temperature graph)<br />
+05. Software auto update for new features (ex.Mail alert scheduled)<br />
+06. Reusable Arduino UNO (firmware not overwritten for AdobeAIR)<br />
 07. Reusable [Motor Driver Carrier](http://www.pololu.com/product/1451) (Not soldered to PCB)<br />
-08. High precision at high temperature (Scheduled)<br />
+08. High precision both low/high temperature (Scheduled)<br />
 09. Added RGB LED (Scheduled)<br />
 10. You can order primer from app (Scheduled)<br />
-<br />
+
 Minor differences from OpenPCR:<br />
 01. Cleared its Design Rule Check of PCB<br />
-02. Simpler metal parts<br />
+02. Simpler metal parts (drilling to bending)<br />
 03. Unit is changed from inch to mm<br />
