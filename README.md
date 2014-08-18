@@ -20,11 +20,11 @@ Major changes from OpenPCR:<br />
 05. Software auto update for new features (ex.Mail alert scheduled)<br />
 06. Reusable Arduino UNO (firmware not overwritten for AdobeAIR)<br />
 07. Reusable [Motor Driver Carrier](http://www.pololu.com/product/1451) (Not soldered to PCB)<br />
-08. High precision both low/high temperature (Scheduled)<br />
+08. High precision at both low/high temperature (Scheduled)<br />
 09. Added RGB LED (Scheduled)<br />
 10. You can order primer from app (Scheduled)<br />
 
 Minor differences from OpenPCR:<br />
-01. Cleared its Design Rule Check of PCB<br />
-02. Simpler metal parts (drilling to bending)<br />
-03. Unit is changed from inch to mm<br />
+11. Cleared its Design Rule Check of PCB<br />
+12. Simpler metal parts (drilling to bending)<br />
+13. Unit is changed from inch to mm<br />
