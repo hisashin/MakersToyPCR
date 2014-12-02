@@ -73,6 +73,54 @@ chromeUtil.alertUpdate = function (currentVersion, latestVersion) {
 	$('#update_dialog').show();
 }
 
+function debugObject (obj, maxDepth/*Default 1*/) {
+	_debugObject (obj, maxDepth||1, 0);
+}
+
+function _debugObject (obj, maxDepth/*Default 1*/, depth) {
+	if (depth>maxDepth) return;
+	var indent = "";
+	for (var i=0; i<depth; i++) {indent+="  ";}
+	
+	var index=0;
+	var functions = [];
+	for (var key in obj) {
+		//console.log(depth + "-" + index + " " + key + "=" + typeof obj[key])
+		index ++
+	
+		switch (typeof obj[key]) {
+		case "string" : {
+			console.log(indent + key + ":\"" + obj[key] + "\"");
+			break;
+		}
+		case "boolean" :
+		case "number" : {
+			console.log(indent + key + ":" + obj[key]);
+			break;
+		}
+		case "function" : {
+			functions.push(key);
+			//console.log(indent + key + ": [function]");
+			break;
+		}
+		case "object": {
+			console.log(indent + key + ":");
+			_debugObject(obj[key], maxDepth, depth+1);
+			break;
+		}
+		default: {
+			console.log(indent + key + ": (?)" + typeof obj[key]);
+		}
+		
+		}
+		
+	}
+	if (functions.length > 0) {
+		console.log(indent + "functions:[" + functions + "]");
+	}
+}
+
+
 var Storage = function () {
 	this.data = {};
 	this.experiments = [];
