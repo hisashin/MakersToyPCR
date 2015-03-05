@@ -68,7 +68,7 @@
 	"minute1":{"message":"1 minute"},
 	"minutes":{"message":"minutes"},
 	"close":{"message":"Close"},
-	"downloadUrl":{"message":"http://www.tori.st"},
+	"downloadUrl":{"message":"https://github.com/hisashin/NinjaPCR/wiki"},
 	"lessOptions":{"message":"Less options"},
 	"stepStep":{"message":"Step"},
 	"stepDenaturing":{"message":"Denaturing"},
