@@ -81,7 +81,7 @@ function scanPortsAndDisplay (delay) {
 			$("#runningUnplugged").show();
 			$("#runningPluggedIn").hide();
 			// Not plugged in.
-			Log.d('Send "request_status" command and check ongoing experiment (TODO)');
+			console.log('Send "request_status" command and check ongoing experiment (TODO)');
 			chromeSerial.scanOngoingExperiment (function () {
 				//if (!window.checkPlugInterval) {window.checkPlugInterval = setInterval(checkPlug, 2000); }
 				});
@@ -91,11 +91,11 @@ function scanPortsAndDisplay (delay) {
 
 
 function checkFirmwareVersion (version) {
-	Log.v("Firmware version=" + version + ", Latest version=" + LATEST_FIRMWARE_VERSION);
+	console.verbose("Firmware version=" + version + ", Latest version=" + LATEST_FIRMWARE_VERSION);
 	if (version==LATEST_FIRMWARE_VERSION) {
-		Log.v("The firmware is up to date.");
+		console.verbose("The firmware is up to date.");
 	} else {
-		Log.v("Please update the firmware!");
+		console.verbose("Please update the firmware!");
 		chromeUtil.alertUpdate(version, LATEST_FIRMWARE_VERSION);
 	}
 }
@@ -145,7 +145,7 @@ function listSubmit() {
  * loads the experiment with the given experimentID
  */
 function loadExperiment(experimentID) {
-	Log.v("loadExperiment id=" + experimentID);
+	console.verbose("loadExperiment id=" + experimentID);
 	pcrStorage.loadExperiment(experimentID, function(experiment) {
 		// Now we've made all the modifications needed, display the Form page
 		sp2.showPanel(1);
@@ -186,7 +186,7 @@ function newExperiment() {
  * Returns: nothing
  */
 function startOrUnplugged(display) {
-	Log.d("############ startOrUnplugged ##########");
+	console.log("############ startOrUnplugged ##########");
 	//pick the Start or Unplugged button based on whether the device is plugged in or not
 	// if plugged in then
 	if (window.pluggedIn == true) {
@@ -206,7 +206,7 @@ function startOrUnplugged(display) {
  * puts Form buttons in the state they should be immediately following loading an experiment
  */
 function reRunButtons() {
-	Log.d("reRunButtons");
+	console.log("reRunButtons");
 	// Hide the Delete button
 	$('#deleteButton').show();
 	// Start with the edit button shown
@@ -262,7 +262,7 @@ function newExperimentButtons() {
  * The Enter/Return key doesn't do anything right now
  */
 function disableEnterKey(e) {
-	Log.v("disableEnterKey");
+	console.verbose("disableEnterKey");
 	var key;
 	if (window.event)
 		key = window.event.keyCode; //IE
@@ -331,17 +331,17 @@ function startPCR() {
 	// command id can't be 0 
 	// where is OpenPCR
 	var devicePort = chromeSerial.port;
-	Log.v("devicePort=" + devicePort);
+	console.verbose("devicePort=" + devicePort);
 	
 	pcrProgram = writeoutExperiment();
 	var parsedProgram = programToDeviceCommand (pcrProgram);	
 	// verify that there are no more than 16 top level steps
-	Log.v(pcrProgram.steps.length + " : top level steps");
-	Log.v(window.lessthan20steps + " : cycle level steps");
+	console.verbose(pcrProgram.steps.length + " : top level steps");
+	console.verbose(window.lessthan20steps + " : cycle level steps");
 	var totalSteps = window.lessthan20steps + pcrProgram.steps.length;
 
 	// check that the entire protocol isn't >252 bytes
-	Log.v("parsedProgram=" + parsedProgram);
+	console.verbose("parsedProgram=" + parsedProgram);
 	if (parsedProgram.length > 512) {
 		chromeUtil
 				.alert(chrome.i18n.getMessage('lengthLimit').replace('___LENGTH___', parsedProgram.length));
@@ -350,20 +350,20 @@ function startPCR() {
 
 	// verify the cycle step has no more than 16 steps
 	else if (window.lessthan20steps > 16) {
-		Log.v(parsedProgram);
+		console.verbose(parsedProgram);
 		chromeUtil.alert(chrome.i18n.getMessage('stepLimit').replace('___STEPS___',window.lessthan20steps));
 		return 0;
 	}
 
 	// and check that the total overall is less than 25
 	else if (totalSteps > 25) {
-		Log.v(parsedProgram);
+		console.verbose(parsedProgram);
 		chromeUtil.alert(chrome.i18n.getMessage('totalStepLimit').replace('___STEPS___',totalSteps));
 		return 0;
 	}
 
 	//debug
-	Log.v(parsedProgram);
+	console.verbose(parsedProgram);
 	// go to the Running dashboard
 	sp2.showPanel(2);
 	$("#ex2_p3").hide();
@@ -465,7 +465,7 @@ function stopPCR() {
 	// increment the window.command id and send the new command to the device
 	window.command_id++;
 	stopPCR += '&d=' + window.command_id;
-	Log.v(stopPCR);
+	console.verbose(stopPCR);
 	// Send out the STOP command by serial
 	chromeSerial.stopOnComplete();
 	chromeSerial.sendStopCommand(stopPCR, function(){
@@ -531,6 +531,8 @@ function prepareButtons() {
 		});
 		$('#about_dialog').dialog('open');
 	});
+	
+	$('#debugLink').on('click', Log.toggleDebugArea);
 
 	/*  "Contrast" button on the OpenPCR Home page
 	 * Sets the contrast for OpenPCR
@@ -564,7 +566,7 @@ function prepareButtons() {
 	 * Sends an experiment to OpenPCR and switches to the Running page
 	 */
 	$('#Start').on('click', function() {
-		Log.d("#Start.click");
+		console.log("#Start.click");
 		startPCR();
 	});
 
@@ -630,7 +632,7 @@ function prepareButtons() {
 	 * Delete the step
 	 */
 	$('.deleteStepButton').on('click', function() {
-		Log.v("deleteStepButton");
+		console.verbose("deleteStepButton");
 		$(this).parent().slideUp('slow', function() {
 			// after animation is complete, remove parent step
 			$(this).remove();
@@ -786,7 +788,7 @@ $(function() {
 										+ '&d=' + command_id;
 
 								// trace it
-								Log.v("string: " + contrast_string);
+								console.verbose("string: " + contrast_string);
 
 								// Write out the  command to CONTROL.TXT
 								// name of the output file
@@ -812,7 +814,7 @@ $(function() {
 								contrast_string = 's=ACGTC&c=cfg&o=' + contrast
 										+ '&d=' + command_id;
 								// trace it
-								Log.v("string: " + contrast_string);
+								console.verbose("string: " + contrast_string);
 								// Write out the  command to CONTROL.TXT
 								// name of the output file
 								if (window.path != null) {

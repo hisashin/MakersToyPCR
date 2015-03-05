@@ -26,7 +26,7 @@ SerialPortScanner.prototype.findPcrPort = function (callback) {
 		this._scan(function(){
 			self.currentPortIndex++;
 			if (self.foundPort) {
-				Log.d("Finish scanning.");
+				console.log("Finish scanning.");
 				chromeSerial.setOnReceive(null);
 				callback(self.foundPort, self.connectionId, self.firmwareVersion);
 			} else {
@@ -40,7 +40,7 @@ SerialPortScanner.prototype.findPcrPort = function (callback) {
 SerialPortScanner.prototype._scan = function(callback) {
 	var port = this.ports[this.currentPortIndex];
 	if (port.match(PORT_TO_IGNORE)) {
-		Log.d("Ignore port " + port);
+		console.log("Ignore port " + port);
 		callback(null);
 		return;
 	}
@@ -61,7 +61,7 @@ SerialPortScanner.prototype._scan = function(callback) {
 		var connectionId = openInfo.connectionId;
 		self.connectionId = connectionId;
 		if (connectionId<0) {
-			Log.e("Connection error. ID=" + connectionId);
+			console.error("Connection error. ID=" + connectionId);
 			callback(null);
 		} else {
 			if (onSerialOpen)
@@ -97,10 +97,10 @@ SerialPortScanner.prototype._read = function (data) {
 		//self._read(connectionId, callback);
 	} else {
 		// Finish reading and check message
-		Log.d("Message=" + self.readMessage);
+		console.log("Message=" + self.readMessage);
 		if (self.readMessage.match(MESSAGE_FROM_DEVICE)) {
 			var version = RegExp.$1;
-			Log.i("Device found. Firmware version " + version);
+			console.info("Device found. Firmware version " + version);
 			self.foundPort = port;
 			self.firmwareVersion = version;
 			console.log("self.connectionId=" + self.connectionId);
@@ -110,7 +110,7 @@ SerialPortScanner.prototype._read = function (data) {
 			});
 		} else {
 			chrome.serial.disconnect(this.connectionId, function () {
-				Log.d("Device was not found on port " + port);
+				console.log("Device was not found on port " + port);
 				callback();
 			});
 		}
