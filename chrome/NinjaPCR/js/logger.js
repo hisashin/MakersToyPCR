@@ -31,8 +31,50 @@ Log._write = function (message, level, label) {
 		console.log ("[NinjaPCR]\t" + "[" + label + "]\t" + Log._getDate() + "\t" + message);
 	}
 }
-Log.v = function (message) { Log._write(message, Log.Level.VERBOSE, "v"); };
-Log.d = function (message) { Log._write(message, Log.Level.DEBUG, "d"); };
-Log.i = function (message) { Log._write(message, Log.Level.INFO, "i"); };
-Log.w = function (message) { Log._write(message, Log.Level.WARNING, "w"); };
-Log.e = function (message) { Log._write(message, Log.Level.ERROR, "e"); };
+//log, info, warn, error
+Log.showInDebugArea = function (tag, msg) {
+	var debugArea = document.getElementById("debugText");
+	if (debugArea) {
+		debugArea.innerHTML += "\n";
+		debugArea.innerHTML += "[" + tag +"] " + Log._getDate() + " " + msg;
+	}
+}
+
+console.log_orig = console.log;
+console.log = function(msg) {
+	console.log_orig(msg);
+	Log.showInDebugArea("L", msg);
+	
+};
+console.verbose = function(msg) {
+	console.log_orig(msg);
+	Log.showInDebugArea("V", msg);
+	
+};
+console.info_orig = console.info;
+console.info = function(msg) {
+	console.info_orig(msg);
+	Log.showInDebugArea("I", msg);
+	
+};
+console.warn_orig = console.warn;
+console.warn = function(msg) {
+	Log.showInDebugArea("W", msg);
+	console.warn_orig(msg);
+	
+};
+console.error_orig = console.error;
+console.error = function(msg) {
+	Log.showInDebugArea("E", msg);
+	console.error_orig(msg);
+	
+};
+Log.toggleDebugArea = function () {
+
+var debugArea = document.getElementById("debugText");
+	if (debugArea) {
+		debugArea.style.display = (debugArea.style.display=="none")?"block":"none";
+	}
+};
+
+

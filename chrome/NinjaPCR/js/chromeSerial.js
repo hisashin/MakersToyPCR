@@ -44,7 +44,7 @@ Serial.prototype.scan = function (callbackExternal, _wait) {
 			}
 			if (!found) {
 				// New Port Found!
-				Log.d("New Port Found! path=" + ports[i].path);
+				console.log("New Port Found! path=" + ports[i].path);
 				portsToSearch.push(ports[i].path);
 			}
 		}
@@ -58,7 +58,7 @@ Serial.prototype.scan = function (callbackExternal, _wait) {
 	});
 };
 Serial.prototype.scanOngoingExperiment = function (callback) {
-	Log.d("TODO scanOngoingExperiment");
+	console.log("TODO scanOngoingExperiment");
 	//TODO getPorts -> Open -> (callback) -> getList -> sendRequest -> read -> ...
 	callback();
 };
@@ -80,10 +80,10 @@ Serial.prototype._getScanFunc = function (callbackExternal, portsToSearch) {
 Serial.prototype.startWithCommand = function (commandBody) {
 	this.lastResponseTime = null;
 	this.complete = false;
-	Log.d("------------------------------------------------");
-	Log.d("Start Communication");
-	Log.d("------------------------------------------------");
-	Log.d("Program=" + commandBody);
+	console.log("------------------------------------------------");
+	console.log("Start Communication");
+	console.log("------------------------------------------------");
+	console.log("Program=" + commandBody);
 	var port = this.port;
 	var options = {
 			bitrate:BAUD_RATE
@@ -91,7 +91,7 @@ Serial.prototype.startWithCommand = function (commandBody) {
 	var self = this;
 	var connectionId = self.connectionId;
 	if (connectionId<0) {
-		Log.e("Connection error.");
+		console.error("Connection error.");
 	} else {
 		var data = getFullCommand(commandBody, SEND_CMD);
 		chrome.serial.send(connectionId, data, function (sendInfo){
@@ -130,7 +130,7 @@ Serial.prototype.sendStopCommand = function (command, callback) {
 	var self = this;
 	var connectionId = self.connectionId;
 	if (connectionId<0) {
-		Log.e("Connection error. ID=" + connectionId);
+		console.error("Connection error. ID=" + connectionId);
 	} else {
 		var data = getFullCommand(command, SEND_CMD);
 		chrome.serial.send(connectionId, data, function (sendInfo){
@@ -151,11 +151,11 @@ Serial.prototype.requestStatus = function (callback) {
 	var self = this;
 	var connectionId = self.connectionId;
 	var data = getFullCommand("", STATUS_REQ);
-	Log.v("Request status... connectionId=" + connectionId);
+	console.verbose("Request status... connectionId=" + connectionId);
 	chrome.serial.send(connectionId, data, function (sendInfo) {
 		if (sendInfo.error) {
 			console.log("sendInfo=" + sendInfo.error);this.connectionAlertDone = true;
-			Log.w("Connection on port " + this.port + " seems to be lost. Reconnecting...");
+			console.warn("Connection on port " + this.port + " seems to be lost. Reconnecting...");
 			document.getElementById('runningUnplugged').style.display = 'block';
 			var options = {
 					bitrate:BAUD_RATE
@@ -163,11 +163,11 @@ Serial.prototype.requestStatus = function (callback) {
 			chrome.serial.open(this.port, options, function (openInfo) {
 				var connectionId = openInfo.connectionId;
 				if (connectionId<0) {
-					Log.e("Connection error. ID=" + connectionId);
+					console.error("Connection error. ID=" + connectionId);
 					callback(null);
 				} else {
 					self.connectionId = connectionId;
-					Log.d("Reconnected. conenctionId=" + connectionId);
+					console.log("Reconnected. conenctionId=" + connectionId);
 				}
 			});
 		}
@@ -233,7 +233,7 @@ Serial.prototype.processPacket = function () {
 	for (var i=0; i<bodyLength; i++) {
 		message += String.fromCharCode(commandBody[i]);
 	};
-	Log.d(message);
+	console.log(message);
 	if (this.onReceiveStatus)
 		onReceiveStatus(message);
 }

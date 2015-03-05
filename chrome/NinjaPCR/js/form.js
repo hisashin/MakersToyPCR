@@ -354,7 +354,7 @@ function writeoutExperiment() {
 	});
 	$("#cycleContainer .step_name").each (function(index, elem){
 		var stepName = globalizeStepName($(this).text());
-		Log.v("Step Name=" + stepName);
+		console.verbose("Step Name=" + stepName);
 		cycleNameArray.push(stepName);
 	});
 
@@ -456,7 +456,7 @@ function writeoutExperiment() {
  * Input: name, name of the file to be written out (add .pcr extension)
  */
 function save(name, isNew, callback) {
-	Log.v("save " + name + ", isNew=" + isNew);
+	console.verbose("save " + name + ", isNew=" + isNew);
 	// grab the current experiment and update window.experiment
 	pcrProgram = writeoutExperiment();
 	console.log("pcrProgram=" + pcrProgram);
@@ -465,7 +465,7 @@ function save(name, isNew, callback) {
 	// turn the pcrProgram into a string
 	if (isNew) {
 		pcrStorage.insertExperiment(name, pcrProgram, function(result) {
-			Log.v("result=" + result);
+			console.verbose("result=" + result);
 			if (callback) {
 				callback();
 			}
@@ -478,7 +478,7 @@ function save(name, isNew, callback) {
 	}
 	else {
 		pcrStorage.updateCurrentExperiment(name, pcrProgram, function(result) {
-			Log.v("result=" + result);
+			console.verbose("result=" + result);
 			if (callback) {
 				callback();
 			}

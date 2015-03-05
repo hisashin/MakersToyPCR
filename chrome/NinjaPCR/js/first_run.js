@@ -11,10 +11,10 @@
 // if the "Experiments" folder doesn't exist, copy the "Experiments" folder from the app directory into the user's application storage dir
 
 // files from the app folder
-Log.v('TODO TORI source = air.File.applicationDirectory.resolvePath("Default Experiments");');
+console.verbose('TODO TORI source = air.File.applicationDirectory.resolvePath("Default Experiments");');
 
 // into the user's storage folder
-Log.v('TODO TORI destination = air.File.applicationStorageDirectory.resolvePath("Experiments");');
+console.verbose('TODO TORI destination = air.File.applicationStorageDirectory.resolvePath("Experiments");');
 // copy
-Log.v('TODO TORI source.copyTo( destination, false );');
+console.verbose('TODO TORI source.copyTo( destination, false );');
 // should throw an error to IO, "Error: Error #3012: Cannot delete file or directory" if folder exists

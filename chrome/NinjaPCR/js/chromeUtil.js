@@ -1,11 +1,11 @@
 var chromeUtil = {
 };
 chromeUtil.getOS = function () {
-		Log.v("getOS OS=" + navigator.appVersion);
+		console.verbose("getOS OS=" + navigator.appVersion);
 		return navigator.appVersion;
 };
 chromeUtil.alert = function (message) {
-	Log.v("Alert " + message);
+	console.verbose("Alert " + message);
 	if (!chromeUtil.alertDialogInit) {
 		chromeUtil.alertDialogInit = true;
 		$('#alert_dialog').dialog({
@@ -68,7 +68,7 @@ chromeUtil.alertUpdate = function (currentVersion, latestVersion) {
 	var message = chrome.i18n.getMessage('firmwareVersionDialog')
 		.replace("___LATEST_VERSION___", latestVersion)
 		.replace("___INSTALLED_VERSION___", currentVersion);
-	Log.v(message);
+	console.verbose(message);
 	$('#update_dialog_content')[0].innerHTML = message;
 	$('#update_dialog').show();
 }
@@ -83,23 +83,23 @@ var STORAGE_KEY_EXPERIMENT_LIST = "experimentList";
 var STORAGE_KEY_EXPERIMENT_PREFIX = "pcr_";
 
 Storage.prototype.loadList = function (callback) {
-	Log.v("Storage.prototype.loadList");
+	console.verbose("Storage.prototype.loadList");
 	var self = this;
 	chrome.storage.sync.get(STORAGE_KEY_EXPERIMENT_LIST, function (data) {
-		Log.v("Load done. data=" + data);
+		console.verbose("Load done. data=" + data);
 		if (data[STORAGE_KEY_EXPERIMENT_LIST])
 			self.experiments = JSON.parse(data[STORAGE_KEY_EXPERIMENT_LIST]);
 		else
 			self.experiments = [];
 		if (self.experiments && self.experiments.length>0) {
-			Log.v("Storage.loadList Experiment List Found.");
+			console.verbose("Storage.loadList Experiment List Found.");
 			for (var i=0; i<self.experiments.length; i++) {
-				Log.v(self.experiments[i].name);
+				console.verbose(self.experiments[i].name);
 			}
 			callback(self.experiments);
 		} else {
 			//Empty
-			Log.v("Empty. Add default experiment and save.");
+			console.verbose("Empty. Add default experiment and save.");
 			self.insertDefaultExperiment(callback);
 		}
 	});
@@ -107,7 +107,7 @@ Storage.prototype.loadList = function (callback) {
 Storage.prototype.insertDefaultExperiment = function (callback) {
 	var self = this;
 	this.insertExperiment (DEFAULT_EXPERIMENT.name, DEFAULT_EXPERIMENT, function () {
-		Log.i("Default experiment was inserted.");
+		console.info("Default experiment was inserted.");
 		self.loadList(callback);
 	});
 }
@@ -116,14 +116,14 @@ Storage.prototype.loadExperiment = function (experimentId, callback) {
 	var self = this;
 	chrome.storage.sync.get(key, function(data){
 		var dataStr = data[key];
-		Log.v("Data str=" + dataStr);
+		console.verbose("Data str=" + dataStr);
 		var experiment = null;
 		
 		if (dataStr!=null) {
 			try {
 				experiment = JSON.parse(dataStr);
 			} catch (e) {
-				Log.e(e);
+				console.error(e);
 			}
 		}
 		self.currentExperimentId = experimentId;
@@ -133,9 +133,9 @@ Storage.prototype.loadExperiment = function (experimentId, callback) {
 	
 };
 Storage.prototype.clearAllData = function () {
-	Log.v("clearAllData");
+	console.verbose("clearAllData");
 	chrome.storage.sync.clear (function(){
-		Log.v("Done.");
+		console.verbose("Done.");
 	});
 };
 Storage.prototype.generateId = function () {
@@ -150,7 +150,7 @@ Storage.prototype.updateCurrentExperiment = function (name, newData, callback) {
 	for (var i=0; i<this.experiments.length; i++) {
 		var experiment = this.experiments[i];
 		if (experiment.id==id) {
-			Log.v("Old name=" + experiment.name);
+			console.verbose("Old name=" + experiment.name);
 			this.experiments[i].name = name;
 		}
 	}
@@ -158,7 +158,7 @@ Storage.prototype.updateCurrentExperiment = function (name, newData, callback) {
 	storageObj[STORAGE_KEY_EXPERIMENT_LIST] = JSON.stringify(this.experiments, null, '');
 	var self = this;
 	chrome.storage.sync.set(storageObj, function() {
-			Log.v('Experiment "'+name+'" saved');
+			console.verbose('Experiment "'+name+'" saved');
 			var detailStorageObj = {};
 			detailStorageObj[key]  = JSON.stringify(newData, null, '');
 			chrome.storage.sync.set(detailStorageObj, function() {
@@ -170,12 +170,12 @@ Storage.prototype.updateCurrentExperiment = function (name, newData, callback) {
 		});
 };
 Storage.prototype.deleteCurrentExperiment = function (callback) {
-	Log.v("deleteCurrentExperiment " + this.currentExperimentId);
+	console.verbose("deleteCurrentExperiment " + this.currentExperimentId);
 
 	for (var i=0; i<this.experiments.length; i++) {
 		var experiment = this.experiments[i];
 		if (experiment.id==this.currentExperimentId) {
-			Log.v("Remove " + i);
+			console.verbose("Remove " + i);
 			this.experiments.splice(i, 1);
 			break;
 		}
@@ -184,11 +184,11 @@ Storage.prototype.deleteCurrentExperiment = function (callback) {
 	storageObj[STORAGE_KEY_EXPERIMENT_LIST] = JSON.stringify(this.experiments, null, '');
 	var self = this;
 	chrome.storage.sync.set(storageObj, function() {
-			Log.v('List saved.');
+			console.verbose('List saved.');
 			var detailStorageObj = {};
 			var key = self.getKeyForId(self.currentExperimentId);
 			chrome.storage.sync.remove(key, function() {
-				Log.v('Detail data removed.');
+				console.verbose('Detail data removed.');
 				callback();
 			});
 		});
@@ -204,7 +204,7 @@ Storage.prototype.insertExperiment = function (name, experiment, callback) {
 	storageObj[STORAGE_KEY_EXPERIMENT_LIST] = JSON.stringify(this.experiments, null, '');
 	var self = this;
 	chrome.storage.sync.set(storageObj, function() {
-			Log.v('Experiment "'+name+'" saved');
+			console.verbose('Experiment "'+name+'" saved');
 			var detailStorageObj = {};
 			var key = self.getKeyForId(id);
 			detailStorageObj[key]  = JSON.stringify(experiment, null, '');
@@ -217,11 +217,11 @@ Storage.prototype.insertExperiment = function (name, experiment, callback) {
 		});
 };
 Storage.prototype.updateExperiment = function (experiment) {
-	Log.v("Storage#updateExperiment");
+	console.verbose("Storage#updateExperiment");
 };
 
 Storage.prototype.getLogFileName = function () {
-	Log.d("Storage.getLogFileName experiment=" + this.currentExperiment);
+	console.log("Storage.getLogFileName experiment=" + this.currentExperiment);
 	var time = new Date();
 	var experimentName = (this.currentExperiment)?this.currentExperiment.name:'New Experiment';
 	var fileName = experimentName.replace(/ /g, "_");
