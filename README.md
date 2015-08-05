@@ -7,8 +7,10 @@ NinjaPCR is Opensource(GPLv3) DNA Amplifier,Thermocycler Implementation for [Pol
 [Photos](https://www.facebook.com/hisakawa/media_set?set=a.10151895843079481.663784480&type=3)
 [![image](https://raw.github.com/hisashin/NinjaPCR/master/img/pcr_1000.png)](https://www.facebook.com/hisakawa/media_set?set=a.10151895843079481.663784480&type=3)
 
-[3D CAD](https://fusion360.autodesk.com/projects/ninjapcr)<br />[![image](https://raw.github.com/hisashin/NinjaPCR/master/img/AutodeskCapture.png)](https://fusion360.autodesk.com/projects/ninjapcr)
+[3D CAD](https://fusion360.autodesk.com/projects/ninjapcr)<br />
+[![image](https://raw.github.com/hisashin/NinjaPCR/master/img/AutodeskCapture.png)](https://fusion360.autodesk.com/projects/ninjapcr)
 
+[BOM](https://docs.google.com/spreadsheets/d/1Eu-5YibDgaByIjIB5OE9yRJ3uC1ED0U484PYJb1YKqg/edit#gid=36)
 
 Forked from [OpenPCR](https://github.com/jperfetto/OpenPCR).
 
@@ -28,3 +30,9 @@ Minor differences from OpenPCR:<br />
 11. Cleared its Design Rule Check of PCB<br />
 12. Simpler metal parts (drilling to bending)<br />
 13. Unit is changed from inch to mm<br />
+
+Note:<br />
+NinjaPCR-131202.brd is the best PCB to try.
+After that I added photocoupler to test high/low temperature modes but analog switch is right choice for that purpose.<br />
+Pololu legacy motor driver VNH3SP30 is used. if you want to use latest one, you should change a little.<br />
+There seems a inconsistency error on EAGLE but... maybe not so severe. I'll check later.'
