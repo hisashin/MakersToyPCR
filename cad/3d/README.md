@@ -1,0 +1,3 @@
+You need to tap some holes on metal parts.
+
+![image](https://raw.github.com/hisashin/NinjaPCR/master/cad/3d/TappingInstructions_n201.jpg)![image](https://raw.github.com/hisashin/NinjaPCR/master/cad/3d/TappingInstructions_n203.jpg)![image](https://raw.github.com/hisashin/NinjaPCR/master/cad/3d/TappingInstructions_n301.jpg)![image](https://raw.github.com/hisashin/NinjaPCR/master/cad/3d/TappingInstructions_n501.jpg)![image](https://raw.github.com/hisashin/NinjaPCR/master/cad/3d/TappingInstructions_n502.jpg)
