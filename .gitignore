@@ -10,6 +10,7 @@
 *.aws
 *.s
 *.zip
+.DS_Store
 .dep
 usb/default
 .project
