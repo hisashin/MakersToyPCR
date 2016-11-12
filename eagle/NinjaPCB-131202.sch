@@ -10075,7 +10075,7 @@ Source: DCJ0303.pdf</description>
 <part name="+5VREG4" library="openpcr" deviceset="+5VREG" device=""/>
 <part name="GND6" library="openpcr" deviceset="GND1" device=""/>
 <part name="C3" library="rcl" deviceset="CPOL-US" device="E5-13" value="3300uF16V"/>
-<part name="U$3" library="openpcr" deviceset="ARDUINO" device="DUEMILANOVE"/>
+<part name="U$3" library="openpcr" deviceset="ARDUINO" device="NS" value="Arduino UNO"/>
 <part name="IC1" library="microchip" deviceset="MCP355*" device="SN" technology="1"/>
 <part name="P+5" library="openpcr" deviceset="+12V1" device=""/>
 <part name="GND8" library="openpcr" deviceset="GND1" device=""/>
