@@ -714,27 +714,27 @@ design rules under a new name.</description>
 <attribute name="OC_FARNELL" value="1462950" x="32.5180125" y="15.834334375" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="OC_NEWARK" value="30C0862" x="32.5180125" y="15.834334375" size="1.778" layer="27" rot="R180" display="off"/>
 </element>
-<element name="R4" library="resistor" package="0207/10" value="" x="45.45418125" y="29.150953125" smashed="yes">
+<element name="R4" library="resistor" package="0207/10" value="2.2k" x="45.45418125" y="29.150953125" smashed="yes">
 <attribute name="VALUE" x="43.19358125" y="28.515953125" size="1.27" layer="27" ratio="10"/>
 </element>
-<element name="R10" library="resistor" package="0207/10" value="" x="45.45418125" y="25.340953125" smashed="yes" rot="R180">
+<element name="R10" library="resistor" package="0207/10" value="2.2k" x="45.45418125" y="25.340953125" smashed="yes" rot="R180">
 <attribute name="VALUE" x="47.71478125" y="25.975953125" size="1.27" layer="27" ratio="10" rot="R180"/>
 </element>
 <element name="R12" library="resistor" package="0207/10" value="1k" x="45.45418125" y="21.530953125" smashed="yes" rot="R180"/>
-<element name="C3" library="rcl" package="E5-13" value="" x="18.884515625" y="15.071575" smashed="yes" rot="R270">
+<element name="C3" library="rcl" package="E5-13" value="3300uF16V" x="18.884515625" y="15.071575" smashed="yes" rot="R270">
 <attribute name="VALUE" x="14.947515625" y="19.643575" size="1.778" layer="27" ratio="10" rot="R270"/>
 </element>
-<element name="U$3" library="openpcr" package="ARDUINO-NOSILK" value="ARDUINODUEMILANOVE" x="3.07" y="0"/>
+<element name="U$3" library="openpcr" package="ARDUINO-NOSILK" value="Arduino UNO" x="3.07" y="0"/>
 <element name="IC1" library="microchip" package="SO-08" value="MCP3551SN" x="32.916178125" y="33.954259375" smashed="yes" rot="R90">
 <attribute name="MF" value="" x="32.916178125" y="33.954259375" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="MPN" value="MCP3551-E/SN" x="32.916178125" y="33.954259375" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="OC_FARNELL" value="1084625" x="32.916178125" y="33.954259375" size="1.778" layer="27" rot="R90" display="off"/>
 <attribute name="OC_NEWARK" value="97K4494" x="32.916178125" y="33.954259375" size="1.778" layer="27" rot="R90" display="off"/>
 </element>
-<element name="C2" library="rcl" package="E5-8,5" value="" x="27.622353125" y="5.49519375" smashed="yes" rot="R270">
+<element name="C2" library="rcl" package="E5-8,5" value="1000uF16V" x="27.622353125" y="5.49519375" smashed="yes" rot="R270">
 <attribute name="VALUE" x="24.599753125" y="8.00979375" size="1.27" layer="27" ratio="10" rot="R270"/>
 </element>
-<element name="Q2" library="openpcr" package="TO202" value="BSS97" x="60.737940625" y="11.412275" smashed="yes"/>
+<element name="Q2" library="openpcr" package="TO202" value="2SK2232" x="60.737940625" y="11.412275" smashed="yes"/>
 <element name="MD01B" library="MOTORDRIVE" package="VNH3SP30+4PIN_NOHOLES" value="VNH3SP30+4PINN" x="15.651021875" y="23.095428125" smashed="yes"/>
 <element name="U$1" library="PIN" package="1X02_1.1_UNSIGNED" value="1X02" x="51.252075" y="11.7027125" smashed="yes" rot="R90"/>
 <element name="J2" library="con-molex" package="POLOLU-8-VERTICAL" value="22--08" x="58.95090625" y="29.480671875" smashed="yes" rot="R90"/>
@@ -750,7 +750,7 @@ design rules under a new name.</description>
 <element name="JP4" library="pinhead" package="1X01" value="" x="2.960165625" y="16.95316875" smashed="yes" rot="R270">
 <attribute name="VALUE" x="-0.214834375" y="18.22316875" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="Q3" library="openpcr" package="TO202" value="BSS97" x="44.376959375" y="11.412275" smashed="yes"/>
+<element name="Q3" library="openpcr" package="TO202" value="2SK2232" x="44.376959375" y="11.412275" smashed="yes"/>
 <element name="R13" library="resistor" package="0207/10" value="1k" x="45.45418125" y="17.720953125" smashed="yes"/>
 </elements>
 <signals>
