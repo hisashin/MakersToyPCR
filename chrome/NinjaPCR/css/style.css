@@ -321,3 +321,14 @@ meter {
 	text-align:right;
 	padding-right:55px;
 }
+#browser_alert {
+	background-color: #ffd;
+	border: 1px solid orange;
+	margin: 10px;
+	padding: 8px;
+}
+#browser_alert a {
+	color: blue;
+	text-decoration: underline;
+	}
+}

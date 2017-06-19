@@ -33,6 +33,17 @@
 </style>
 </head>
 <body>
+<div style="display:none;" id="browser_alert">
+You are opening PCR.html directly by Chrome web browser.<br/>
+ It is intended to be opened as a browser extension, not a web page.<br/>
+ Please install it from <a href="https://chrome.google.com/webstore/detail/ninjapcr/iafcnpnnklpfgblfnbdicnlbppphcemi">Chrome Web Store</a>
+  and launch from <a href="chrome://extensions/">Extensions tab</a>. 
+</div>
+<script type="text/javascript">
+if (!chrome || !chrome.serial) {
+	document.getElementById("browser_alert").style.display = 'block';
+}
+</script>
 <div id="content" role="main">
 	<div id="example2" class="SlidingPanels">
 	<div class="SlidingPanelsContentGroup">
