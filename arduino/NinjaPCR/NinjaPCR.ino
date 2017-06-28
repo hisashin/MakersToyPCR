@@ -23,6 +23,19 @@
 #include "thermocycler.h"
 
 
+#ifdef USE_WIFI
+/*
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+#include <ESP8266HTTPClient.h>
+*/
+#endif /* USE_WIFI */
+
+
+#ifdef USE_WIFI
+
+#endif
+
 Thermocycler* gpThermocycler = NULL;
 
 boolean InitialStart() {
@@ -45,8 +58,14 @@ void setup() {
   }
   
   //restart detection
+  
+#ifdef USE_WIFI
+  //TODO EEPROM
+  boolean restarted = false;
+#else
   boolean restarted = !(MCUSR & 1);
   MCUSR &= 0xFE;
+#endif
   gpThermocycler = new Thermocycler(restarted);
   Serial.begin(4800);
   digitalWrite(5, HIGH);

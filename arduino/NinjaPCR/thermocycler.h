@@ -19,11 +19,11 @@
 #ifndef _THERMOCYCLER_H_
 #define _THERMOCYCLER_H_
 
+#include <Arduino.h>
 #include "PID_v1.h"
 #include "pid.h"
 #include "program.h"
 #include "thermistors.h"
-
 
 class Display;
 class SerialControl;

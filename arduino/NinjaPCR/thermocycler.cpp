@@ -19,11 +19,14 @@
 #include "pcr_includes.h"
 #include "thermocycler.h"
 
-#include "display.h"
 #include "program.h"
 #include "serialcontrol_chrome.h"
 #include "../Wire/Wire.h"
+#include "display.h"
+
+#ifndef USE_WIFI
 #include <avr/pgmspace.h>
+#endif
 
 //constants
 
@@ -103,6 +106,7 @@ iTargetLidTemp(0) {
   ipSerialControl = new SerialControl(ipDisplay);
 
   //init pins
+  // TODO define pins
   pinMode(15, INPUT);
   pinMode(2, OUTPUT);
   pinMode(3, OUTPUT);
@@ -114,6 +118,7 @@ iTargetLidTemp(0) {
   //interrupt disabled,spi enabled,msb 1st,master,clk low when idle,
   //sample on leading edge of clk,system clock/4 rate (fastest)
   int clr;
+#ifndef USE_WIFI
   SPCR = (1<<SPE)|(1<<MSTR)|(1<<4);
   clr=SPSR;
   clr=SPDR;
@@ -135,7 +140,8 @@ TCCR1A |= (1<<WGM11) | (1<<WGM10);
     TCCR1A = _BV(COM1A1) | _BV(COM1B1) | _BV(WGM11) | _BV(WGM10);
     TCCR1B = _BV(CS12);
    */
-#endif
+#endif /* TCCR2A */
+#endif /* ifndef USE_WIFI */
   iszProgName[0] = '\0';
 }
 

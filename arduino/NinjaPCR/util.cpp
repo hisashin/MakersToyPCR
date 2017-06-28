@@ -40,7 +40,7 @@ void sprintFloat(char* str, float val, int decimalDigits, boolean pad) {
   else
     sprintf_P(str, FLOAT_FORM_STR, number, abs(decimal));
 }
-
+#ifndef USE_ESP8266
 void* operator new(size_t size) {
   void* pMem = malloc(size);
 
@@ -49,10 +49,11 @@ void* operator new(size_t size) {
     gpThermocycler->GetDisplay()->SetDebugMsg("Out of Memory");  
     delay(5000);
   }
-#endif
+#endif /* DEBUG_DISPLAY */
 
   return pMem;
 }
+#endif /* USE_ESP8266 */
 
 struct __freelist
 {
@@ -80,13 +81,16 @@ void fix28135_malloc_bug()
    }
  }
 
-
+#ifndef USE_ESP8266
 void operator delete(void * ptr) {
   free(ptr);
   fix28135_malloc_bug();
 }
+#endif /* USE_ESP8266 */
 
+#ifndef USE_ESP8266
 void __cxa_pure_virtual(void) {};
+#endif /* USE_ESP8266 */
 
 unsigned short htons(unsigned short val) {
   return val << 8 + (byte)val;
