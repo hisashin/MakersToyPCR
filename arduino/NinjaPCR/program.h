@@ -19,6 +19,8 @@
 #ifndef _PROGRAM_H_
 #define _PROGRAM_H_
 
+#include "pcr_includes.h"
+
 class Step;
 
 ////////////////////////////////////////////////////////////////////

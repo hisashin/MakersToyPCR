@@ -21,8 +21,9 @@
 
 #include "thermocycler.h"
 #include "program.h"
-#include "display.h"
 #include "thermistors.h"
+
+#include "display.h"
 
 #define BAUD_RATE 4800
 

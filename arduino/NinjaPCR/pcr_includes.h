@@ -19,6 +19,23 @@
 #ifndef _PCR_INCLUDES_H_
 #define _PCR_INCLUDES_H_
 
+#define USE_ESP8266
+/* Use WiFi functionalities */
+#define USE_WIFI
+
+/* Use LCD */
+#define USE_LCD
+
+#ifdef USE_LCD
+#define LCD_PIN_RS 6
+#define LCD_PIN_ENABLE 7
+#define LCD_PIN_D4 8
+//#define LCD_PIN_D5 A5
+#define LCD_PIN_D5 5 // TMP
+#define LCD_PIN_D6 16
+#define LCD_PIN_D7 17
+#endif
+
 //#define DEBUG_DISPLAY
 
 #define SERIAL_PREFIX "pcr"
@@ -26,7 +43,10 @@
 
 
 #include "Arduino.h"
+
+#ifndef USE_WIFI
 #include <avr/pgmspace.h>
+#endif
 
 #define PLATE_FAST_RAMP_THRESHOLD_MS 1000
 

@@ -183,9 +183,12 @@ void CPlateThermistor::ReadTemp() {
   iTemp = TableLookup(PLATE_RESISTANCE_TABLE, sizeof(PLATE_RESISTANCE_TABLE) / sizeof(PLATE_RESISTANCE_TABLE[0]), -40, resistance);
 }
 //------------------------------------------------------------------------------
+
 char CPlateThermistor::SPITransfer(volatile char data) {
+#ifndef USE_WIFI
   SPDR = data;                    // Start the transmission
   while (!(SPSR & (1<<SPIF)))     // Wait the end of the transmission
   {};
   return SPDR;                    // return the received byte
+#endif
 }
