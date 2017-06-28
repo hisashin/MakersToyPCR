@@ -43,12 +43,16 @@ const char BLOCK_TEMP_FORM_STR[] PROGMEM = "%s C";
 const char STATE_FORM_STR[] PROGMEM = "%-13s";
 const char VERSION_FORM_STR[] PROGMEM = "Firm v%s";
 
+#ifdef USE_LCD
 Display::Display():
-  iLcd(6, 7, 8, A5, 16, 17),
+
+
+  iLcd(LCD_PIN_RS, LCD_PIN_ENABLE, LCD_PIN_D4, LCD_PIN_D5, LCD_PIN_D6, LCD_PIN_D7),
   iLastState(Thermocycler::EStartup) {
 
   iLcd.begin(20, 4);
   iLastReset = millis();
+
 #ifdef DEBUG_DISPLAY
   iszDebugMsg[0] = '\0';
 #endif
@@ -207,3 +211,4 @@ void Display::DisplayState() {
   sprintf_P(buf, STATE_FORM_STR, stateStr);
   iLcd.print(buf);
 }
+#endif /* define USE_LCD */
