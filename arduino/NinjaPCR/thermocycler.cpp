@@ -83,9 +83,11 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
   { 
     200, 80, 1.1, 10   }
 };
-
 //public
 Thermocycler::Thermocycler(boolean restarted):
+        iPlatePid(NULL, NULL, NULL, 0,0,0,0),
+        iLidPid(LID_PID_GAIN_SCHEDULE, 0, 0)
+/*
 iRestarted(restarted),
 ipDisplay(NULL),
 ipProgram(NULL),
@@ -98,23 +100,33 @@ iThermalDirection(OFF),
 iPeltierPwm(0),
 iCycleStartTime(0),
 iRamping(true),
-iPlatePid(&iPlateThermistor.GetTemp(), &iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
+*/
+/*
+iPlatePid(&iPlateThermistor.GetTemp(),
+&iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
 iLidPid(LID_PID_GAIN_SCHEDULE, MIN_LID_PWM, MAX_LID_PWM),
-iTargetLidTemp(0) {
 
+iTargetLidTemp(0)*/ {
+  Serial.println("Thermocycler 0");
+#ifdef USE_LCD
   ipDisplay = new Display();
   ipSerialControl = new SerialControl(ipDisplay);
-
+#else
+  ipSerialControl = new SerialControl(NULL);
+#endif /* USE_LCD */
+  Serial.println("const 3");
   //init pins
-  // TODO define pins
-  pinMode(15, INPUT);
-  pinMode(2, OUTPUT);
-  pinMode(3, OUTPUT);
-  pinMode(4, OUTPUT);
-  pinMode(5, OUTPUT);
-  pinMode(9, OUTPUT);
+  pinMode(15, INPUT); // TODO ?
+  pinMode(PIN_WELL_INA, OUTPUT);
+  pinMode(PIN_LID_PWM, OUTPUT);
+  pinMode(PIN_WELL_INB, OUTPUT);
+  pinMode(PIN_WELL_PWM, OUTPUT);
 
-  // SPCR = 01010000
+#ifdef PIN_LCD_CONTRAST
+  pinMode(5, OUTPUT);
+#endif /* PIN_LCD_CONTRAST */
+
+  // SPCR = 01010000 // TODO
   //interrupt disabled,spi enabled,msb 1st,master,clk low when idle,
   //sample on leading edge of clk,system clock/4 rate (fastest)
   int clr;
@@ -219,8 +231,10 @@ static boolean lamp = false;
 
 // internal
 void Thermocycler::Loop() {
-	digitalWrite(6, (lamp)?HIGH:LOW);
-	digitalWrite(5, (!lamp)?HIGH:LOW);
+#ifdef USE_STATUS_PINS
+	digitalWrite(PIN_STATUS_A, (!lamp)?HIGH:LOW);
+    digitalWrite(PIN_STATUS_B, (lamp)?HIGH:LOW);
+#endif /* USE_STATUS_PINS */
 	lamp = !lamp;
   switch (iProgramState) {
   case EStartup:
@@ -415,7 +429,7 @@ void Thermocycler::ControlLid() {
   int drive = 0;  
   if (iProgramState == ERunning || iProgramState == ELidWait)
     drive = iLidPid.Compute(iTargetLidTemp, GetLidTemp());
-  analogWrite(3, drive);
+  analogWrite(PIN_LID_PWM, drive);
   analogValueLid = drive;
 }
 
@@ -475,19 +489,19 @@ void Thermocycler::UpdateEta() {
 
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm) {
   if (dir == COOL) {
-    digitalWrite(2, HIGH);
-    digitalWrite(4, LOW);
+    digitalWrite(PIN_WELL_INA, HIGH);
+    digitalWrite(PIN_WELL_INB, LOW);
   } 
   else if (dir == HEAT) {
-    digitalWrite(2, LOW);
-    digitalWrite(4, HIGH);
+    digitalWrite(PIN_WELL_INA, LOW);
+    digitalWrite(PIN_WELL_INB, HIGH);
   } 
   else {
-    digitalWrite(2, LOW);
-    digitalWrite(4, LOW);
+    digitalWrite(PIN_WELL_INA, LOW);
+    digitalWrite(PIN_WELL_INB, LOW);
   }
 
-  analogWrite(9, pwm);
+  analogWrite(PIN_WELL_PWM, pwm);
   analogValuePeltier = (dir==COOL)?-pwm:pwm;
 }
 
