@@ -29,6 +29,8 @@ void Step::SetName(const char* szName) {
   strncpy(iName, szName, sizeof(iName));
   iName[sizeof(iName) - 1] = '\0';
 }
+//SEND_CMD
+//STATUS_REQ
 
 void Step::Reset() {
   iStepReturned = false;

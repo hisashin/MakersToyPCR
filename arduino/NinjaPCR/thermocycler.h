@@ -59,6 +59,7 @@ public:
     EPIDPlate
   };
   
+  Thermocycler();
   Thermocycler(boolean restarted);
   ~Thermocycler();
   

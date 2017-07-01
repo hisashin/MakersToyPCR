@@ -15,6 +15,9 @@
 PID::PID(double* Input, double* Output, double* Setpoint,
         double Kp, double Ki, double Kd, int ControllerDirection)
 {
+  
+  Serial.println("PID 0");
+    return; // TODO remove
 	PID::SetOutputLimits(0, 255);				//default output limit corresponds to 
 												//the arduino pwm limits
 
@@ -28,6 +31,7 @@ PID::PID(double* Input, double* Output, double* Setpoint,
     myOutput = Output;
     myInput = Input;
     mySetpoint = Setpoint;
+    Serial.println("PID 1");
 		
 }
  

@@ -24,17 +24,12 @@
 
 
 #ifdef USE_WIFI
-/*
 #include <ESP8266WiFi.h>
+#include <ESP8266WebServer.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
-*/
+#include "serialcontrol_chrome.h"
 #endif /* USE_WIFI */
-
-
-#ifdef USE_WIFI
-
-#endif
 
 Thermocycler* gpThermocycler = NULL;
 
@@ -47,11 +42,31 @@ boolean InitialStart() {
   return true;
 }
 
+const SPIDTuning LID_PID_GAIN_SCHEDULE2[] = {
+  //maxTemp, kP, kI, kD
+  { 
+    70, 40, 0.15, 60   }
+  ,
+  { 
+    200, 80, 1.1, 10   }
+};
 void setup() {
-  pinMode(5,OUTPUT);
-  pinMode(6,OUTPUT);
-  digitalWrite(5,LOW);
-  digitalWrite(6,LOW);
+#ifdef USE_STATUS_PINS
+  pinMode(PIN_STATUS_A,OUTPUT);
+  pinMode(PIN_STATUS_B,OUTPUT);
+  digitalWrite(PIN_STATUS_A,LOW);
+  digitalWrite(PIN_STATUS_B,LOW);
+#endif /* USE_STATUS_PINS */
+  
+#ifdef USE_WIFI
+  Serial.begin(115200);
+  Serial.println("Starting NinjaPCR WiFi");
+#else
+  Serial.begin(4800);
+  Serial.println("Starting NinjaPCR Serial");
+  }
+#endif /* USE_WIFI */
+
   //init factory settings
   if (InitialStart()) {
     EEPROM.write(0, 100); // set contrast to 100
@@ -65,35 +80,62 @@ void setup() {
 #else
   boolean restarted = !(MCUSR & 1);
   MCUSR &= 0xFE;
-#endif
+#endif /* USE_WIFI */
+  
+  Serial.println("init 3");
+
+#ifdef USE_STATUS_PINS
+  digitalWrite(PIN_STATUS_A, HIGH);
+#endif /* USE_STATUS_PINS */
+  
+  Serial.println("Init Thermocycler 0");
   gpThermocycler = new Thermocycler(restarted);
-  Serial.begin(4800);
-  digitalWrite(5, HIGH);
+  Serial.println("Init Thermocycler 1");
+#ifdef USE_WIFI
+  Serial.println("Starting WiFi...");
+  network_start();
+#endif /* USE_WIFI */
 }
  
 bool connected = false;
 bool initDone = false;
 short INTERVAL_MSEC = 500;
+
 void loop() {
+#ifdef USE_WIFI
+  if (network_is_connected()) {
+#else
   if (connected) {
-    gpThermocycler->Loop();
+#endif /* USE_WIFI */
+    //gpThermocycler->Loop();
+    delay(1000);
   } else {
-    checkPlugged();
+#ifndef USE_WIFI
+  checkPlugged();
+#endif /* USE_WIFI */
   }
+#ifdef USE_WIFI
+  network_loop();
+#endif /* USE_WIFI */
 }
 
 bool startLamp = false;
 void checkPlugged () {
     Serial.print("pcr1.0.5");
     Serial.print("\n");
-    digitalWrite(5, (startLamp)?HIGH:LOW);
+ #ifdef USE_STATUS_PINS
+    digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);
+#endif /* USE_STATUS_PINS */
     startLamp = !startLamp;
     int timeStart = millis();
     while (millis()<timeStart+INTERVAL_MSEC) {
       while (Serial.available()){
         char ch = Serial.read();
         if (ch=='a'&&!connected) {
-          digitalWrite(5, LOW);
+ #ifdef USE_STATUS_PINS
+          digitalWrite(PIN_STATUS_A, LOW);
+#endif /* USE_STATUS_PINS */
+          
           connected = true;
         }
       }
