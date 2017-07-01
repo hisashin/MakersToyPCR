@@ -43,23 +43,27 @@ const char BLOCK_TEMP_FORM_STR[] PROGMEM = "%s C";
 const char STATE_FORM_STR[] PROGMEM = "%-13s";
 const char VERSION_FORM_STR[] PROGMEM = "Firm v%s";
 
-#ifdef USE_LCD
 Display::Display():
 
-
-  iLcd(LCD_PIN_RS, LCD_PIN_ENABLE, LCD_PIN_D4, LCD_PIN_D5, LCD_PIN_D6, LCD_PIN_D7),
+  iLcd(PIN_LCD_RS, PIN_LCD_ENABLE, PIN_LCD_D4, PIN_LCD_D5, PIN_LCD_D6, PIN_LCD_D7),
   iLastState(Thermocycler::EStartup) {
+    Serial.println("Display 0");
+
+#ifndef USE_LCD
+    return; //debug
+#endif
+    Serial.println("Display 1");
 
   iLcd.begin(20, 4);
   iLastReset = millis();
 
 #ifdef DEBUG_DISPLAY
   iszDebugMsg[0] = '\0';
-#endif
+#endif /* DEBUG_DISPLAY */
   
   // Set contrast
   iContrast = ProgramStore::RetrieveContrast();
-  analogWrite(5, iContrast);
+  analogWrite(PIN_LCD_CONTRAST, iContrast);
 }
 
 void Display::Clear() {
@@ -68,14 +72,14 @@ void Display::Clear() {
 
 void Display::SetContrast(uint8_t contrast) {
   iContrast = contrast;
-  analogWrite(5, iContrast);
+  analogWrite(PIN_LCD_CONTRAST, iContrast);
   iLcd.begin(20, 4);
 }
   
 void Display::SetDebugMsg(char* szDebugMsg) {
 #ifdef DEBUG_DISPLAY
   strcpy(iszDebugMsg, szDebugMsg);
-#endif
+#endif /* DEBUG_DISPLAY */
   iLcd.clear();
   Update();
 }
@@ -104,7 +108,7 @@ void Display::Update() {
     iLcd.print(iszDebugMsg);
  #else
     iLcd.print(GetThermocycler().GetProgName());
- #endif
+ #endif /* DEBUG_DISPLAY */
            
     DisplayLidTemp();
     DisplayBlockTemp();
@@ -211,4 +215,3 @@ void Display::DisplayState() {
   sprintf_P(buf, STATE_FORM_STR, stateStr);
   iLcd.print(buf);
 }
-#endif /* define USE_LCD */

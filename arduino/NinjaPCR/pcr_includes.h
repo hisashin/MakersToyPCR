@@ -19,30 +19,15 @@
 #ifndef _PCR_INCLUDES_H_
 #define _PCR_INCLUDES_H_
 
-#define USE_ESP8266
-/* Use WiFi functionalities */
-#define USE_WIFI
+#include "Arduino.h"
 
-/* Use LCD */
-#define USE_LCD
+//#include "board_conf_ninjapcr.h"
+#include "board_conf_ninjapcrwifi.h"
 
-#ifdef USE_LCD
-#define LCD_PIN_RS 6
-#define LCD_PIN_ENABLE 7
-#define LCD_PIN_D4 8
-//#define LCD_PIN_D5 A5
-#define LCD_PIN_D5 5 // TMP
-#define LCD_PIN_D6 16
-#define LCD_PIN_D7 17
-#endif
 
-//#define DEBUG_DISPLAY
 
 #define SERIAL_PREFIX "pcr"
 #define OPENPCR_FIRMWARE_VERSION_STRING "1.0.5"
-
-
-#include "Arduino.h"
 
 #ifndef USE_WIFI
 #include <avr/pgmspace.h>
