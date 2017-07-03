@@ -1,31 +1,54 @@
-
-
 /* Init wifi */
 
-// TODO dummy (Manage SSID and password with interactive serial interface and EEPROM)
-/*
-char ssid[] = "dummy_ssid";
-char password[] = "dummy_pass";
-*/
 #include "wifi_conf.h"
+#include "wifi_communicator.h"
+#include "thermocycler.h"
+
 ESP8266WebServer server(80);
 
+/* t_network_receive_interface */
+void wifi_receive () {
+  server.handleClient();
+}
+/* t_network_send_interface */
+void wifi_send (char *response, int size) {
+  server.send(200, "text/plain", response);
+  
+  
+}
 /* HTTP request handlers */
 /* Handle request to "/" */
 void requestHandlerTop () {
-    server.send(200, "text/plain", "requestHandlerTop");
+    //server.send(200, "text/plain", "requestHandlerTop");
 }
 /* Handle request to "/command" */
 void requestHandlerCommand() {
     
-    server.send(200, "text/plain", "requestHandlerCommand");
+    //server.send(200, "text/plain", "requestHandlerCommand");
 
     Serial.println(server.uri());
+
+/*
+ * //TODO
+    wifi.ResetCommand();
+    wifi.SendCommand();
+    */
+    char buff[256];
     for (uint8_t i= 0; i<server.args(); i++) {
-        Serial.print(server.argName(i));
+        String sKey = server.argName(i);
+        String sValue = server.arg(i);
+        Serial.print(sKey);
         Serial.print("->");
-        Serial.println(server.arg(i));
+        Serial.println(sValue);
+        char *key = (char *) malloc(sKey.length()+1);
+        char *value = (char *) malloc(sValue.length()+1);
+        sKey.toCharArray(key, sKey.length()+1);
+        sValue.toCharArray(value, sValue.length()+1);
+        //wifi.AddCommandParam(key, value, buff); //TODO
+        free(key);
+        free(value);
     }
+    Serial.println(buff);
     // TODO CommandParser::ParseCommand
 }
 /* Handle request to "/status" */
@@ -71,7 +94,7 @@ boolean network_start() {
 
 /* Handle HTTP request as a server */
 void network_loop() {
-    server.handleClient();
+    //server.handleClient();
 }
 boolean network_is_connected () {
     return (WiFi.status() == WL_CONNECTED);
