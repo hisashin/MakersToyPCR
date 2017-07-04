@@ -36,18 +36,24 @@ void Communicator::ProcessMessage() {
 
   switch (currentCommand) {
   case SEND_CMD:
+    Serial.println("ProcessMessage CMD");
     SCommand command;
     pCommandBuf = (char*) (commandBody);
 
     //store start commands for restart
-    ProgramStore::StoreProgram(pCommandBuf);
-
+    //ProgramStore::StoreProgram(pCommandBuf); TODO
+    Serial.println("CMD 1");
     CommandParser::ParseCommand(command, pCommandBuf);
+    Serial.println("CMD 2");
     GetThermocycler().ProcessCommand(command);
+    Serial.println("CMD 3");
     iCommandId = command.commandId;
+    SendCommandResponse();
+    Serial.println("CMD 4");
     break;
 
   case STATUS_REQ:
+    Serial.println("ProcessMessage REQ");
     iReceivedStatusRequest = true;
     SendStatus();
     break;
@@ -96,8 +102,7 @@ void Communicator::SendStatus() {
   statusPtr++; //to include null terminator
 
   int statusBufLen = statusPtr - statusBuf;
-
-  SendResponse(statusBuf, statusBufLen);
+  SendStatusResponse(statusBuf, statusBufLen);
 }
 
 char* Communicator::AddParam(char* pBuffer, char key, int val, boolean init) {

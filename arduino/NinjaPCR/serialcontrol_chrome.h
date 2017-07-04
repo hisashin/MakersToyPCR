@@ -36,7 +36,8 @@ public:
   // TODO inherit destructor
 protected:
   boolean ParseWholeMessage();
-  void SendResponse (char *response, int size);
+  void SendStatusResponse (char *response, int size);
+  void SendCommandResponse ();
   void OnFinishReaing ();
 
 private:

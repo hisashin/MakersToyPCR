@@ -27,6 +27,8 @@
 
 class Display;
 class SerialControl;
+class WifiCommunicator;
+class Communicator;
 
 class Thermocycler {
 public:
@@ -74,6 +76,7 @@ public:
   Display* GetDisplay() { return ipDisplay; }
   ProgramComponentPool<Cycle, 4>& GetCyclePool() { return iCyclePool; }
   ProgramComponentPool<Step, 20>& GetStepPool() { return iStepPool; }
+  void SetCommunicator(Communicator *comm);
   
   boolean Ramping() { return iRamping; }
   int GetPeltierPwm() { return iPeltierPwm; }
@@ -115,7 +118,7 @@ private:
 private:
   // components
   Display* ipDisplay;
-  SerialControl* ipSerialControl;
+  Communicator* ipSerialControl;
   CLidThermistor iLidThermistor;
   CPlateThermistor iPlateThermistor;
   ProgramComponentPool<Cycle, 4> iCyclePool;

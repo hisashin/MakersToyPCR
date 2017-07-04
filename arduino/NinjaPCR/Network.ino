@@ -12,7 +12,11 @@ void wifi_receive () {
 }
 /* t_network_send_interface */
 void wifi_send (char *response, int size) {
-  server.send(200, "text/plain", response);
+  Serial.println("wifi_send");
+  char *buff = (char *)malloc(size+32);
+  sprintf(buff, "res(\"%s\");", response);
+  server.send(200, "text/plain", buff);
+  free(buff);
   
   
 }
@@ -28,11 +32,8 @@ void requestHandlerCommand() {
 
     Serial.println(server.uri());
 
-/*
- * //TODO
-    wifi.ResetCommand();
-    wifi.SendCommand();
-    */
+    wifi->ResetCommand();
+    wifi->SendCommand();
     char buff[256];
     for (uint8_t i= 0; i<server.args(); i++) {
         String sKey = server.argName(i);
@@ -44,20 +45,25 @@ void requestHandlerCommand() {
         char *value = (char *) malloc(sValue.length()+1);
         sKey.toCharArray(key, sKey.length()+1);
         sValue.toCharArray(value, sValue.length()+1);
-        //wifi.AddCommandParam(key, value, buff); //TODO
+        wifi->AddCommandParam(key, value, buff); //TODO
         free(key);
         free(value);
     }
+    Serial.println("requestHandlerCommand done");
     Serial.println(buff);
-    // TODO CommandParser::ParseCommand
 }
 /* Handle request to "/status" */
 int statusCount = 0;
+
 void requestHandlerStatus() {
+  /*
     char response[50];
     sprintf(response, "updateStatus(%d);", statusCount++);
     server.send(200, "text/plain", response);
     // TODO SerialControl::SendStatus
+    */
+    wifi->ResetCommand();
+    wifi->RequestStatus();
 }
 
 void requestHandler404 () {
@@ -78,16 +84,12 @@ boolean network_start() {
     Serial.print("\nConnected.IP address: ");
     Serial.println(WiFi.localIP());
 
-    Serial.println("network 1");
     server.on("/", requestHandlerTop);
-    Serial.println("network 2");
     server.on("/command", requestHandlerCommand);
-    Serial.println("network 3");
     server.on("/status", requestHandlerStatus);
-    Serial.println("network 4");
 
     server.onNotFound(requestHandler404);
-    Serial.println("network 5");
+    Serial.println("Server started");
     server.begin();
     return true;
 }

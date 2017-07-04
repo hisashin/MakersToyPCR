@@ -17,7 +17,9 @@ public:
 
 protected:
   boolean ParseWholeMessage();
-  void SendResponse(char *response, int size);
+  void SendRequestResponse();
+  void SendCommandResponse();
+  void SendStatusResponse(char *response, int size);
   void OnFinishReaing();
 
 private:
