@@ -29,9 +29,11 @@
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 #include "serialcontrol_chrome.h"
+#include "wifi_communicator.h"
 #endif /* USE_WIFI */
 
 Thermocycler* gpThermocycler = NULL;
+WifiCommunicator *wifi = NULL;
 
 boolean InitialStart() {
   for (int i = 0; i < 50; i++) {
@@ -91,7 +93,10 @@ void setup() {
   Serial.println("Init Thermocycler 0");
   gpThermocycler = new Thermocycler(restarted);
   Serial.println("Init Thermocycler 1");
+  
 #ifdef USE_WIFI
+  wifi = new WifiCommunicator(wifi_receive, wifi_send);
+  gpThermocycler->SetCommunicator(wifi);
   Serial.println("Starting WiFi...");
   network_start();
 #endif /* USE_WIFI */
@@ -107,7 +112,7 @@ void loop() {
 #else
   if (connected) {
 #endif /* USE_WIFI */
-    //gpThermocycler->Loop();
+    gpThermocycler->Loop();
     delay(1000);
   } else {
 #ifndef USE_WIFI

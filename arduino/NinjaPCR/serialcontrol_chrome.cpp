@@ -19,6 +19,7 @@
 #include "pcr_includes.h"
 #include "display.h"
 #include "serialcontrol_chrome.h"
+#include "wifi_communicator.h"
 
 unsigned char remainingBody = 0;
 boolean waitingForMessage = true;
@@ -97,7 +98,10 @@ SERIAL_STATUS SerialControl::ReadPacket() {
   }
 }
 
-void SerialControl::SendResponse(char *response, int size) {
+void SerialControl::SendCommandResponse () {
+  // Do nothing
+}
+void SerialControl::SendStatusResponse (char *response, int size) {
   //send packet
   Serial.write(START_CODE);
   Serial.write(STATUS_RESP);

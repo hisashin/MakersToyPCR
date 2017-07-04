@@ -13,8 +13,12 @@ boolean WifiCommunicator::ParseWholeMessage() {
   }
   return hasMessage;
 }
-
-void WifiCommunicator::SendResponse(char *response, int size) {
+void WifiCommunicator::SendCommandResponse () {
+  Serial.println("SendCommandResponse 1");
+  networkSendInterface("OK", 2);
+}
+void WifiCommunicator::SendStatusResponse(char *response, int size) {
+  Serial.println("SendStatusResponse 1");
   if (networkSendInterface) {
     networkSendInterface(response, size);
   }
