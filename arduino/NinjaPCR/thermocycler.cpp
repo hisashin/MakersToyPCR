@@ -21,6 +21,7 @@
 
 #include "program.h"
 #include "serialcontrol_chrome.h"
+#include "wifi_communicator.h"
 #include "../Wire/Wire.h"
 #include "display.h"
 
@@ -108,12 +109,14 @@ iLidPid(LID_PID_GAIN_SCHEDULE, MIN_LID_PWM, MAX_LID_PWM),
 
 iTargetLidTemp(0)*/ {
   Serial.println("Thermocycler 0");
+#ifndef USE_WIFI
 #ifdef USE_LCD
   ipDisplay = new Display();
-  ipSerialControl = new SerialControl(ipDisplay);
 #else
-  ipSerialControl = new SerialControl(NULL);
+  ipDisplay = NULL;
 #endif /* USE_LCD */
+  ipSerialControl = new SerialControl(ipDisplay);
+#endif /* USE_WIFI */
   Serial.println("const 3");
   //init pins
   pinMode(15, INPUT); // TODO ?
@@ -210,7 +213,9 @@ void Thermocycler::Stop() {
   iStepPool.ResetPool();
   iCyclePool.ResetPool();
 
-  ipDisplay->Clear();
+  if (ipDisplay != NULL) {
+    ipDisplay->Clear();
+  }
 }
 
 PcrStatus Thermocycler::Start() {
@@ -231,6 +236,9 @@ static boolean lamp = false;
 
 // internal
 void Thermocycler::Loop() {
+  Serial.print(".-");
+  ipSerialControl->Process();
+  return;
 #ifdef USE_STATUS_PINS
 	digitalWrite(PIN_STATUS_A, (!lamp)?HIGH:LOW);
     digitalWrite(PIN_STATUS_B, (lamp)?HIGH:LOW);
@@ -317,6 +325,9 @@ void Thermocycler::Loop() {
 
 }
 
+void Thermocycler::SetCommunicator(Communicator *comm) {
+  ipSerialControl = comm;
+}
 //private
 void Thermocycler::AdvanceToNextStep() {
   ipPreviousStep = ipCurrentStep;

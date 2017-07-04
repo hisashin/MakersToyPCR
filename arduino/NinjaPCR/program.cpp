@@ -110,18 +110,27 @@ void Cycle::RestartCycle() {
 // Class CommandParser
 void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
   char* pValue;
+  Serial.println("ParseCommand 1");
   memset(&command, NULL, sizeof(command));
   char buf[32];
 
+  Serial.println("ParseCommand 2");
   gpThermocycler->Stop(); //need to stop here to reset program pools
+  Serial.println("ParseCommand 3");
     
   char* pParam = strtok(pCommandBuf, "&");
   while (pParam) {  
     pValue = strchr(pParam, '=');
     *pValue++ = '\0';
+    Serial.println("ParseCommand A1");
+    Serial.println(pParam);
+    Serial.println(pValue);
     AddComponent(&command, pParam[0], pValue);
+    Serial.println("ParseCommand A2");
     pParam = strtok(NULL, "&");
+    Serial.println("ParseCommand A3");
   }
+  Serial.println("ParseCommand 4");
 }
 /*
 const char STATUS_START[] PROGMEM = "start";
@@ -163,8 +172,11 @@ Cycle* CommandParser::ParseProgram(char* pBuffer) {
 	
   char* pCycBuf = strtok(pBuffer, "()");
   while (pCycBuf != NULL) {
+    Serial.println(pCycBuf);
+    Serial.println("ParseProgram 5");
     pProgram->AddComponent(ParseCycle(pCycBuf));
     pCycBuf = strtok(NULL, "()");
+    Serial.println("ParseProgram 6");
   }
   
   return pProgram;
@@ -173,6 +185,7 @@ Cycle* CommandParser::ParseProgram(char* pBuffer) {
 ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
   char countBuf[5];
 	
+  Serial.println("ParseCycle 1");
   //find first step
   char* pStep = strchr(pBuffer, '[');
 	
@@ -181,18 +194,22 @@ ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
   strncpy(countBuf, pBuffer, countLen);
   countBuf[countLen] = '\0';
   int cycCount = atoi(countBuf);
-  
+
   Cycle* pCycle = gpThermocycler->GetCyclePool().AllocateComponent();
   pCycle->SetNumCycles(cycCount);
-	
+
   //add steps
   while (pStep != NULL) {
     *pStep++ = '\0';
     char* pStepEnd = strchr(pStep, ']');
+    Serial.println("ParseCycle B");
+    Serial.println(pStep);
     *pStepEnd++ = '\0';
 
     Step* pNewStep = ParseStep(pStep);
+    Serial.println("ParseCycle C");
     pCycle->AddComponent(pNewStep);
+    Serial.println("ParseCycle A");
     pStep = strchr(pStepEnd, '[');
   }
 
@@ -200,24 +217,37 @@ ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
 }
 
 Step* CommandParser::ParseStep(char* pBuffer) {
+  //10|95|Initial Step|0]
   //parse temp
+  Serial.println("ParseStep");
   char* pTemp = strchr(pBuffer, '|');
   *pTemp++ = '\0';
   
   //parse name
   char* pName = strchr(pTemp, '|');
   *pName++ = '\0';
-  
   //parse ramp duration if exists
   char* pEnd;
   char* pRampDuration = strchr(pName, '|');
   if (pRampDuration) {
+    Serial.println("ParseStep X");
     *pRampDuration++ = '\0';
+    Serial.println(pRampDuration);
     pEnd = strchr(pRampDuration, ']');
   } else {
+    Serial.println("ParseStep x");
     pEnd = strchr(pName, '|');
   }
-  *pEnd = '\0';
+  Serial.println(pRampDuration);
+  if (pEnd) {
+    *pEnd = '\0';
+  } else {
+    Serial.println("pEnd null?");
+  }
+  Serial.println(pBuffer);
+  Serial.println(pTemp);
+  Serial.println(pName);
+  Serial.println(pRampDuration);
 	
   unsigned long stepDuration = atol(pBuffer);
   unsigned long rampDuration = pRampDuration == NULL ? 0 : atol(pRampDuration);

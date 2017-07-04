@@ -41,7 +41,8 @@ public:
 
 protected:
   virtual boolean ParseWholeMessage() = 0;
-  virtual void SendResponse (char *response, int size) = 0;
+  virtual void SendStatusResponse (char *response, int size) = 0;
+  virtual void SendCommandResponse () = 0;
   virtual void OnFinishReaing () = 0;
 
   void FinishReading ();
