@@ -173,10 +173,8 @@ Cycle* CommandParser::ParseProgram(char* pBuffer) {
   char* pCycBuf = strtok(pBuffer, "()");
   while (pCycBuf != NULL) {
     Serial.println(pCycBuf);
-    Serial.println("ParseProgram 5");
     pProgram->AddComponent(ParseCycle(pCycBuf));
     pCycBuf = strtok(NULL, "()");
-    Serial.println("ParseProgram 6");
   }
   
   return pProgram;
@@ -185,7 +183,6 @@ Cycle* CommandParser::ParseProgram(char* pBuffer) {
 ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
   char countBuf[5];
 	
-  Serial.println("ParseCycle 1");
   //find first step
   char* pStep = strchr(pBuffer, '[');
 	
@@ -202,14 +199,10 @@ ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
   while (pStep != NULL) {
     *pStep++ = '\0';
     char* pStepEnd = strchr(pStep, ']');
-    Serial.println("ParseCycle B");
-    Serial.println(pStep);
     *pStepEnd++ = '\0';
 
     Step* pNewStep = ParseStep(pStep);
-    Serial.println("ParseCycle C");
     pCycle->AddComponent(pNewStep);
-    Serial.println("ParseCycle A");
     pStep = strchr(pStepEnd, '[');
   }
 
