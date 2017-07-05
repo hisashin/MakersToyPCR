@@ -86,30 +86,28 @@ var STORAGE_KEY_EXPERIMENT_LIST = "experimentList";
 var STORAGE_KEY_EXPERIMENT_PREFIX = "pcr_";
 
 Storage.prototype.loadList = function (callback) {
-	/*
-	console.verbose("Storage.prototype.loadList");
-	var self = this;
-	chrome.storage.sync.get(STORAGE_KEY_EXPERIMENT_LIST, function (data) {
-		console.verbose("Load done. data=" + data);
-		if (data[STORAGE_KEY_EXPERIMENT_LIST])
-			self.experiments = JSON.parse(data[STORAGE_KEY_EXPERIMENT_LIST]);
-		else
-			self.experiments = [];
-		if (self.experiments && self.experiments.length>0) {
-			console.verbose("Storage.loadList Experiment List Found.");
-			for (var i=0; i<self.experiments.length; i++) {
-				console.verbose(self.experiments[i].name);
-			}
-			callback(self.experiments);
-		} else {
-			//Empty
-			console.verbose("Empty. Add default experiment and save.");
-			self.insertDefaultExperiment(callback);
+	if (!localStorage) {
+		alert ("local storage is not available.");
+	}
+	var data = localStorage.getItem(STORAGE_KEY_EXPERIMENT_LIST);
+	if (data) {
+		console.log(data);
+		this.experiments = JSON.parse(data);
+	} else {
+		this.experiments = [];
+	}
+	
+	if (this.experiments && this.experiments.length>0) {
+		console.verbose("Storage.loadList Experiment List Found.");
+		for (var i=0; i<this.experiments.length; i++) {
+			console.verbose(this.experiments[i].name);
 		}
-	});
-	*/
-	//TODO use local storage
-	callback([DEFAULT_EXPERIMENT]);
+		callback(this.experiments);
+	} else {
+		//Empty
+		console.verbose("Empty. Add default experiment and save.");
+		this.insertDefaultExperiment(callback);
+	}
 };
 Storage.prototype.insertDefaultExperiment = function (callback) {
 	var self = this;
@@ -119,33 +117,26 @@ Storage.prototype.insertDefaultExperiment = function (callback) {
 	});
 }
 Storage.prototype.loadExperiment = function (experimentId, callback) {
-	/*
 	var key = this.getKeyForId(experimentId);
 	var self = this;
-	chrome.storage.sync.get(key, function(data){
-		var dataStr = data[key];
-		console.verbose("Data str=" + dataStr);
-		var experiment = null;
-		
-		if (dataStr!=null) {
-			try {
-				experiment = JSON.parse(dataStr);
-			} catch (e) {
-				console.error(e);
-			}
+	var dataStr = localStorage.getItem(key);
+	console.verbose("Data str=" + dataStr);
+	var experiment = null;
+	
+	if (dataStr!=null) {
+		try {
+			experiment = JSON.parse(dataStr);
+		} catch (e) {
+			console.error(e);
 		}
-		self.currentExperimentId = experimentId;
-		self.currentExperiment = experiment;
-		callback(experiment);
-	});
-	*/
-	callback(DEFAULT_EXPERIMENT);
+	}
+	self.currentExperimentId = experimentId;
+	self.currentExperiment = experiment;
+	callback(experiment);
 };
 Storage.prototype.clearAllData = function () {
 	console.verbose("clearAllData");
-	chrome.storage.sync.clear (function(){
-		console.verbose("Done.");
-	});
+	// TODO is it possible?
 };
 Storage.prototype.generateId = function () {
 	return new Date().getTime();
@@ -164,19 +155,14 @@ Storage.prototype.updateCurrentExperiment = function (name, newData, callback) {
 		}
 	}
 	var storageObj = {};
-	storageObj[STORAGE_KEY_EXPERIMENT_LIST] = JSON.stringify(this.experiments, null, '');
 	var self = this;
-	chrome.storage.sync.set(storageObj, function() {
-			console.verbose('Experiment "'+name+'" saved');
-			var detailStorageObj = {};
-			detailStorageObj[key]  = JSON.stringify(newData, null, '');
-			chrome.storage.sync.set(detailStorageObj, function() {
-				chrome.storage.sync.get(key, function(data){
-					var dataStr = data[key];
-					callback("success");
-				});
-			});
-		});
+	console.log("Setting. key=" + STORAGE_KEY_EXPERIMENT_LIST + ", value=" + JSON.stringify(this.experiments, null, ''));
+	localStorage.setItem(STORAGE_KEY_EXPERIMENT_LIST, JSON.stringify(this.experiments, null, ''));
+	console.verbose('Experiment "'+name+'" saved');
+
+	console.log("Setting. key=" + key + ", value=" + JSON.stringify(newData, null, ''));
+	localStorage.setItem(key, JSON.stringify(newData, null, ''));
+	callback("success");
 };
 Storage.prototype.deleteCurrentExperiment = function (callback) {
 	console.verbose("deleteCurrentExperiment " + this.currentExperimentId);
@@ -196,10 +182,10 @@ Storage.prototype.deleteCurrentExperiment = function (callback) {
 			console.verbose('List saved.');
 			var detailStorageObj = {};
 			var key = self.getKeyForId(self.currentExperimentId);
-			chrome.storage.sync.remove(key, function() {
-				console.verbose('Detail data removed.');
-				callback();
-			});
+			console.log("key=" + key);
+			localStorage.setItem(key, null);
+			console.verbose('Detail data removed.');
+			callback();
 		});
 }
 Storage.prototype.insertExperiment = function (name, experiment, callback) {
@@ -209,21 +195,18 @@ Storage.prototype.insertExperiment = function (name, experiment, callback) {
 			"id":id
 	};
 	this.experiments.push(experimentData);
-	var storageObj = {};
-	storageObj[STORAGE_KEY_EXPERIMENT_LIST] = JSON.stringify(this.experiments, null, '');
 	var self = this;
-	chrome.storage.sync.set(storageObj, function() {
-			console.verbose('Experiment "'+name+'" saved');
-			var detailStorageObj = {};
-			var key = self.getKeyForId(id);
-			detailStorageObj[key]  = JSON.stringify(experiment, null, '');
-			chrome.storage.sync.set(detailStorageObj, function() {
-				chrome.storage.sync.get(key, function(data){
-					var dataStr = data[key];
-					callback("success");
-				});
-			});
-		});
+	console.log("setting item. key=" + STORAGE_KEY_EXPERIMENT_LIST + 
+			", value=" + JSON.stringify(this.experiments, null, ''));
+	localStorage.setItem(STORAGE_KEY_EXPERIMENT_LIST, JSON.stringify(this.experiments, null, ''));
+	console.verbose('Experiment "'+name+'" saved');
+
+	var detailStorageObj = {};
+	var key = self.getKeyForId(id);
+	console.log(key);
+	console.log("detailData=" + JSON.stringify(experiment, null, ''));
+	localStorage.setItem(key, JSON.stringify(experiment, null, ''));
+	callback("success");
 };
 Storage.prototype.updateExperiment = function (experiment) {
 	console.verbose("Storage#updateExperiment");

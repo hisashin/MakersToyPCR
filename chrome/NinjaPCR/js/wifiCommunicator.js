@@ -39,7 +39,7 @@ Serial.prototype.scan = function (callback) {
 	ipText.placeholder = "XXX.XXX.XXX.XXX";
 	ipText.id = "device_ip";
 	ipText.value = "192.168.2.153";
-	ipText.size = "80";
+	ipText.size = "24";
 	
 	var ipButton = document.createElement("input");
 	ipButton.value = "Connect";
@@ -107,3 +107,10 @@ Serial.prototype.sendStopCommand = function (command, callback) {
 };
 
 var chromeSerial = new Serial(); // TODO rename
+
+(function () {
+	console.log("Testing local storage");
+	console.log("localStorage=" + window.localStorage);
+	console.log("item=" + window.localStorage.getItem("hoge"));
+	window.localStorage.setItem("hoge","puni");
+})();
