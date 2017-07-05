@@ -22,7 +22,7 @@ function experimentToHTML(inputJSON) {
 	// max temp 120, min temp 0 (off)
 	$('#lidTemp')
 			.html(
-					'<span class="title">'+chrome.i18n.getMessage('heaterLid')+'</span>'
+					'<span class="title">'+getLocalizedMessage('heaterLid')+'</span>'
 							+ '<input type="text" name="lid_temp" id="lid_temp" class="required integer textinput" maxlength="3" min="0" max="120"  value="'
 							+ inputJSON.lidtemp + '">');
 	// 4 possibile DIVs
@@ -79,14 +79,14 @@ var STEP_NAMES = [
 function localizeStepName (stepName) {
 	for (var i=0; i<STEP_NAMES.length; i++) {
 		if (STEP_NAMES[i][1]==stepName)
-			return chrome.i18n.getMessage(STEP_NAMES[i][0]);
+			return getLocalizedMessage(STEP_NAMES[i][0]);
 	}
 	return stepName;
 }
 function globalizeStepName (_stepName) {
 	var stepName = _stepName.replace(/^[ \t\n]+/g,'').replace(/[ \t\n]+$/g, '');
 	for (var i=0; i<STEP_NAMES.length; i++) {
-		if (chrome.i18n.getMessage(STEP_NAMES[i][0])==stepName)
+		if (getLocalizedMessage(STEP_NAMES[i][0])==stepName)
 			return STEP_NAMES[i][1];
 	}
 	return stepName;
@@ -105,7 +105,7 @@ function stepToHTML(step) {
 	if (step.type == "cycle") {
 		// printhe "Number of Cycles" div
 		// max 99 cycles
-		stepHTML += '<label for="number_of_cycles"></label><div><span class="title">'+chrome.i18n.getMessage('numberOfCycles')+':</span><input type="text" name="number_of_cycles" id="number_of_cycles" class="required number textinput" maxlength="2" min="0" max="99"  value="'
+		stepHTML += '<label for="number_of_cycles"></label><div><span class="title">'+getLocalizedMessage('numberOfCycles')+':</span><input type="text" name="number_of_cycles" id="number_of_cycles" class="required number textinput" maxlength="2" min="0" max="99"  value="'
 				+ step.count + '"></div><br />';
 		// steps container
 		// print each individual step
@@ -130,7 +130,7 @@ function stepToHTML(step) {
 					+ '<table><tr>'
 					+ '<th><label for="step'
 					+ step_number
-					+ '_temp">'+chrome.i18n.getMessage('tempShort')+':</label> <div class="step'
+					+ '_temp">'+getLocalizedMessage('tempShort')+':</label> <div class="step'
 					+ step_number
 					+ '_temp"><input type="text" style="font-weight:normal;" class="required number textinput" name="step'
 					+ step_number
@@ -141,22 +141,22 @@ function stepToHTML(step) {
 					+ '" maxlength="4" min="-20" max="120" ></div><span htmlfor="openpcr_temp" generated="true" class="units">&deg;C</span> </th>'
 					+ '<th><label for="step'
 					+ step_number
-					+ '_time">'+chrome.i18n.getMessage('stepDuration')+':</label> <div class=""><input type="text" class="required number textinput"  style="font-weight:normal;" name="step'
+					+ '_time">'+getLocalizedMessage('stepDuration')+':</label> <div class=""><input type="text" class="required number textinput"  style="font-weight:normal;" name="step'
 					+ step_number
 					+ '_time" id="step'
 					+ step_number
 					+ '_time" value="'
 					+ step_time
-					+ '" maxlength="4" min="0" max="6000"  ></div><span htmlfor="openpcr_time" generated="true" class="units">'+chrome.i18n.getMessage('sec')+'</span></th>'
+					+ '" maxlength="4" min="0" max="6000"  ></div><span htmlfor="openpcr_time" generated="true" class="units">'+getLocalizedMessage('sec')+'</span></th>'
 					+ '<th><label for="step'
 					+ step_number
-					+ '_rampDuration">'+chrome.i18n.getMessage('rampDuration')+':</label> <div class=""><input type="text" class="required number textinput"  style="font-weight:normal;" name="step'
+					+ '_rampDuration">'+getLocalizedMessage('rampDuration')+':</label> <div class=""><input type="text" class="required number textinput"  style="font-weight:normal;" name="step'
 					+ step_number
 					+ '_rampDuration" id="step'
 					+ step_number
 					+ '_rampDuration" value="'
 					+ step_rampDuration
-					+ '" maxlength="6" min="0" max="999999"  ></div><span htmlfor="openpcr_rampDuration" generated="true" class="units">'+chrome.i18n.getMessage('sec')+'</span></th>'
+					+ '" maxlength="6" min="0" max="999999"  ></div><span htmlfor="openpcr_rampDuration" generated="true" class="units">'+getLocalizedMessage('sec')+'</span></th>'
 					+ '</tr></table></div>';
 
 		}
@@ -179,7 +179,7 @@ function stepToHTML(step) {
 				+ step_name
 				+ ' </span><a class="edit deleteStepButton"><img src="images/minus.png" height="30"></a>'
 				+ '<table cellspacing="20"><tr>'
-				+ '<th><label>'+chrome.i18n.getMessage('tempShort')+':</label> <div><input type="text" style="font-weight:normal;" class="required number textinput" value="'
+				+ '<th><label>'+getLocalizedMessage('tempShort')+':</label> <div><input type="text" style="font-weight:normal;" class="required number textinput" value="'
 				+ step_temp
 				+ '" maxlength="4" name="temp_'
 				+ step_number
@@ -187,20 +187,20 @@ function stepToHTML(step) {
 
 		// if the individual step has 0 time (or blank?) time, then it is a "hold" step and doesn't have a "time" component
 		if (step_time != 0) {
-			stepHTML += '<th><label>'+chrome.i18n.getMessage('stepDuration')+':</label> <div class=""><input type="text" class="required number textinput" style="font-weight:normal;" value="'
+			stepHTML += '<th><label>'+getLocalizedMessage('stepDuration')+':</label> <div class=""><input type="text" class="required number textinput" style="font-weight:normal;" value="'
 					+ step_time
 					+ '" name="time_'
 					+ step_number
-					+ '" maxlength="4" min="0" max="6000"></div><span htmlfor="openpcr_time" generated="true" class="units">'+chrome.i18n.getMessage('sec')+'</span></th>';
+					+ '" maxlength="4" min="0" max="6000"></div><span htmlfor="openpcr_time" generated="true" class="units">'+getLocalizedMessage('sec')+'</span></th>';
 			stepHTML += '<th><label>ramp duration:</label> <div class=""><input type="text" class="required number textinput" style="font-weight:normal;" value="'
 					+ step_rampDuration
 					+ '" name="rampDuration_'
 					+ step_number
-					+ '" maxlength="6" min="0" max="999999"></div><span htmlfor="openpcr_rampDuration" generated="true" class="units">'+chrome.i18n.getMessage('sec')+'</span></th>';
+					+ '" maxlength="6" min="0" max="999999"></div><span htmlfor="openpcr_rampDuration" generated="true" class="units">'+getLocalizedMessage('sec')+'</span></th>';
 		}
 	}
 	else
-		chromeUtil.alert(chrome.i18n.getMessage('error')+" #1986");
+		chromeUtil.alert(getLocalizedMessage('error')+" #1986");
 	stepHTML += '</tr></table></div>';
 	return stepHTML;
 }
@@ -289,15 +289,15 @@ function addStep(location) {
 			+ '<a class="edit deleteStepButton"><img src="images/minus.png" height="30"></a>'
 			+ '<table cellspacing="20">'
 			+ '<tr>'
-			+ '<th><label>'+chrome.i18n.getMessage('tempShort')+'</label><div><input type="text" style="font-weight:normal;" class="required number textinput" value="" name="temp_'
+			+ '<th><label>'+getLocalizedMessage('tempShort')+'</label><div><input type="text" style="font-weight:normal;" class="required number textinput" value="" name="temp_'
 			+ step_number
 			+ '" maxlength="4" min="0" max="120" ></div><span htmlfor="openpcr_temp" generated="true" class="units">&deg;C</span> </th>'
-			+ '<th><label>'+chrome.i18n.getMessage('stepDuration')+'</label><div class=""><input type="text" class="required number textinput" style="font-weight:normal;" value=""  name="time_'
+			+ '<th><label>'+getLocalizedMessage('stepDuration')+'</label><div class=""><input type="text" class="required number textinput" style="font-weight:normal;" value=""  name="time_'
 			+ step_number
-			+ '" maxlength="4" min="0" max="1000"></div><span htmlfor="openpcr_time" generated="true" class="units">'+chrome.i18n.getMessage('sec')+'</span></th>'
-			+ '<th><label>'+chrome.i18n.getMessage('rampDuration')+'</label><div class=""><input type="text" class="required number textinput" style="font-weight:normal;" value=""  name="rampDuration_'
+			+ '" maxlength="4" min="0" max="1000"></div><span htmlfor="openpcr_time" generated="true" class="units">'+getLocalizedMessage('sec')+'</span></th>'
+			+ '<th><label>'+getLocalizedMessage('rampDuration')+'</label><div class=""><input type="text" class="required number textinput" style="font-weight:normal;" value=""  name="rampDuration_'
 			+ step_number
-			+ '" maxlength="6" min="0" max="999999"></div><span htmlfor="openpcr_rampDuration" generated="true" class="units">'+chrome.i18n.getMessage('sec')+'</span></th>'
+			+ '" maxlength="6" min="0" max="999999"></div><span htmlfor="openpcr_rampDuration" generated="true" class="units">'+getLocalizedMessage('sec')+'</span></th>'
 			+ '</tr>' + '</table>' + '</div>';
 	// append a new step to location
 	$('#' + location).append(step);

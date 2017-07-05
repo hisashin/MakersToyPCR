@@ -77,9 +77,8 @@ Serial.prototype._getScanFunc = function (callbackExternal, portsToSearch) {
 	}
 };
 
-Serial.prototype.startWithCommand = function (commandBody) {
+Serial.prototype.sendStartCommand = function (commandBody) {
 	this.lastResponseTime = null;
-	this.complete = false;
 	console.log("------------------------------------------------");
 	console.log("Start Communication");
 	console.log("------------------------------------------------");
@@ -104,7 +103,6 @@ Serial.prototype.startWithCommand = function (commandBody) {
  * Complete
  */
 Serial.prototype.stopOnComplete = function () {
-	this.complete = true;
 };
 /**
  * Convert String to Command Byte Array (Including Header)
@@ -143,7 +141,7 @@ Serial.prototype.sendStopCommand = function (command, callback) {
  */
 Serial.prototype.requestStatus = function (callback) {
 	this.txBusy = true;
-	this.onReceiveStatus = onReceiveStatus;
+	this.onReceiveStatus = callback;
 	var port = this.port;
 	var options = {
 			bitrate:BAUD_RATE
@@ -154,7 +152,8 @@ Serial.prototype.requestStatus = function (callback) {
 	console.verbose("Request status... connectionId=" + connectionId);
 	chrome.serial.send(connectionId, data, function (sendInfo) {
 		if (sendInfo.error) {
-			console.log("sendInfo=" + sendInfo.error);this.connectionAlertDone = true;
+			console.log("sendInfo=" + sendInfo.error);
+			this.connectionAlertDone = true;
 			console.warn("Connection on port " + this.port + " seems to be lost. Reconnecting...");
 			document.getElementById('runningUnplugged').style.display = 'block';
 			var options = {
@@ -234,8 +233,9 @@ Serial.prototype.processPacket = function () {
 		message += String.fromCharCode(commandBody[i]);
 	};
 	console.log(message);
-	if (this.onReceiveStatus)
+	if (this.onReceiveStatus) {
 		onReceiveStatus(message);
+	}
 }
 Serial.prototype.finishReading= function() {
 	currentCommand = 0;

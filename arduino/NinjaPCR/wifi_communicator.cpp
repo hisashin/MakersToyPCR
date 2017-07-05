@@ -15,12 +15,12 @@ boolean WifiCommunicator::ParseWholeMessage() {
 }
 void WifiCommunicator::SendCommandResponse () {
   Serial.println("SendCommandResponse 1");
-  networkSendInterface("OK", 2);
+  networkSendInterface("true", "command");
 }
 void WifiCommunicator::SendStatusResponse(char *response, int size) {
   Serial.println("SendStatusResponse 1");
   if (networkSendInterface) {
-    networkSendInterface(response, size);
+    networkSendInterface(response, "status");
   }
 }
 

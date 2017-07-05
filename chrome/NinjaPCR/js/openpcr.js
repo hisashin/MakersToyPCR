@@ -56,10 +56,11 @@ function checkPlug () {
 };
 function scanPortsAndDisplay (delay) {
 	chromeSerial.scan(function(port) {
+		// TODO Wifi & Chrome
 		var deviceFound = !!port;
 		
 		var portMessage = (deviceFound)?
-				(chrome.i18n.getMessage('deviceFound').replace('___PORT___',port)):chrome.i18n.getMessage('deviceNotFound');
+				(getLocalizedMessage('deviceFound').replace('___PORT___',port)):getLocalizedMessage('deviceNotFound');
 		$("#portLabel").html(portMessage);
 		
 		if (deviceFound) {
@@ -119,7 +120,7 @@ function listExperiments() {
 		}
 		// if blank, add a "No Saved Experiments" item
 		if (presetsHTML == "<select id='dropdown'>") {
-			presetsHTML += '<option value=1>-'+chrome.i18n.getMessage('none')+'-</option>';
+			presetsHTML += '<option value=1>-'+getLocalizedMessage('none')+'-</option>';
 		}
 
 		// close the drop down HTML tags
@@ -257,7 +258,7 @@ function newExperimentButtons() {
 	startOrUnplugged("inline");
 	$('#singleTemp').hide();
 	// make sure the "More options" button says so
-	$('#OptionsButton').html(chrome.i18n.getMessage('moreOptions'));
+	$('#OptionsButton').html(getLocalizedMessage('moreOptions'));
 }/* disableEnterKey(e)
  * The Enter/Return key doesn't do anything right now
  */
@@ -275,17 +276,17 @@ function disableEnterKey(e) {
 function programToDeviceCommand (pcrProgram) {
 	// now parse it out
 	// Start with the signature
-	var parsedProgram = "s=ACGTC";
+	var encodedProgram = "s=ACGTC";
 	// Command
-	parsedProgram += "&c=start";
+	encodedProgram += "&c=start";
 	// Command id 
-	parsedProgram += "&d=" + window.command_id;
+	encodedProgram += "&d=" + window.command_id;
 	// Lid Temp NO DECIMALS. Not handeled by UI currently, but just making sure it doesn't make it to OpenPCR
-	parsedProgram += "&l=" + Math.round(pcrProgram.lidtemp);
+	encodedProgram += "&l=" + Math.round(pcrProgram.lidtemp);
 	// Name
-	parsedProgram += "&n=" + pcrProgram.name
+	encodedProgram += "&n=" + pcrProgram.name
 	// get all the variables from the pre-cycle, cycle, and post-cycle steps
-	parsedProgram += "&p=";
+	encodedProgram += "&p=";
 	window.lessthan20steps = 0;
 	for (i = 0; i < pcrProgram.steps.length; i++) {
 		if (pcrProgram.steps[i].type == "step")
@@ -295,15 +296,15 @@ function programToDeviceCommand (pcrProgram) {
 			// if the previous element wasn't a step (i.e. null or cycle)
 			if (typeof pcrProgram.steps[i - 1] == 'undefined'
 					|| pcrProgram.steps[i - 1].type == "cycle") {
-				parsedProgram += "(1";
+				encodedProgram += "(1";
 			}
 
-			parsedProgram += stepToString(pcrProgram.steps[i]);
+			encodedProgram += stepToString(pcrProgram.steps[i]);
 
 			// if the next element isn't a step (i.e. null or cycle)
 			if (typeof pcrProgram.steps[i + 1] == 'undefined'
 					|| pcrProgram.steps[i + 1].type != "step") {
-				parsedProgram += ")";
+				encodedProgram += ")";
 			}
 		}
 
@@ -311,11 +312,11 @@ function programToDeviceCommand (pcrProgram) {
 		// if it's a cycle add the prefix for the number of steps, then each step
 		{
 			// for example, this should return (35[30,95,Denaturing][60,55,Annealing][60,72,Extension])
-			parsedProgram += stepToString(pcrProgram.steps[i]);
+			encodedProgram += stepToString(pcrProgram.steps[i]);
 			window.lessthan20steps = pcrProgram.steps[i].steps.length;
 		}
 	}
-	return parsedProgram;
+	return encodedProgram;
 }
 
 var experimentLogger = null;
@@ -334,36 +335,36 @@ function startPCR() {
 	console.verbose("devicePort=" + devicePort);
 	
 	pcrProgram = writeoutExperiment();
-	var parsedProgram = programToDeviceCommand (pcrProgram);	
+	var encodedProgram = programToDeviceCommand (pcrProgram);	
 	// verify that there are no more than 16 top level steps
 	console.verbose(pcrProgram.steps.length + " : top level steps");
 	console.verbose(window.lessthan20steps + " : cycle level steps");
 	var totalSteps = window.lessthan20steps + pcrProgram.steps.length;
 
 	// check that the entire protocol isn't >252 bytes
-	console.verbose("parsedProgram=" + parsedProgram);
-	if (parsedProgram.length > 512) {
+	console.verbose("encodedProgram=" + encodedProgram);
+	if (encodedProgram.length > 512) {
 		chromeUtil
-				.alert(chrome.i18n.getMessage('lengthLimit').replace('___LENGTH___', parsedProgram.length));
+				.alert(getLocalizedMessage('lengthLimit').replace('___LENGTH___', encodedProgram.length));
 		return 0;
 	}
 
 	// verify the cycle step has no more than 16 steps
 	else if (window.lessthan20steps > 16) {
-		console.verbose(parsedProgram);
-		chromeUtil.alert(chrome.i18n.getMessage('stepLimit').replace('___STEPS___',window.lessthan20steps));
+		console.verbose(encodedProgram);
+		chromeUtil.alert(getLocalizedMessage('stepLimit').replace('___STEPS___',window.lessthan20steps));
 		return 0;
 	}
 
 	// and check that the total overall is less than 25
 	else if (totalSteps > 25) {
-		console.verbose(parsedProgram);
-		chromeUtil.alert(chrome.i18n.getMessage('totalStepLimit').replace('___STEPS___',totalSteps));
+		console.verbose(encodedProgram);
+		chromeUtil.alert(getLocalizedMessage('totalStepLimit').replace('___STEPS___',totalSteps));
 		return 0;
 	}
 
 	//debug
-	console.verbose(parsedProgram);
+	console.verbose(encodedProgram);
 	// go to the Running dashboard
 	sp2.showPanel(2);
 	$("#ex2_p3").hide();
@@ -378,7 +379,7 @@ function startPCR() {
 	$('#starting').dialog('open');
 	
 	// write out the file to the OpenPCR device
-	chromeSerial.startWithCommand(parsedProgram);
+	chromeSerial.sendStartCommand(encodedProgram);
 	experimentLogger.start();
 	running();
 	
@@ -448,8 +449,6 @@ function onReceiveStatus(message) {
  * Returns: boolean
  */
 function stopPCR() {
-	// Stop reading the STATUS.TXT file
-
 	// Clear the values in the Running page
 	$("#runningHeader").html("");
 	$("#progressbar").progressbar({
@@ -458,17 +457,16 @@ function stopPCR() {
 	$("#minutesRemaining").html("");
 
 	// Create the string to write out
-	var stopPCR = 's=ACGTC&c=stop';
+	var stopCommand = 's=ACGTC&c=stop';
 	// contrast
 	//// contrast no longer controlled here, delete
 	////stopPCR += '&t=50';
 	// increment the window.command id and send the new command to the device
 	window.command_id++;
-	stopPCR += '&d=' + window.command_id;
-	console.verbose(stopPCR);
+	stopCommand += '&d=' + window.command_id;
+	console.verbose(stopCommand);
 	// Send out the STOP command by serial
-	chromeSerial.stopOnComplete();
-	chromeSerial.sendStopCommand(stopPCR, function(){
+	chromeSerial.sendStopCommand(stopCommand, function(){
 	});
 	window.clearInterval(window.updateRunningPage);
 	createCSV();
@@ -510,7 +508,7 @@ function prepareButtons() {
 	$('#saveForm').on('click', function() {
 		$('#Start').click();
 	});
-	$('#appVersion').html(chrome.runtime.getManifest().version);
+	$('#appVersion').html(chromeUtil.getAppVersion());
 	
 	/*  "About" button on the OpenPCR Home page
 	 * Displays about info
@@ -542,7 +540,7 @@ function prepareButtons() {
 	});
 
 	$('#OpenDownloadPage').on('click', function () {
-		window.open(chrome.i18n.getMessage('downloadUrl'));
+		window.open(getLocalizedMessage('downloadUrl'));
 	});
 	/*  "Home" button on the OpenPCR Form page
 	 * Goes Home
@@ -670,19 +668,19 @@ function prepareButtons() {
 						// get current state
 						buttonText = document.getElementById("OptionsButton").value;
 						// if we're hiding the options and there are no pre-steps or post-steps, hide those sections appropriately
-						if (buttonText == chrome.i18n.getMessage('lessOptions')
+						if (buttonText == getLocalizedMessage('lessOptions')
 								&& $("#preSteps").html() == "") {
 							// hide pre steps
 							$("#preContainer").hide();
 						}
-						if (buttonText == chrome.i18n.getMessage('lessOptions')
+						if (buttonText == getLocalizedMessage('lessOptions')
 								&& $("#postSteps").html() == "") {
 							// hide post steps
 							$("#postContainer").hide();
 						}
 						// flip the Options button text between "More options" and "Less options"
-						var buttonText = (buttonText != chrome.i18n.getMessage('moreOptions') ? chrome.i18n.getMessage('moreOptions')
-								: chrome.i18n.getMessage('lessOptions'));
+						var buttonText = (buttonText != getLocalizedMessage('moreOptions') ? getLocalizedMessage('moreOptions')
+								: getLocalizedMessage('lessOptions'));
 						$('#OptionsButton')[0].value = buttonText;
 					});
 

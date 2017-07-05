@@ -39,22 +39,22 @@ ExperimentLogger.prototype.log = function (status) {
 
 	var statusLid = status["x"].toFixed(1);
 	var statusPeltier = status["y"].toFixed(1);
-	$("#deviceStatusLid").html((statusLid>0)?chrome.i18n.getMessage('statusHeating'):chrome.i18n.getMessage('statusStop'));
+	$("#deviceStatusLid").html((statusLid>0)?getLocalizedMessage('statusHeating'):getLocalizedMessage('statusStop'));
 	$("#deviceStatusLid").css("color", (statusLid>0)?COLOR_HEATING:COLOR_STOP);
 	{
 		var color;
 		var text;
 		if (statusPeltier>0) {
 			color = COLOR_HEATING;
-			text = chrome.i18n.getMessage('statusHeating');
+			text = getLocalizedMessage('statusHeating');
 		}
 		else if (statusPeltier<0) {
 			color = COLOR_COOLING;
-			text = chrome.i18n.getMessage('statusCooling');
+			text = getLocalizedMessage('statusCooling');
 		} 
 		else {
 			color = COLOR_STOP;
-			text = chrome.i18n.getMessage('statusStop');
+			text = getLocalizedMessage('statusStop');
 		}
 		$("#deviceStatusPeltier").html(text);
 		$("#deviceStatusPeltier").css("color",color);
@@ -72,7 +72,7 @@ ExperimentLogger.prototype.log = function (status) {
 			$("#progressbar").hide();
 			$("#cycleNumOfNum").hide();
 			$("#timeRemaining").html("");
-			$("#minutesRemaining").html(chrome.i18n.getMessage('lidHeating'));
+			$("#minutesRemaining").html(getLocalizedMessage('lidHeating'));
 
 			// during lidwait, no protocol name is included, so include the protocol name from the previous page
 			$("#runningHeader").html(
@@ -80,7 +80,7 @@ ExperimentLogger.prototype.log = function (status) {
 		}
 
 		if (status["s"] == "running") {
-			$("#timeRemaining").html(chrome.i18n.getMessage('timeRemaining'));
+			$("#timeRemaining").html(getLocalizedMessage('timeRemaining'));
 			// otherwise, if running set variable for percentComplete
 			// never display less than 2% for UI purposes
 			var percentComplete = 100 * status["e"]
@@ -142,7 +142,7 @@ ExperimentLogger.prototype.log = function (status) {
 			value : 100
 		});
 		// show the completed message
-		minutesRemaining = '<span style="color:#04B109;">'+chrome.i18n.getMessage('done')+'</span>';
+		minutesRemaining = '<span style="color:#04B109;">'+getLocalizedMessage('done')+'</span>';
 		$("#minutesRemaining").html(minutesRemaining);
 		// update the "current temp"
 		var block_temp = status["b"];
@@ -151,7 +151,7 @@ ExperimentLogger.prototype.log = function (status) {
 		var lid_temp = status["l"];
 		$("#lidTemperature").html(lid_temp);
 		// replace the "cycle # of total#" span with "PCR took..."
-		$("#cycleNumOfNum").html(chrome.i18n.getMessage('tookTime').replace('___TIME___', humanTime(status["e"])));
+		$("#cycleNumOfNum").html(getLocalizedMessage('tookTime').replace('___TIME___', humanTime(status["e"])));
 		// i.e. hide the "Holding for 10 sec", just show "Holding"
 		$("#stepRemaining").hide();
 		// Current step name
