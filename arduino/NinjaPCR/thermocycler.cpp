@@ -440,6 +440,12 @@ void Thermocycler::ControlLid() {
   int drive = 0;  
   if (iProgramState == ERunning || iProgramState == ELidWait)
     drive = iLidPid.Compute(iTargetLidTemp, GetLidTemp());
+
+#ifdef USE_ESP8266
+  //TODO
+#else
+  //TODO
+#endif
   analogWrite(PIN_LID_PWM, drive);
   analogValueLid = drive;
 }

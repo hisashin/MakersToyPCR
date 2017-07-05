@@ -22,6 +22,7 @@
 /* Lid */
 #define PIN_LID_THERMISTOR_AIN 1 // TODO Use TOUT
 #define PIN_LID_PWM 2 // TODO Switch PWM/OnOff
+#define USE_ESP8266
 
 /* Well */
 #define PIN_WELL_INA 0
