@@ -11,13 +11,12 @@ void wifi_receive () {
   server.handleClient();
 }
 /* t_network_send_interface */
-void wifi_send (char *response, int size) {
+void wifi_send (char *response, char *funcName) {
   Serial.println("wifi_send");
-  char *buff = (char *)malloc(size+32);
-  sprintf(buff, "res(\"%s\");", response);
+  char *buff = (char *) malloc(32 + strlen(response) + strlen(funcName));
+  sprintf(buff, "DeviceResponse.%s(\"%s\");", funcName, response);
   server.send(200, "text/plain", buff);
   free(buff);
-  
   
 }
 /* HTTP request handlers */
@@ -65,6 +64,10 @@ void requestHandlerStatus() {
     wifi->ResetCommand();
     wifi->RequestStatus();
 }
+/* Handle request to "/connect" */
+void requestHandlerConnect() {
+  wifi_send("true","connect");
+}
 
 void requestHandler404 () {
     server.send(404, "text/plain", "requestHandler404");
@@ -87,6 +90,7 @@ boolean network_start() {
     server.on("/", requestHandlerTop);
     server.on("/command", requestHandlerCommand);
     server.on("/status", requestHandlerStatus);
+    server.on("/connect", requestHandlerConnect);
 
     server.onNotFound(requestHandler404);
     Serial.println("Server started");

@@ -4,7 +4,7 @@
 #include "communicator.h"
 
 typedef void (t_network_receive_interface)();
-typedef void (t_network_send_interface)(char *response, int size);
+typedef void (t_network_send_interface)(char *response, char *funcName);
 
 class WifiCommunicator: public Communicator {
 
