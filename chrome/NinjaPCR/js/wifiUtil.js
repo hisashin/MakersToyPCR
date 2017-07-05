@@ -25,7 +25,7 @@ chromeUtil.alert = function (message) {
 	$('#alert_dialog').dialog('open');
 };
 chromeUtil.getAppVersion = function () {
-	return chrome.runtime.getManifest().version;
+	return "1.0.0";//chrome.runtime.getManifest().version; // TODO define app version
 };
 
 /* humanTime()
@@ -86,6 +86,7 @@ var STORAGE_KEY_EXPERIMENT_LIST = "experimentList";
 var STORAGE_KEY_EXPERIMENT_PREFIX = "pcr_";
 
 Storage.prototype.loadList = function (callback) {
+	/*
 	console.verbose("Storage.prototype.loadList");
 	var self = this;
 	chrome.storage.sync.get(STORAGE_KEY_EXPERIMENT_LIST, function (data) {
@@ -106,6 +107,9 @@ Storage.prototype.loadList = function (callback) {
 			self.insertDefaultExperiment(callback);
 		}
 	});
+	*/
+	//TODO use local storage
+	callback([DEFAULT_EXPERIMENT]);
 };
 Storage.prototype.insertDefaultExperiment = function (callback) {
 	var self = this;
@@ -115,6 +119,7 @@ Storage.prototype.insertDefaultExperiment = function (callback) {
 	});
 }
 Storage.prototype.loadExperiment = function (experimentId, callback) {
+	/*
 	var key = this.getKeyForId(experimentId);
 	var self = this;
 	chrome.storage.sync.get(key, function(data){
@@ -133,7 +138,8 @@ Storage.prototype.loadExperiment = function (experimentId, callback) {
 		self.currentExperiment = experiment;
 		callback(experiment);
 	});
-	
+	*/
+	callback(DEFAULT_EXPERIMENT);
 };
 Storage.prototype.clearAllData = function () {
 	console.verbose("clearAllData");

@@ -12,7 +12,7 @@ var TempGraph = function (container) {
 	defaultAxis = {min : 0, max : this.getScale()};
 	this.options = {
 		xaxis:defaultAxis,
-		title : chrome.i18n.getMessage('temperature')
+		title : getLocalizedMessage('temperature')
 	};
 	var self = this;
 
@@ -57,7 +57,7 @@ TempGraph.prototype.drawGraph = function (opts) {
 		};
 	return Flotr.draw(
 			this.container, 
-			[{data:this.dataLid,label:chrome.i18n.getMessage('lid')}, {data:this.dataBlock,label:chrome.i18n.getMessage('block')} ],
+			[{data:this.dataLid,label:getLocalizedMessage('lid')}, {data:this.dataBlock,label:getLocalizedMessage('block')} ],
 			o);
 }
 

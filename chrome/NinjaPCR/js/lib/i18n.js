@@ -1,4 +1,11 @@
 LOCALIZE_CLASS_REGEXP = new RegExp('.*pcr_localize_([^ ]+)');
+function getLocalizedMessage (messageId) {
+	if (chrome && chrome.i18n) {
+		chrome.i18n.getMessage(messageId);
+	} else {
+		return messageId; //TODO chrome lib 
+	}
+}
 function localize() {
 	var tags = [];
 	var all = document.getElementsByTagName('*');
@@ -11,8 +18,8 @@ function localize() {
 	for (var i=0, l=tags.length; i<l; i++) {
 		var element = tags[i];
 		if (element.className && element.className.match(LOCALIZE_CLASS_REGEXP)) {
-			element.innerHTML = chrome.i18n.getMessage(RegExp.$1);
-			if (!chrome.i18n.getMessage(RegExp.$1)) {
+			element.innerHTML = getLocalizedMessage(RegExp.$1);
+			if (!getLocalizedMessage(RegExp.$1)) {
 				console.error("I18N ERROR. NO MESSAGE FOUND FOR THE KEY " + RegExp.$1);
 			}
 		}
@@ -23,7 +30,7 @@ function localize() {
 		if ('button'!=element.type) continue;
 		if (null!=element.className && element.className.match(LOCALIZE_CLASS_REGEXP))
 		{
-			element.value = chrome.i18n.getMessage(RegExp.$1);
+			element.value = getLocalizedMessage(RegExp.$1);
 		}
 	}
 };
