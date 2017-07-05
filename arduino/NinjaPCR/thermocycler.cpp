@@ -442,11 +442,11 @@ void Thermocycler::ControlLid() {
     drive = iLidPid.Compute(iTargetLidTemp, GetLidTemp());
 
 #ifdef USE_ESP8266
-  //TODO
+  // Use on-off control instead of PWM because ESP8266 does not have enough pins
+  digitalWrite(PIN_LID_PWM, (drive>MAX_PELTIER_PWM/2));
 #else
-  //TODO
-#endif
   analogWrite(PIN_LID_PWM, drive);
+#endif
   analogValueLid = drive;
 }
 
