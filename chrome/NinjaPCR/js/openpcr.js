@@ -55,7 +55,7 @@ function checkPlug () {
 	scanPortsAndDisplay(2500);
 };
 function scanPortsAndDisplay (delay) {
-	chromeSerial.scan(function(port) {
+	communicator.scan(function(port) {
 		// TODO Wifi & Chrome
 		var deviceFound = !!port;
 		
@@ -77,13 +77,13 @@ function scanPortsAndDisplay (delay) {
 				$("#Start").show();
 			}
 			// Alert Firmware Update
-			checkFirmwareVersion(chromeSerial.firmwareVersion);
+			checkFirmwareVersion(communicator.firmwareVersion);
 		} else {
 			$("#runningUnplugged").show();
 			$("#runningPluggedIn").hide();
 			// Not plugged in.
 			console.log('Send "request_status" command and check ongoing experiment (TODO)');
-			chromeSerial.scanOngoingExperiment (function () {
+			communicator.scanOngoingExperiment (function () {
 				//if (!window.checkPlugInterval) {window.checkPlugInterval = setInterval(checkPlug, 2000); }
 				});
 		}
@@ -331,7 +331,7 @@ function startPCR() {
 	window.command_id = Math.floor(Math.random() * 65534);
 	// command id can't be 0 
 	// where is OpenPCR
-	var devicePort = chromeSerial.port;
+	var devicePort = communicator.port;
 	console.verbose("devicePort=" + devicePort);
 	
 	pcrProgram = writeoutExperiment();
@@ -379,7 +379,7 @@ function startPCR() {
 	$('#starting').dialog('open');
 	
 	// write out the file to the OpenPCR device
-	chromeSerial.sendStartCommand(encodedProgram);
+	communicator.sendStartCommand(encodedProgram);
 	experimentLogger.start();
 	running();
 	
@@ -413,7 +413,7 @@ function running() {
  */
 
 function updateRunning() {
-	chromeSerial.requestStatus(onReceiveStatus);
+	communicator.requestStatus(onReceiveStatus);
 }
 var experimentLog;
 
@@ -466,7 +466,7 @@ function stopPCR() {
 	stopCommand += '&d=' + window.command_id;
 	console.verbose(stopCommand);
 	// Send out the STOP command by serial
-	chromeSerial.sendStopCommand(stopCommand, function(){
+	communicator.sendStopCommand(stopCommand, function(){
 	});
 	window.clearInterval(window.updateRunningPage);
 	createCSV();

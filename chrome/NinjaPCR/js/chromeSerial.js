@@ -1,6 +1,6 @@
 var BAUD_RATE = 4800;
 var PORT_TO_IGNORE = new RegExp("Bluetooth");
-//chromeSerial
+
 var Serial = function () {
 	this.rxBuffer = [];
 	this.port = null;
@@ -255,4 +255,4 @@ function getArrayBufferForString(str) {
 	}
 	return buff;
 }
-var chromeSerial = new Serial();
+var communicator = new Serial();
