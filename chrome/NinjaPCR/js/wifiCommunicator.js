@@ -1,6 +1,3 @@
-var Serial = function () {
-	this.firmwareVersion = "1.0.0"; //TODO implement version check (Firmware + app)
-};
 var DeviceResponse = {
 		onDeviceFound : null,
 		onReceiveCommandResponse : null,
@@ -11,10 +8,11 @@ var DeviceResponse = {
 /* Handle connection check response */
 DeviceResponse.connect = function (obj) {
 	console.log("DeviceResponse.connect:" + obj);
-	if (obj) {
+	if (obj && obj.connected) {
 		// Connected
 		$("#ip_status").text("Connected");
-		// TODO OK
+		communicator.firmwareVersionversion = obj.version;
+		console.log("Firmware version=" + communicator.firmwareVersionversion);
 		DeviceResponse.onDeviceFound("DEVICE");
 	}
 };
@@ -29,8 +27,13 @@ DeviceResponse.status = function (obj) {
 		DeviceResponse.onReceiveStatus(obj);
 	}
 };
+
+// TODO rename class
+var NetworkCommunicator = function () {
+	this.firmwareVersion = "1.0.5";
+};
 // Find ports
-Serial.prototype.scan = function (callback) {
+NetworkCommunicator.prototype.scan = function (callback) {
 	// callback(port)
 	DeviceResponse.onDeviceFound = callback;
 	var ipLabel = document.createTextNode("http://")
@@ -60,7 +63,7 @@ Serial.prototype.scan = function (callback) {
 	document.getElementById("ipInputContainer").appendChild(ipButton);
 	document.getElementById("ipInputContainer").appendChild(ipStatusLabel);
 };
-Serial.prototype.sendRequestToDevice = function (path, param) {
+NetworkCommunicator.prototype.sendRequestToDevice = function (path, param) {
 	var URL = "http://" + this.ip + path;
 	if (param) {
 		if (param.charAt(0)!="?") {
@@ -74,43 +77,36 @@ Serial.prototype.sendRequestToDevice = function (path, param) {
 	scriptTag.src = URL;
 	document.body.appendChild(scriptTag);
 }
-Serial.prototype.setDeviceIP = function (ip) {
+NetworkCommunicator.prototype.setDeviceIP = function (ip) {
 	this.ip = ip;
 }
-Serial.prototype.connect = function (ip) {
+NetworkCommunicator.prototype.connect = function (ip) {
 	this.sendRequestToDevice("/connect");
 	$("#ip_status").text("Connecting...");
 }
 
-Serial.prototype.scanOngoingExperiment = function () {
+NetworkCommunicator.prototype.scanOngoingExperiment = function () {
 	console.log("TODO scanOngoingExperiment");
 	// TODO getPorts -> Open -> (callback) -> getList -> sendRequest -> read -> ...
 	callback();
 };
 
 
-Serial.prototype.sendStartCommand = function (commandBody) {
+NetworkCommunicator.prototype.sendStartCommand = function (commandBody) {
 	console.log("TODO sendStartCommand");
 	this.sendRequestToDevice("/command", commandBody);
 };
 
 // * Request Status and Wait for Response
-Serial.prototype.requestStatus = function (callback) {
+NetworkCommunicator.prototype.requestStatus = function (callback) {
 	this.sendRequestToDevice("/status");
 	DeviceResponse.onReceiveStatus = callback;
 };
 
 // Send "Stop" Command and Wait for Response
-Serial.prototype.sendStopCommand = function (command, callback) {
+NetworkCommunicator.prototype.sendStopCommand = function (command, callback) {
 	// self.startListeningStatus(self.port, connectionId, callback);
 	
 };
 
-var chromeSerial = new Serial(); // TODO rename
-
-(function () {
-	console.log("Testing local storage");
-	console.log("localStorage=" + window.localStorage);
-	console.log("item=" + window.localStorage.getItem("hoge"));
-	window.localStorage.setItem("hoge","puni");
-})();
+var communicator = new NetworkCommunicator();

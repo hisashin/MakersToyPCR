@@ -24,8 +24,9 @@ chromeUtil.alert = function (message) {
 	$('#alert_dialog_content')[0].innerHTML = message;
 	$('#alert_dialog').dialog('open');
 };
+var PCR_APP_VERSION = "1.0";
 chromeUtil.getAppVersion = function () {
-	return "1.0.0";//chrome.runtime.getManifest().version; // TODO define app version
+	return PCR_APP_VERSION;//chrome.runtime.getManifest().version;
 };
 
 /* humanTime()
@@ -175,18 +176,14 @@ Storage.prototype.deleteCurrentExperiment = function (callback) {
 			break;
 		}
 	}
-	var storageObj = {};
-	storageObj[STORAGE_KEY_EXPERIMENT_LIST] = JSON.stringify(this.experiments, null, '');
+	localStorage.setItem(STORAGE_KEY_EXPERIMENT_LIST, JSON.stringify(this.experiments, null, ''));
 	var self = this;
-	chrome.storage.sync.set(storageObj, function() {
-			console.verbose('List saved.');
-			var detailStorageObj = {};
-			var key = self.getKeyForId(self.currentExperimentId);
-			console.log("key=" + key);
-			localStorage.setItem(key, null);
-			console.verbose('Detail data removed.');
-			callback();
-		});
+	console.verbose('List saved.');
+	var key = self.getKeyForId(self.currentExperimentId);
+	console.log("key=" + key);
+	localStorage.setItem(key, null);
+	console.verbose('Detail data removed.');
+	callback();
 }
 Storage.prototype.insertExperiment = function (name, experiment, callback) {
 	var id = this.generateId();

@@ -26,11 +26,7 @@ void requestHandlerTop () {
 }
 /* Handle request to "/command" */
 void requestHandlerCommand() {
-    
-    //server.send(200, "text/plain", "requestHandlerCommand");
-
     Serial.println(server.uri());
-
     wifi->ResetCommand();
     wifi->SendCommand();
     char buff[256];
@@ -55,18 +51,13 @@ void requestHandlerCommand() {
 int statusCount = 0;
 
 void requestHandlerStatus() {
-  /*
-    char response[50];
-    sprintf(response, "updateStatus(%d);", statusCount++);
-    server.send(200, "text/plain", response);
-    // TODO SerialControl::SendStatus
-    */
     wifi->ResetCommand();
     wifi->RequestStatus();
 }
+
 /* Handle request to "/connect" */
 void requestHandlerConnect() {
-  wifi_send("true","connect");
+  wifi_send("{connected:true,version:\"1.0.5\"}","connect");
 }
 
 void requestHandler404 () {
