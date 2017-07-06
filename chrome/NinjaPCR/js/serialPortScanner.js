@@ -7,7 +7,7 @@ var SerialPortScanner = function (ports) {
 };
 
 SerialPortScanner.prototype.findPcrPort = function (callback) {
-	chromeSerial.setOnReceive(function(info){
+	communicator.setOnReceive(function(info){
 		if (info.data && currentScanner) {
 			currentScanner._read(info.data);
 		}
@@ -27,7 +27,7 @@ SerialPortScanner.prototype.findPcrPort = function (callback) {
 			self.currentPortIndex++;
 			if (self.foundPort) {
 				console.log("Finish scanning.");
-				chromeSerial.setOnReceive(null);
+				communicator.setOnReceive(null);
 				callback(self.foundPort, self.connectionId, self.firmwareVersion);
 			} else {
 				self.findPcrPort(callback);
