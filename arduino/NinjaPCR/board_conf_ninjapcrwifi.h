@@ -1,8 +1,17 @@
 #ifndef ___BOARD_CONF_NINJAPCR___
 #define ___BOARD_CONF_NINJAPCR___
+
+#define BAUD_RATE 115200
 /* Board Config */
 #define USE_ESP8266
+
+// Thermistor value is measured by 2 ranges, switched by analog switch
+#define THERMISTOR_2_RANGES
+#define PIN_THERMISTOR_RANGE_SWITCH 16 /* Analog switch */
+
 #define USE_WIFI /* Use WiFi functionalities */
+#define PIN_WIFI_MODE 16 /* Analog pin to  */
+#define VALUE_WIFI_MODE_AP LOW /* Start with AP mode if value of PIN_WIFI_MODE agrees with this.  */
 // #define USE_LCD /* Use display */
 // #define USE_STATUS_PINS /* Use status LEDs */
 // #define DEBUG_DISPLAY
