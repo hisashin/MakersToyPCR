@@ -53,6 +53,13 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] = {
     200, 80, 1.1, 10   }
 };
 void setup() {
+    /* 
+     * TODO 
+     * set direction of mode pin (HIGH_TEMP)
+     * Read HIGH_TEMP pin
+     * Transition to 
+     * 
+     */
 #ifdef USE_STATUS_PINS
   pinMode(PIN_STATUS_A,OUTPUT);
   pinMode(PIN_STATUS_B,OUTPUT);

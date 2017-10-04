@@ -86,9 +86,6 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
 };
 //public
 Thermocycler::Thermocycler(boolean restarted):
-        iPlatePid(NULL, NULL, NULL, 0,0,0,0),
-        iLidPid(LID_PID_GAIN_SCHEDULE, 0, 0)
-/*
 iRestarted(restarted),
 ipDisplay(NULL),
 ipProgram(NULL),
@@ -101,13 +98,10 @@ iThermalDirection(OFF),
 iPeltierPwm(0),
 iCycleStartTime(0),
 iRamping(true),
-*/
-/*
 iPlatePid(&iPlateThermistor.GetTemp(),
 &iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
 iLidPid(LID_PID_GAIN_SCHEDULE, MIN_LID_PWM, MAX_LID_PWM),
-
-iTargetLidTemp(0)*/ {
+iTargetLidTemp(0) {
   Serial.println("Thermocycler 0");
 #ifndef USE_WIFI
 #ifdef USE_LCD
