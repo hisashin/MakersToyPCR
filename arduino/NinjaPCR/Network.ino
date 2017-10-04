@@ -64,6 +64,12 @@ void requestHandler404 () {
     server.send(404, "text/plain", "requestHandler404");
 }
 
+/* Start network as an access point */
+boolean network_ap_start() {
+    
+    
+}
+/* Start network as a HTTP server */
 boolean network_start() {
     WiFi.begin(ssid, password);
     Serial.print("SSID:");
