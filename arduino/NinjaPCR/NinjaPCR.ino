@@ -74,9 +74,6 @@ bool isApMode = false;
   }
 }
 
-void setup_ap_mode () {
-    
-}
 void setup_normal () {
 
 #ifdef USE_STATUS_PINS
@@ -121,9 +118,6 @@ bool connected = false;
 bool initDone = false;
 short INTERVAL_MSEC = 500;
 
-void loop_ap_mode () {
-    network_ap_start();
-}
 void loop() {
 #ifdef USE_WIFI
     if (isApMode) {

@@ -9,7 +9,7 @@
 #define USE_STATUS_PINS /* Use status LEDs */
 
 // #define DEBUG_DISPLAY
-
+#define USE_FAN
 /* Use LCD */
 
 #ifdef USE_LCD
