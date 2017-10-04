@@ -66,12 +66,21 @@ bool isApMode = false;
     Serial.println("Starting NinjaPCR WiFi with Normal mode.");
   }
 #endif /* USE_WIFI */
-  
+
+#ifdef USE_WIFI
   if (isApMode) {
       setup_ap_mode();
   } else {
+      setup_server_mode();
       setup_normal();
+      wifi = new WifiCommunicator(wifi_receive, wifi_send);
+      gpThermocycler->SetCommunicator(wifi);
+      Serial.println("Starting WiFi...");
+      network_start();
   }
+#else
+  setup_normal();
+#endif
 }
 
 void setup_normal () {
@@ -106,12 +115,6 @@ void setup_normal () {
   gpThermocycler = new Thermocycler(restarted);
   Serial.println("Init Thermocycler 1");
   
-#ifdef USE_WIFI
-  wifi = new WifiCommunicator(wifi_receive, wifi_send);
-  gpThermocycler->SetCommunicator(wifi);
-  Serial.println("Starting WiFi...");
-  network_start();
-#endif /* USE_WIFI */
 }
  
 bool connected = false;

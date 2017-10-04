@@ -132,46 +132,22 @@ void setup_ap_mode () {
     startAPMode();
     startServer();
 }
-/* Start network as a HTTP server */
-boolean network_start() {
-    WiFi.begin(ssid, password);
-    Serial.print("SSID:");
-    Serial.println(ssid);
-    Serial.print("Pass:");
-    Serial.println(password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-    }
-
-    Serial.print("\nConnected.IP address: ");
-    Serial.println(WiFi.localIP());
-
-    server.on("/", requestHandlerTop);
-    server.on("/command", requestHandlerCommand);
-    server.on("/status", requestHandlerStatus);
-    server.on("/connect", requestHandlerConnect);
-
-    server.onNotFound(requestHandler404);
-    Serial.println("Server started");
-    server.begin();
-    return true;
-}
-
-/* Handle HTTP request as a server */
-void network_loop() {
-    //server.handleClient();
-}
 boolean network_is_connected () {
     return (WiFi.status() == WL_CONNECTED);
 }
 
-#define EEPROM_WIFI_SSID_ADDR 512
+#define EEPROM_WIFI_CONF_DONE_ADDR 512
+#define EEPROM_WIFI_CONF_DONE_VAL 0xF0
+#define EEPROM_WIFI_SSID_ADDR 512+1
 #define EEPROM_WIFI_SSID_MAX_LENGTH 31
-#define EEPROM_WIFI_PASSWORD_ADDR 512+32
+#define EEPROM_WIFI_PASSWORD_ADDR (512+32)
 #define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
 
+bool isWifiConfDone () {
+    return EEPROM.read(EEPROM_WIFI_CONF_DONE_ADDR) == EEPROM_WIFI_CONF_DONE_VAL;
+}
 void saveWiFiConnectionInfo(String ssid, String password) {
+    EEPROM.write(EEPROM_WIFI_CONF_DONE_ADDR, EEPROM_WIFI_CONF_DONE_VAL);
     for (int i = 0, l = ssid.length(); i < l; i++) {
         EEPROM.write(EEPROM_WIFI_SSID_ADDR+i, ssid.charAt(i));
     }
@@ -251,4 +227,60 @@ void loop_ap_mode () {
     if (page == PAGE_JOIN) {
         saveWiFiConnectionInfo(ssid, password);
     }
+}
+/* Start network as a HTTP server */
+/* 
+#define EEPROM_WIFI_SSID_ADDR 512
+#define EEPROM_WIFI_SSID_MAX_LENGTH 31
+#define EEPROM_WIFI_PASSWORD_ADDR 512+32
+#define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
+ */
+boolean network_start() {
+    if (!isWifiConfDone ()) {
+        Serial.println("Network can't start. WiFi config not found.");
+        return;
+    }
+    char ssid[EEPROM_WIFI_SSID_MAX_LENGTH+1];
+    char password[EEPROM_WIFI_PASSWORD_MAX_LENGTH+1];
+    int ssidIndex = 0;
+    while (ssidIndex < EEPROM_WIFI_SSID_MAX_LENGTH) {
+        char c = EEPROM.read(EEPROM_WIFI_SSID_ADDR+ssidIndex);
+        ssid[ssidIndex] = c;
+        if (c==0x00) break;
+    }
+    ssid[EEPROM_WIFI_SSID_MAX_LENGTH] = 0x00;
+    int passwordIndex = 0;
+    while (passwordIndex < EEPROM_WIFI_PASSWORD_MAX_LENGTH) {
+        char c = EEPROM.read(EEPROM_WIFI_PASSWORD_ADDR+passwordIndex);
+        password[ssidIndex] = c;
+        if (c==0x00) break;
+    }
+    password[EEPROM_WIFI_PASSWORD_MAX_LENGTH] = 0x00;
+    WiFi.begin(ssid, password);
+    Serial.print("SSID:");
+    Serial.println(ssid);
+    Serial.print("Pass:");
+    Serial.println(password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+
+    Serial.print("\nConnected.IP address: ");
+    Serial.println(WiFi.localIP());
+
+    server.on("/", requestHandlerTop);
+    server.on("/command", requestHandlerCommand);
+    server.on("/status", requestHandlerStatus);
+    server.on("/connect", requestHandlerConnect);
+
+    server.onNotFound(requestHandler404);
+    Serial.println("Server started");
+    server.begin();
+    return true;
+}
+
+/* Handle HTTP request as a server */
+void network_loop() {
+    //server.handleClient();
 }
