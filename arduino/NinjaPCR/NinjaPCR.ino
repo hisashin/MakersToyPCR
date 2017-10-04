@@ -53,28 +53,38 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] = {
     200, 80, 1.1, 10   }
 };
 void setup() {
-    /* 
-     * TODO 
-     * set direction of mode pin (HIGH_TEMP)
-     * Read HIGH_TEMP pin
-     * Transition to 
-     * 
-     */
+
+  Serial.begin(BAUD_RATE);
+bool isApMode = false;
+#ifdef USE_WIFI
+  Serial.println("Starting NinjaPCR WiFi");
+  pinMode(PIN_WIFI_MODE, INPUT);
+  if (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP) {
+    Serial.println("Starting NinjaPCR WiFi with AP mode.");
+    isApMode = true;
+  } else {
+    Serial.println("Starting NinjaPCR WiFi with Normal mode.");
+  }
+#endif /* USE_WIFI */
+  
+  if (isApMode) {
+      setup_ap_mode();
+  } else {
+      setup_normal();
+  }
+}
+
+void setup_ap_mode () {
+    
+}
+void setup_normal () {
+
 #ifdef USE_STATUS_PINS
   pinMode(PIN_STATUS_A,OUTPUT);
   pinMode(PIN_STATUS_B,OUTPUT);
   digitalWrite(PIN_STATUS_A,LOW);
   digitalWrite(PIN_STATUS_B,LOW);
 #endif /* USE_STATUS_PINS */
-  
-#ifdef USE_WIFI
-  Serial.begin(115200);
-  Serial.println("Starting NinjaPCR WiFi");
-#else
-  Serial.begin(4800);
-  Serial.println("Starting NinjaPCR Serial");
-  }
-#endif /* USE_WIFI */
 
   //init factory settings
   if (InitialStart()) {
@@ -90,8 +100,6 @@ void setup() {
   boolean restarted = !(MCUSR & 1);
   MCUSR &= 0xFE;
 #endif /* USE_WIFI */
-  
-  Serial.println("init 3");
 
 #ifdef USE_STATUS_PINS
   digitalWrite(PIN_STATUS_A, HIGH);
@@ -113,7 +121,16 @@ bool connected = false;
 bool initDone = false;
 short INTERVAL_MSEC = 500;
 
+void loop_ap_mode () {
+    network_ap_start();
+}
 void loop() {
+#ifdef USE_WIFI
+    if (isApMode) {
+        loop_ap_mode();
+        return;
+    }
+#endif /* USE_WIFI */
 #ifdef USE_WIFI
   if (network_is_connected()) {
 #else
