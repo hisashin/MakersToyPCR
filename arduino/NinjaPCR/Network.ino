@@ -144,6 +144,10 @@ boolean isWiFiConnected () {
 #define EEPROM_WIFI_EMAIL_ADDR (512+32+32)
 #define EEPROM_WIFI_EMAIL_MAX_LENGTH 254 // ref. RFC5321 4.5.3.1
 
+#define EEPROM_WIFI_LAST_IP_ADDR  (512+32+32+255)
+#define EEPROM_WIFI_LAST_IP_EXISTS_VAL 0xF0
+// flag 1byte + 4bytes
+
 /* Check WiFi Connection in EEPROM */
 bool isWifiConfDone () {
     return EEPROM.read(EEPROM_WIFI_CONF_DONE_ADDR) == EEPROM_WIFI_CONF_DONE_VAL;
@@ -269,12 +273,27 @@ boolean startWiFiHTTPServer() {
     Serial.println(WiFi.localIP());
     
     char *email = malloc(sizeof(char) * (EEPROM_WIFI_EMAIL_MAX_LENGTH+1));
-    readStringFromEEPROM(email, EEPROM_WIFI_EMAIL_ADDR, EEPROM_WIFI_EMAIL_MAX_LENGTH);
-    // Send IP with lambda function
-    // TODO call lambda function
-    // TODO check last IP
     Serial.print("Email:"); Serial.println(email);
+    readStringFromEEPROM(email, EEPROM_WIFI_EMAIL_ADDR, EEPROM_WIFI_EMAIL_MAX_LENGTH);
+    char prevIP = malloc(sizeof(char) * 4);
+    
+    bool ipAddressChanged = false;
+    if (EEPROM.read(EEPROM_WIFI_LAST_IP_ADDR)==EEPROM_WIFI_LAST_IP_EXISTS_VAL) {
+        for (int i=0; i<4; i++) {
+            if (EEPROM.read(EEPROM_WIFI_LAST_IP_ADDR+1+i)!=WiFi.localIP()[i]) {
+                ipAddressChanged = true;
+            }
+        }
+    } else {
+        ipAddressChanged = true;
+    }
+    if (ipAddressChanged) {
+        // Send IP with lambda function
+        // TODO call lambda function
+        // TODO check last IP
+    }
     free(email);
+    free(prevIP);
 
     /* Add handlers for paths */
     server.on("/", requestHandlerTop);
