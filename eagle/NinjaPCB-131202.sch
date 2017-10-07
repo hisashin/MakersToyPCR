@@ -10524,7 +10524,7 @@ Source: DCJ0303.pdf</description>
 <junction x="-50.8" y="86.36"/>
 </segment>
 </net>
-<net name="N$9" class="0">
+<net name="OUTA" class="0">
 <segment>
 <pinref part="MD01B" gate="G$1" pin="OUTA"/>
 <wire x1="55.88" y1="121.92" x2="71.12" y2="121.92" width="0.1524" layer="91"/>
@@ -10535,7 +10535,7 @@ Source: DCJ0303.pdf</description>
 <junction x="55.88" y="121.92"/>
 </segment>
 </net>
-<net name="N$10" class="0">
+<net name="OUTB" class="0">
 <segment>
 <pinref part="MD01B" gate="G$1" pin="OUTB"/>
 <wire x1="55.88" y1="119.38" x2="73.66" y2="119.38" width="0.1524" layer="91"/>
