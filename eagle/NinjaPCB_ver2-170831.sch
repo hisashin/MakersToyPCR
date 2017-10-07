@@ -1598,21 +1598,6 @@ DIN A3, landscape with location and doc. field</description>
 <rectangle x1="3.429" y1="-2.921" x2="4.191" y2="-1.905" layer="21"/>
 <rectangle x1="5.969" y1="-2.921" x2="6.731" y2="-1.905" layer="21"/>
 </package>
-<package name="1X01">
-<description>&lt;b&gt;PIN HEADER&lt;/b&gt;</description>
-<wire x1="-0.635" y1="1.27" x2="0.635" y2="1.27" width="0.1524" layer="21"/>
-<wire x1="0.635" y1="1.27" x2="1.27" y2="0.635" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="0.635" x2="1.27" y2="-0.635" width="0.1524" layer="21"/>
-<wire x1="1.27" y1="-0.635" x2="0.635" y2="-1.27" width="0.1524" layer="21"/>
-<wire x1="-1.27" y1="0.635" x2="-1.27" y2="-0.635" width="0.1524" layer="21"/>
-<wire x1="-0.635" y1="1.27" x2="-1.27" y2="0.635" width="0.1524" layer="21"/>
-<wire x1="-1.27" y1="-0.635" x2="-0.635" y2="-1.27" width="0.1524" layer="21"/>
-<wire x1="0.635" y1="-1.27" x2="-0.635" y2="-1.27" width="0.1524" layer="21"/>
-<pad name="1" x="0" y="0" drill="1.016" shape="octagon"/>
-<text x="-1.3462" y="1.8288" size="1.27" layer="25" ratio="10">&gt;NAME</text>
-<text x="-1.27" y="-3.175" size="1.27" layer="27">&gt;VALUE</text>
-<rectangle x1="-0.254" y1="-0.254" x2="0.254" y2="0.254" layer="51"/>
-</package>
 <package name="1X02">
 <description>&lt;b&gt;PIN HEADER&lt;/b&gt;</description>
 <wire x1="-1.905" y1="1.27" x2="-0.635" y2="1.27" width="0.1524" layer="21"/>
@@ -1673,15 +1658,6 @@ DIN A3, landscape with location and doc. field</description>
 <pin name="5" x="-2.54" y="-2.54" visible="pad" length="short" direction="pas" function="dot"/>
 <pin name="6" x="-2.54" y="-5.08" visible="pad" length="short" direction="pas" function="dot"/>
 </symbol>
-<symbol name="PINHD1">
-<wire x1="-6.35" y1="-2.54" x2="1.27" y2="-2.54" width="0.4064" layer="94"/>
-<wire x1="1.27" y1="-2.54" x2="1.27" y2="2.54" width="0.4064" layer="94"/>
-<wire x1="1.27" y1="2.54" x2="-6.35" y2="2.54" width="0.4064" layer="94"/>
-<wire x1="-6.35" y1="2.54" x2="-6.35" y2="-2.54" width="0.4064" layer="94"/>
-<text x="-6.35" y="3.175" size="1.778" layer="95">&gt;NAME</text>
-<text x="-6.35" y="-5.08" size="1.778" layer="96">&gt;VALUE</text>
-<pin name="1" x="-2.54" y="0" visible="pad" length="short" direction="pas" function="dot"/>
-</symbol>
 <symbol name="PINHD2">
 <wire x1="-6.35" y1="-2.54" x2="1.27" y2="-2.54" width="0.4064" layer="94"/>
 <wire x1="1.27" y1="-2.54" x2="1.27" y2="5.08" width="0.4064" layer="94"/>
@@ -1721,22 +1697,6 @@ DIN A3, landscape with location and doc. field</description>
 <connect gate="A" pin="4" pad="4"/>
 <connect gate="A" pin="5" pad="5"/>
 <connect gate="A" pin="6" pad="6"/>
-</connects>
-<technologies>
-<technology name=""/>
-</technologies>
-</device>
-</devices>
-</deviceset>
-<deviceset name="PINHD-1X1" prefix="JP" uservalue="yes">
-<description>&lt;b&gt;PIN HEADER&lt;/b&gt;</description>
-<gates>
-<gate name="G$1" symbol="PINHD1" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="1X01">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
 </connects>
 <technologies>
 <technology name=""/>
@@ -2998,12 +2958,6 @@ http://www.st.com&lt;p&gt;
 <part name="R11" library="PCR-RCL" deviceset="R0603" device="NC" value="1.5K or 1.8K"/>
 <part name="GND15" library="supply1" deviceset="GND" device=""/>
 <part name="C3" library="Seeed-Capacitor" deviceset="CERAMIC-100NF-50V-10%-X7R(0603)" device="" value="100nf"/>
-<part name="IO9" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="IO10" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="MISO" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="MOSI" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="SCKL" library="pinhead" deviceset="PINHD-1X1" device=""/>
-<part name="CS0" library="pinhead" deviceset="PINHD-1X1" device=""/>
 <part name="R10" library="Seeed-Resistor" deviceset="SMD-RES-3K-1%-1/10W(0603)" device="" value="3K"/>
 <part name="R14" library="Seeed-Resistor" deviceset="SMD-RES-2K-1%-1/10W(0603)" device="" value="2K"/>
 <part name="RL" library="PCR-RCL" deviceset="R0603" device="NC" value="30K"/>
@@ -3141,12 +3095,6 @@ http://www.st.com&lt;p&gt;
 <instance part="R11" gate="G$1" x="250.19" y="86.36" rot="R90"/>
 <instance part="GND15" gate="1" x="190.5" y="85.09"/>
 <instance part="C3" gate="G$1" x="190.5" y="104.14" rot="R90"/>
-<instance part="IO9" gate="G$1" x="16.51" y="158.75" rot="MR0"/>
-<instance part="IO10" gate="G$1" x="16.51" y="149.86" rot="MR0"/>
-<instance part="MISO" gate="G$1" x="120.65" y="146.05"/>
-<instance part="MOSI" gate="G$1" x="120.65" y="137.16"/>
-<instance part="SCKL" gate="G$1" x="120.65" y="128.27"/>
-<instance part="CS0" gate="G$1" x="120.65" y="119.38"/>
 <instance part="R10" gate="G$1" x="314.96" y="154.94"/>
 <instance part="R14" gate="G$1" x="314.96" y="148.59"/>
 <instance part="RL" gate="G$1" x="222.25" y="220.98" rot="R90"/>
@@ -4064,42 +4012,6 @@ http://www.st.com&lt;p&gt;
 <pinref part="SJ30" gate="1" pin="1"/>
 </segment>
 </net>
-<net name="N$61" class="0">
-<segment>
-<wire x1="111.76" y1="144.78" x2="111.76" y2="146.05" width="0.1524" layer="91"/>
-<wire x1="111.76" y1="146.05" x2="118.11" y2="146.05" width="0.1524" layer="91"/>
-<pinref part="MISO" gate="G$1" pin="1"/>
-<pinref part="ESP2" gate="G$1" pin="MISO"/>
-<wire x1="111.76" y1="144.78" x2="91.44" y2="144.78" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$62" class="0">
-<segment>
-<wire x1="111.76" y1="142.24" x2="111.76" y2="137.16" width="0.1524" layer="91"/>
-<wire x1="111.76" y1="137.16" x2="118.11" y2="137.16" width="0.1524" layer="91"/>
-<pinref part="MOSI" gate="G$1" pin="1"/>
-<pinref part="ESP2" gate="G$1" pin="MOSI"/>
-<wire x1="111.76" y1="142.24" x2="91.44" y2="142.24" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$63" class="0">
-<segment>
-<wire x1="109.22" y1="139.7" x2="109.22" y2="128.27" width="0.1524" layer="91"/>
-<wire x1="109.22" y1="128.27" x2="118.11" y2="128.27" width="0.1524" layer="91"/>
-<pinref part="SCKL" gate="G$1" pin="1"/>
-<pinref part="ESP2" gate="G$1" pin="SCLK"/>
-<wire x1="109.22" y1="139.7" x2="91.44" y2="139.7" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$64" class="0">
-<segment>
-<wire x1="106.68" y1="137.16" x2="106.68" y2="119.38" width="0.1524" layer="91"/>
-<wire x1="106.68" y1="119.38" x2="118.11" y2="119.38" width="0.1524" layer="91"/>
-<pinref part="CS0" gate="G$1" pin="1"/>
-<pinref part="ESP2" gate="G$1" pin="CS0"/>
-<wire x1="106.68" y1="137.16" x2="91.44" y2="137.16" width="0.1524" layer="91"/>
-</segment>
-</net>
 <net name="N$67" class="0">
 <segment>
 <pinref part="ESP2" gate="G$1" pin="GPIO12"/>
@@ -4133,24 +4045,6 @@ http://www.st.com&lt;p&gt;
 <pinref part="ESP2" gate="G$1" pin="GPIO16"/>
 <wire x1="55.88" y1="137.16" x2="49.53" y2="137.16" width="0.1524" layer="91"/>
 <pinref part="SJ23" gate="1" pin="2"/>
-</segment>
-</net>
-<net name="N$72" class="0">
-<segment>
-<wire x1="55.88" y1="154.94" x2="24.13" y2="154.94" width="0.1524" layer="91"/>
-<wire x1="24.13" y1="154.94" x2="24.13" y2="158.75" width="0.1524" layer="91"/>
-<wire x1="24.13" y1="158.75" x2="19.05" y2="158.75" width="0.1524" layer="91"/>
-<pinref part="IO9" gate="G$1" pin="1"/>
-<pinref part="ESP2" gate="G$1" pin="IO9"/>
-</segment>
-</net>
-<net name="N$73" class="0">
-<segment>
-<wire x1="55.88" y1="152.4" x2="24.13" y2="152.4" width="0.1524" layer="91"/>
-<wire x1="24.13" y1="152.4" x2="24.13" y2="149.86" width="0.1524" layer="91"/>
-<wire x1="24.13" y1="149.86" x2="19.05" y2="149.86" width="0.1524" layer="91"/>
-<pinref part="IO10" gate="G$1" pin="1"/>
-<pinref part="ESP2" gate="G$1" pin="IO10"/>
 </segment>
 </net>
 <net name="IO12" class="0">
