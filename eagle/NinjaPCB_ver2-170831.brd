@@ -215,7 +215,7 @@
 <text x="66.04" y="-67.4878" size="1.27" layer="22" rot="MR90">TX</text>
 <text x="66.04" y="-70.0278" size="1.27" layer="22" rot="MR90">RX</text>
 <text x="66.04" y="-60.5536" size="1.27" layer="22" rot="MR90">GND</text>
-<text x="63.4492" y="-53.3908" size="1.27" layer="22" rot="SMR90">ESP-WROOM-02</text>
+<text x="63.4492" y="-53.3908" size="1.27" layer="22" rot="MR90">ESP-WROOM-02</text>
 <text x="48.4886" y="-43.1546" size="1.27" layer="21" rot="SR270">ESP-12F</text>
 <hole x="9.5" y="-76.5" drill="3.2"/>
 <text x="25.3492" y="-77.1144" size="1.778" layer="21">NinjaPCB ver2-170831</text>
@@ -1097,7 +1097,7 @@ design rules under a new name.</description>
 </autorouter>
 <elements>
 <element name="ESP1" library="PCR-Module" package="ESP-WROOM-02-NOCREAM" value="ESP-WROOM-02NC" x="65.89" y="-46.5226" smashed="yes" rot="MR270">
-<attribute name="NAME" x="48.5198" y="-49.4656" size="1.778" layer="26" rot="SMR90"/>
+<attribute name="NAME" x="48.5198" y="-49.4656" size="1.778" layer="26" rot="MR90"/>
 </element>
 <element name="IC5" library="microchip" package="SO-08-NOCREAM" value="MCP3551SNNC" x="61.915" y="-24.6356" smashed="yes" rot="R90">
 <attribute name="NAME" x="60.6908" y="-25.3516" size="1.27" layer="25"/>
