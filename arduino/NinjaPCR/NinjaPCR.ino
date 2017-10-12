@@ -51,18 +51,43 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 
 bool isApMode = false;
 
+//#define FORCE_AP_MODE // For debug
+//#define FORCE_NORMAL_MODE // FOR DEBUG
+
 void setup() {
     
     Serial.begin(BAUD_RATE);
-
+    EEPROM.begin(4096);
 #ifdef USE_WIFI
     Serial.println("Starting NinjaPCR WiFi");
     pinMode(PIN_WIFI_MODE, INPUT);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
+#ifdef FORCE_AP_MODE
+  isApMode = true;
+#endif
+
+    // Simple EEPROM test
+    /*
     if (isApMode) {
+      Serial.println("Writing.");
+      EEPROM.write(0, 123);
+      EEPROM.commit();
+    } else {
+      Serial.println("Read.");
+      Serial.println(EEPROM.read(0));
+    }
+    return;
+    */
+
+#ifdef FORCE_NORMAL_MODE
+  isApMode = false;
+#endif
+    if (isApMode) {
+        Serial.println("AP mode");
         startWiFiAPMode();
     }
     else {
+        Serial.println("Server mode");
         setup_normal();
         wifi = new WifiCommunicator(wifi_receive, wifi_send);
         gpThermocycler->SetCommunicator(wifi);
@@ -132,6 +157,7 @@ void loop() {
     else {
         checkSerialConnection();
     }
+#endif
 }
 
 bool startLamp = false;

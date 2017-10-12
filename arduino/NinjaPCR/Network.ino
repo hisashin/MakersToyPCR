@@ -4,8 +4,7 @@
 #include "wifi_communicator.h"
 #include "thermocycler.h"
 #include <EEPROM.h>
-
-
+#include <WiFiClientSecure.h>
 
 ESP8266WebServer server(80);
 
@@ -92,8 +91,6 @@ void scanNearbyAP() {
             Serial.print(" (");
             Serial.print(WiFi.RSSI(i));
             Serial.print(")");
-            Serial.println(
-                    (WiFi.encryptionType(i) == WIFI_AUTH_OPEN) ? " " : "*");
             SSIDs[i] = WiFi.SSID(i);
             delay(10);
         }
@@ -105,11 +102,12 @@ void startScanMode() {
     WiFi.disconnect();
     delay(10);
 }
+const IPAddress apIP(192, 168, 1, 1); // http://192.168.1.1
 void stopScanMode() {
 }
 
 // NinjaPCR works as an AP with this SSID
-const char* apSSID = "NinjaPCR WiFi";
+const char* apSSID = "NinjaPCR";
 
 void startAPMode() {
     WiFi.mode(WIFI_AP);
@@ -127,6 +125,9 @@ void startWiFiAPMode () {
     stopScanMode();
     startAPMode();
     server.begin();
+    server.on("/", requestHandlerConfInit);
+    server.on("/join", requestHandlerConfJoin);
+    server.onNotFound(requestHandler404);
     Serial.println("Server Started.");
 }
 boolean isWiFiConnected () {
@@ -135,109 +136,115 @@ boolean isWiFiConnected () {
 
 /* Addresses of WiFi configuration */
 /* Wfite 0xF0 when WiFi configuration is done. */
-#define EEPROM_WIFI_CONF_DONE_ADDR 512
+#define EEPROM_WIFI_CONF_DONE_ADDR 0//512
 #define EEPROM_WIFI_CONF_DONE_VAL 0xF0
-#define EEPROM_WIFI_SSID_ADDR 512+1
+#define EEPROM_WIFI_SSID_ADDR EEPROM_WIFI_CONF_DONE_ADDR+1
 #define EEPROM_WIFI_SSID_MAX_LENGTH 31
-#define EEPROM_WIFI_PASSWORD_ADDR (512+32)
+#define EEPROM_WIFI_PASSWORD_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+32)
 #define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
-#define EEPROM_WIFI_EMAIL_ADDR (512+32+32)
+#define EEPROM_WIFI_EMAIL_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+32+32)
 #define EEPROM_WIFI_EMAIL_MAX_LENGTH 254 // ref. RFC5321 4.5.3.1
+#define EEPROM_WIFI_EMAIL_PASS_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+32+32+255)
+#define EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH 32
 
-#define EEPROM_WIFI_LAST_IP_ADDR  (512+32+32+255)
+#define EEPROM_WIFI_LAST_IP_ADDR  (EEPROM_WIFI_CONF_DONE_ADDR+32+32+255)
 #define EEPROM_WIFI_LAST_IP_EXISTS_VAL 0xF0
 // flag 1byte + 4bytes
 
 /* Check WiFi Connection in EEPROM */
 bool isWifiConfDone () {
+  Serial.print("isWifiConfDone=");
+  for (int i=0; i<32; i++) {
+    Serial.print(EEPROM.read(EEPROM_WIFI_CONF_DONE_ADDR+i));
+    Serial.print(" ");
+  }
     return EEPROM.read(EEPROM_WIFI_CONF_DONE_ADDR) == EEPROM_WIFI_CONF_DONE_VAL;
 }
-
+int min (int a, int b) {
+  return (a<b)?a:b;
+}
 void saveStringToEEPROM (String str, int startAddress, int maxLength) {
-    int length = min(str.length(), maxLength);
-    for (int i = 0, l = str.length(); i < l; i++) {
+    int len = min(str.length(), maxLength);
+    Serial.print("Length=");
+    Serial.print(len);
+    Serial.print(", Start=");
+    Serial.println(startAddress);
+    for (int i = 0; i<len; i++) {
         EEPROM.write(startAddress+i, str.charAt(i));
     }
-    EEPROM.write(startAddress+length, 0x00); // Write \0
+    EEPROM.write(startAddress+len, 0x00); // Write \0
 }
 
-void saveWiFiConnectionInfo(String ssid, String password, String email) {
+void saveWiFiConnectionInfo(String ssid, String password, String email, String emailPassword) {
     EEPROM.write(EEPROM_WIFI_CONF_DONE_ADDR, EEPROM_WIFI_CONF_DONE_VAL);
-    
     saveStringToEEPROM(ssid, EEPROM_WIFI_SSID_ADDR, EEPROM_WIFI_SSID_MAX_LENGTH);
     saveStringToEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR, EEPROM_WIFI_PASSWORD_MAX_LENGTH);
     saveStringToEEPROM(email, EEPROM_WIFI_EMAIL_ADDR, EEPROM_WIFI_EMAIL_MAX_LENGTH);
+    saveStringToEEPROM(emailPassword, EEPROM_WIFI_EMAIL_PASS_ADDR, EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH);
+    EEPROM.commit();
 }
 
 /* Handle access to software AP */
-void loopWiFiAP () {
-    WiFiClient client = server.available();
-    if (!client) {
-        return;
+#define PAGE_INIT 1
+#define PAGE_JOIN 2
+// Returned string ends with <body> tag.
+String getHTMLHeader () {
+    return "<!DOCTYPE HTML>\r\n<html><head>NinjaPCR</head><body>\r\n";
+}
+void requestHandlerConfInit () {
+    // Send form
+    String s = getHTMLHeader();
+    s += "<form method=\"post\" action=\"join\">";
+    s += "<div>SSID:<select name=\"ssid\"><option>----</option>";
+    for (int i = 0; i < apCount; i++) {
+        String ssid = SSIDs[i];
+        s += "<option value=\"" + ssid + "\">" + ssid + "</option>";
     }
+    s += "</select></div>";
+    s += "<div>Password: <input type=\"text\" name=\"password\"/></div>";
+    s += "<div>Mail address: <input type=\"text\" name=\"email\"/></div>";
+    s += "<div>Mail pass: <input type=\"text\" name=\"emailPassword\"/></div>";
+    s += "<div><input type=\"submit\" value=\"Join\"/></div>";
+    s += "</form>";
+    s += "</body></html>\n";
+    server.send(200, "text/html", s);
+}
+void requestHandlerConfJoin () {
+    String ssid = server.arg("ssid");
+    String password = server.arg("password");
+    String email = server.arg("email");
+    String emailPassword = server.arg("emailPassword");
+    String emptyField = "";
+    bool isValid = true;
+    if (ssid=="") { emptyField = "WiFi SSID"; isValid = false; }
+    if (password=="") { emptyField = "WiFi Password"; isValid = false; }
+    if (email=="") { emptyField = "E-mail address"; isValid = false; }
+    if (emailPassword=="") { emptyField = "E-mail password"; isValid = false; }
 
-    String ssid = "";
-    String password = "";
-    String email = "";
-    // Read the first line of the request
-    String req = client.readStringUntil('\r');
-    while (client.available()) {
-        String str = client.readStringUntil('\r');
-        // ssid=au_Wi-Fi&password=aaa
-        if (str.indexOf("ssid=") != -1 && str.indexOf("password=") != -1) {
-            ssid = getParamFromString(str, "ssid");
-            password = getParamFromString(str, "password");
-            email = getParamFromString(str, "email");
-        }
-    }
-    Serial.println(req);
-    client.flush();
-    
-    int page = 0;
-    if (req.indexOf("/init") != -1) {
-        page = PAGE_INIT;
-    } else if (req.indexOf("/join") != -1) {
-        page = PAGE_JOIN;
-    }
-
-    client.flush();
-
-    // Prepare the response. Start with the common header:
-    String s = "HTTP/1.1 200 OK\r\n";
-    s += "Content-Type: text/html\r\n\r\n";
-    s += "<!DOCTYPE HTML>\r\n<html><head>NinjaPCR</head><body>\r\n";
-
-    if (page == PAGE_INIT) {
-        s += "<form method=\"post\" action=\"join\">";
-        s += "<div>SSID:<select name=\"ssid\"><option>----</option>";
-        for (int i = 0; i < apCount; i++) {
-            String ssid = SSIDs[i];
-            s += "<option value=\"" + ssid + "\">" + ssid + "</option>";
-        }
-        s += "</select></div>";
-        s += "<div>Password: <input type=\"text\" name=\"password\"/></div>";
-        s += "<div>Mail address: <input type=\"text\" name=\"email\"/></div>";
-        s += "<div><input type=\"submit\" value=\"Join\"/></div>";
-        s += "</form>";
-    }
-    else if (page == PAGE_JOIN) {
+    String s = getHTMLHeader();
+    if (!isValid) {
+        // Has error
+        s += "ERROR: " + emptyField + " is empty.";
+    } else {
         s += "Join.";
-        s += "<div>SSID:" + ssid + "</div>";
-        s += "<div>Password:" + password + "</div>";
-        s += "<div>Email:" + email + "</div>";
+        s += "<div>SSID:" + ssid + "<br/>";
+        s += "Password:" + password + "<br/>";
+        s += "Email:" + email + "<br/>";
+        s += "Email pass:" + emailPassword;
     }
     s += "</body></html>\n";
+    server.send(200, "text/html", s);
 
-    // Send the response to the client
-    client.print(s);
-    delay(1);
-    Serial.println("Client disonnected");
-    Serial.println(s);
-
-    if (page == PAGE_JOIN && ssid.length()>0 && password.length()>0 && email.length()>0) {
-        saveWiFiConnectionInfo(ssid, password, email);
+    if (isValid) {
+      Serial.println("Valid input. Saving...");
+        saveWiFiConnectionInfo(ssid, password, email, emailPassword);
+      Serial.println("saved.");
+    } else {
+      Serial.println("Invalid input.");
     }
+    // TODO software reset (if possible)
 }
+
 void readStringFromEEPROM (char *s, int startAddress, int maxLength) {
     int index = 0;
     while (index < maxLength) {
@@ -247,37 +254,28 @@ void readStringFromEEPROM (char *s, int startAddress, int maxLength) {
     }
     s[maxLength] = 0x00;
 }
-/* Start network as a HTTP server */
-boolean startWiFiHTTPServer() {
-    // Check existence of WiFi Config
-    if (!isWifiConfDone ()) {
-        Serial.println("Network can't start. WiFi config not found.");
-        return;
-    }
-    // Load connection info from EEPROM
-    int ssidIndex = 0;
-    char *ssid = malloc(sizeof(char) * (EEPROM_WIFI_SSID_MAX_LENGTH+1));
-    char *password = malloc(sizeof(char) * (EEPROM_WIFI_PASSWORD_MAX_LENGTH+1));
-    readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR, EEPROM_WIFI_SSID_MAX_LENGTH);
-    readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR, EEPROM_WIFI_PASSWORD_MAX_LENGTH);
-    // Connect with saved SSID and password
-    Serial.print("SSID:"); Serial.println(ssid);
-    Serial.print("Pass:"); Serial.println(password);
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        Serial.print(".");
-    }
-    free (ssid, password);
-    Serial.print("\nConnected.IP address: ");
-    Serial.println(WiFi.localIP());
-    
-    char *email = malloc(sizeof(char) * (EEPROM_WIFI_EMAIL_MAX_LENGTH+1));
+
+/*
+ * Check IP address 
+ * -> Compare with previous IP address 
+ * -> Send new IP address via Lambda function
+ *    (http://d3n332182mb98i.cloudfront.net/?i=XXX&m=XXX&p=XXX)
+ */
+WiFiClientSecure httpsClient;
+String byteToHexStr (char c) {
+  char s[3];
+  sprintf(s, "%02X", c);
+  return String(s);
+}
+void checkIPAddressChange () {
+    char *email = (char *) malloc(sizeof(char) * (EEPROM_WIFI_EMAIL_MAX_LENGTH+1));
+    char *emailPassword = (char *) malloc(sizeof(char) * (EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+1));
     Serial.print("Email:"); Serial.println(email);
     readStringFromEEPROM(email, EEPROM_WIFI_EMAIL_ADDR, EEPROM_WIFI_EMAIL_MAX_LENGTH);
-    char prevIP = malloc(sizeof(char) * 4);
-    
+    readStringFromEEPROM(emailPassword, EEPROM_WIFI_EMAIL_PASS_ADDR, EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH);
+    char *prevIP = (char *) malloc(sizeof(char) * 4);
     bool ipAddressChanged = false;
+    // Compare IP addresses (if found in EEPROM)
     if (EEPROM.read(EEPROM_WIFI_LAST_IP_ADDR)==EEPROM_WIFI_LAST_IP_EXISTS_VAL) {
         for (int i=0; i<4; i++) {
             if (EEPROM.read(EEPROM_WIFI_LAST_IP_ADDR+1+i)!=WiFi.localIP()[i]) {
@@ -288,12 +286,92 @@ boolean startWiFiHTTPServer() {
         ipAddressChanged = true;
     }
     if (ipAddressChanged) {
-        // Send IP with lambda function
-        // TODO call lambda function
-        // TODO check last IP
+        // Send IP address via AWS Lambda function (Lambda sends new IP address to specified e-mail address)
+        // http://d3n332182mb98i.cloudfront.net/?i=hoge&m=ninja@example.com&p=XXXXX
+        const char* lambdaHost = "d3n332182mb98i.cloudfront.net";
+        int lambdaPort = 443;
+        String url = "/?i=";
+        for (int i=0; i<4; i++) {
+          url += byteToHexStr(WiFi.localIP()[i]);
+        }
+        url += ("&m=" + String(email) + "&p=" + String(emailPassword));
+        free(email);
+        free(emailPassword);
+        free(prevIP);
+        Serial.println(url);
+
+        if (!httpsClient.connect(lambdaHost, lambdaPort)) {
+            Serial.println("Connection failed.");
+            return;
+        }
+
+        Serial.println("Connected. getting.");
+
+        httpsClient.println("GET " + url + " HTTP/1.1");
+        httpsClient.print("Host: ");
+        httpsClient.println(lambdaHost);
+        httpsClient.println("Connection: close");
+        httpsClient.println();
+
+        unsigned long timeout = millis();
+        while (httpsClient.available() == 0) {
+            if (millis() - timeout > 5000) {
+                Serial.println(">>> Client Timeout !");
+                httpsClient.stop();
+                return;
+            }
+        }
+        
+        /* Parse */
+        bool isSuccess = true;
+        while (httpsClient.available()) {
+            String line = httpsClient.readStringUntil('\n');
+            if (line.indexOf("ERROR") >= 0) {
+                isSuccess = false;
+            }
+        }
+        if (isSuccess) {
+            // Save new IP address
+            EEPROM.write(EEPROM_WIFI_LAST_IP_ADDR,EEPROM_WIFI_LAST_IP_EXISTS_VAL);
+            for (int i=0; i<4; i++) {
+                EEPROM.write(EEPROM_WIFI_LAST_IP_ADDR+1+i,WiFi.localIP()[i]);
+            }
+            EEPROM.commit();
+            
+        } else {
+            // TODO save & show error message
+        }
     }
-    free(email);
-    free(prevIP);
+}
+
+/* Start network as a HTTP server */
+boolean startWiFiHTTPServer() {
+    // Check existence of WiFi Config
+    if (!isWifiConfDone ()) {
+        Serial.println("Network can't start. WiFi config not found.");
+        return false;
+    }
+    // Load connection info from EEPROM
+    int ssidIndex = 0;
+    char *ssid = (char *) malloc(sizeof(char) * (EEPROM_WIFI_SSID_MAX_LENGTH+1));
+    char *password = (char *)malloc(sizeof(char) * (EEPROM_WIFI_PASSWORD_MAX_LENGTH+1));
+    readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR, EEPROM_WIFI_SSID_MAX_LENGTH);
+    readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR, EEPROM_WIFI_PASSWORD_MAX_LENGTH);
+    // Connect with saved SSID and password
+    Serial.print("SSID:"); Serial.println(ssid);
+    Serial.print("Pass:"); Serial.println(password);
+    WiFi.begin(ssid, password);
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    free (ssid);
+    free (password);
+    
+    Serial.print("\nConnected.IP address: ");
+    Serial.println(WiFi.localIP());
+
+    checkIPAddressChange();
 
     /* Add handlers for paths */
     server.on("/", requestHandlerTop);
@@ -309,5 +387,9 @@ boolean startWiFiHTTPServer() {
 
 /* Handle HTTP request as a server */
 void loopWiFiHTTPServer () {
-    //server.handleClient();
+    server.handleClient();
+}
+/* Handle HTTP request as AP */
+void loopWiFiAP () {
+    server.handleClient();
 }
