@@ -2988,7 +2988,7 @@ http://www.st.com&lt;p&gt;
 <part name="SJ38" library="jumper" deviceset="SJ2W" device=""/>
 <part name="SJ39" library="jumper" deviceset="SJ2W" device=""/>
 <part name="SJ40" library="jumper" deviceset="SJ2W" device=""/>
-<part name="C8" library="PCR-RCL" deviceset="CAP_E5-13-L30" device="30RINV" value="CAP_E5-13-L3030RINV"/>
+<part name="C8" library="PCR-RCL" deviceset="CAP_E5-13-L30" device="30RINV" value="3300uF"/>
 <part name="GND21" library="openpcr" deviceset="GND1" device=""/>
 <part name="SJ17" library="jumper" deviceset="SJ2W" device=""/>
 <part name="IC2" library="st-microelectronics" deviceset="VNH5019/VNH3SP30-B" device="NC" value="VNH5019/VNH3SP30-BNC"/>

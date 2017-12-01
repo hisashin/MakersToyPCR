@@ -1324,14 +1324,14 @@ design rules under a new name.</description>
 <element name="SJ40" library="jumper" package="SJ_2" value="" x="54.125" y="-17.7394" smashed="yes" rot="R90">
 <attribute name="VALUE" x="54.125" y="-17.8395" size="0.02" layer="27" rot="R90"/>
 </element>
-<element name="C8" library="PCR-RCL" package="E5-13-L30R-INV" value="CAP_E5-13-L3030RINV" x="13.7946" y="-26.2026" smashed="yes" rot="R270">
+<element name="C8" library="PCR-RCL" package="E5-13-L30R-INV" value="3300uF" x="13.7946" y="-26.2026" smashed="yes" rot="R270">
 <attribute name="NAME" x="17.137" y="-32.0634" size="1.778" layer="25" ratio="10"/>
 </element>
 <element name="SJ17" library="jumper" package="SJ_2" value="" x="65.555" y="-17.7394" smashed="yes" rot="R90">
 <attribute name="VALUE" x="65.555" y="-17.8395" size="0.02" layer="27" rot="R90"/>
 </element>
 <element name="IC2" library="st-microelectronics" package="MULTIPOWERSO-30-B-NOCREAM" value="VNH5019/VNH3SP30-BNC" x="28.806" y="-10.48" smashed="yes" rot="R90">
-<attribute name="NAME" x="26.82" y="-11.11" size="1.27" layer="25"/>
+<attribute name="NAME" x="25.296" y="-11.1354" size="1.27" layer="25"/>
 </element>
 <element name="U$1" library="adafruit" package="PJ-102A" value="2.1MMJACKTHM" x="-0.5" y="-5" rot="R90"/>
 <element name="RH2" library="PCR-RCL" package="R0603NC" value="30K HP" x="52.07" y="-2.54" smashed="yes" rot="R180">
