@@ -43,7 +43,9 @@ PID::PID(double* Input, double* Output, double* Setpoint,
  **********************************************************************************/ 
 void PID::Compute()
 {
-   if(!inAuto) return;
+   if(!inAuto) {
+       return;
+   }
    unsigned long now = millis();
    int timeChange = (now - lastTime);
    if(timeChange>=SampleTime)

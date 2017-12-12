@@ -6,6 +6,27 @@
 #include <EEPROM.h>
 #include <WiFiClientSecure.h>
 
+/* Addresses of WiFi configuration */
+/* Wfite 0xF0 when WiFi configuration is done. */
+#define EEPROM_WIFI_CONF_DONE_ADDR 0//512
+#define EEPROM_WIFI_CONF_DONE_VAL 0xF0
+#define EEPROM_WIFI_SSID_ADDR EEPROM_WIFI_CONF_DONE_ADDR+1
+#define EEPROM_WIFI_SSID_MAX_LENGTH 31
+#define EEPROM_WIFI_PASSWORD_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+EEPROM_WIFI_SSID_MAX_LENGTH+1)
+#define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
+#define EEPROM_WIFI_EMAIL_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
+#define EEPROM_WIFI_EMAIL_MAX_LENGTH 254 // ref. RFC5321 4.5.3.1
+#define EEPROM_WIFI_EMAIL_PASS_ADDR (EEPROM_WIFI_EMAIL_ADDR+EEPROM_WIFI_EMAIL_MAX_LENGTH+1)
+#define EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH 31
+
+#define EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR (EEPROM_WIFI_EMAIL_PASS_ADDR+EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+1)
+#define EEPROM_WIFI_EMAIL_ERROR_FLAG_VAL 0xF0
+#define EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR (EEPROM_WIFI_EMAIL_PASS_ADDR+EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+2)
+#define EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH 128
+
+#define EEPROM_WIFI_LAST_IP_ADDR  (EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR+EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH+1)
+#define EEPROM_WIFI_LAST_IP_EXISTS_VAL 0xF0
+// flag 1byte + 4bytes
 ESP8266WebServer server(80);
 
 /* t_network_receive_interface */
@@ -116,7 +137,17 @@ void startAPMode() {
 }
 
 /* Scan for nearby APs -> save APs -> start AP */
+bool hasPrevWifiError = false;
+String prevWifiError;
+
 void startWiFiAPMode () {
+    hasPrevWifiError = EEPROM.read(EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR)==EEPROM_WIFI_EMAIL_ERROR_FLAG_VAL;
+    if (hasPrevWifiError) {
+        char *msg = (char *) malloc(sizeof(char) * EEPROM_WIFI_EMAIL_MAX_LENGTH);
+        readStringFromEEPROM(msg, EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR, EEPROM_WIFI_EMAIL_MAX_LENGTH);
+        prevWifiError = String(msg);
+        free(msg);
+    }
     startScanMode();
     while (apCount == 0) {
         scanNearbyAP();
@@ -134,22 +165,6 @@ boolean isWiFiConnected () {
     return (WiFi.status() == WL_CONNECTED);
 }
 
-/* Addresses of WiFi configuration */
-/* Wfite 0xF0 when WiFi configuration is done. */
-#define EEPROM_WIFI_CONF_DONE_ADDR 0//512
-#define EEPROM_WIFI_CONF_DONE_VAL 0xF0
-#define EEPROM_WIFI_SSID_ADDR EEPROM_WIFI_CONF_DONE_ADDR+1
-#define EEPROM_WIFI_SSID_MAX_LENGTH 31
-#define EEPROM_WIFI_PASSWORD_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+32)
-#define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
-#define EEPROM_WIFI_EMAIL_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+32+32)
-#define EEPROM_WIFI_EMAIL_MAX_LENGTH 254 // ref. RFC5321 4.5.3.1
-#define EEPROM_WIFI_EMAIL_PASS_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+32+32+255)
-#define EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH 32
-
-#define EEPROM_WIFI_LAST_IP_ADDR  (EEPROM_WIFI_CONF_DONE_ADDR+32+32+255)
-#define EEPROM_WIFI_LAST_IP_EXISTS_VAL 0xF0
-// flag 1byte + 4bytes
 
 /* Check WiFi Connection in EEPROM */
 bool isWifiConfDone () {
@@ -194,26 +209,30 @@ String getHTMLHeader () {
 void requestHandlerConfInit () {
     // Send form
     String s = getHTMLHeader();
+    if (hasPrevWifiError) {
+        s += "<div style=\"color:red\">" + prevWifiError + "</div>";
+    }
     s += "<form method=\"post\" action=\"join\">";
-    s += "<div>SSID:<select name=\"ssid\"><option>----</option>";
+    s += "<div>SSID:<select name=\"s\"><option>----</option>";
     for (int i = 0; i < apCount; i++) {
         String ssid = SSIDs[i];
         s += "<option value=\"" + ssid + "\">" + ssid + "</option>";
     }
     s += "</select></div>";
-    s += "<div>Password: <input type=\"text\" name=\"password\"/></div>";
-    s += "<div>Mail address: <input type=\"text\" name=\"email\"/></div>";
-    s += "<div>Mail pass: <input type=\"text\" name=\"emailPassword\"/></div>";
+    s += "<div>Password: <input type=\"password\" name=\"wp\"/></div>";
+    s += "<div>Mail address: <input type=\"text\" name=\"m\"/></div>";
+    s += "<div>Mail password: <input type=\"password\" name=\"mp\"/></div>";
     s += "<div><input type=\"submit\" value=\"Join\"/></div>";
     s += "</form>";
     s += "</body></html>\n";
     server.send(200, "text/html", s);
 }
+String BR_TAG = "<br/>";
 void requestHandlerConfJoin () {
-    String ssid = server.arg("ssid");
-    String password = server.arg("password");
-    String email = server.arg("email");
-    String emailPassword = server.arg("emailPassword");
+    String ssid = server.arg("s");
+    String password = server.arg("wp");
+    String email = server.arg("m");
+    String emailPassword = server.arg("mp");
     String emptyField = "";
     bool isValid = true;
     if (ssid=="") { emptyField = "WiFi SSID"; isValid = false; }
@@ -224,12 +243,13 @@ void requestHandlerConfJoin () {
     String s = getHTMLHeader();
     if (!isValid) {
         // Has error
+        s += BR_TAG;
         s += "ERROR: " + emptyField + " is empty.";
     } else {
         s += "Join.";
-        s += "<div>SSID:" + ssid + "<br/>";
-        s += "Password:" + password + "<br/>";
-        s += "Email:" + email + "<br/>";
+        s += "<div>SSID:" + ssid + BR_TAG;
+        s += "Password:" + password + BR_TAG;
+        s += "Email:" + email + BR_TAG;
         s += "Email pass:" + emailPassword;
     }
     s += "</body></html>\n";
@@ -292,7 +312,10 @@ void checkIPAddressChange () {
         int lambdaPort = 443;
         String url = "/?i=";
         for (int i=0; i<4; i++) {
-          url += byteToHexStr(WiFi.localIP()[i]);
+          if (i>0) {
+              url += ".";
+          }
+          url += String(WiFi.localIP()[i]);//byteToHexStr(WiFi.localIP()[i]);
         }
         url += ("&m=" + String(email) + "&p=" + String(emailPassword));
         free(email);
@@ -301,7 +324,7 @@ void checkIPAddressChange () {
         Serial.println(url);
 
         if (!httpsClient.connect(lambdaHost, lambdaPort)) {
-            Serial.println("Connection failed.");
+            Serial.println("Conn failed.");
             return;
         }
 
@@ -310,7 +333,7 @@ void checkIPAddressChange () {
         httpsClient.println("GET " + url + " HTTP/1.1");
         httpsClient.print("Host: ");
         httpsClient.println(lambdaHost);
-        httpsClient.println("Connection: close");
+        httpsClient.println("Conn: close");
         httpsClient.println();
 
         unsigned long timeout = millis();
@@ -324,14 +347,18 @@ void checkIPAddressChange () {
         
         /* Parse */
         bool isSuccess = true;
+        String errorMessage = "";
         while (httpsClient.available()) {
             String line = httpsClient.readStringUntil('\n');
+            Serial.println(line);
             if (line.indexOf("ERROR") >= 0) {
                 isSuccess = false;
+                errorMessage = line;
             }
         }
         if (isSuccess) {
             // Save new IP address
+            EEPROM.write(EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR, 0x00);
             EEPROM.write(EEPROM_WIFI_LAST_IP_ADDR,EEPROM_WIFI_LAST_IP_EXISTS_VAL);
             for (int i=0; i<4; i++) {
                 EEPROM.write(EEPROM_WIFI_LAST_IP_ADDR+1+i,WiFi.localIP()[i]);
@@ -339,16 +366,23 @@ void checkIPAddressChange () {
             EEPROM.commit();
             
         } else {
-            // TODO save & show error message
+            saveWiFiError(errorMessage);
         }
     }
 }
+void saveWiFiError(String errorMessage) {
+    EEPROM.write(EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR, EEPROM_WIFI_EMAIL_ERROR_FLAG_VAL);
+    saveStringToEEPROM (errorMessage, EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR, 
+            EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH);
+    EEPROM.commit();
+}
 
+#define WIFI_TIMEOUT_SEC 10
 /* Start network as a HTTP server */
 boolean startWiFiHTTPServer() {
     // Check existence of WiFi Config
     if (!isWifiConfDone ()) {
-        Serial.println("Network can't start. WiFi config not found.");
+        Serial.println("WiFi config not found.");
         return false;
     }
     // Load connection info from EEPROM
@@ -361,8 +395,15 @@ boolean startWiFiHTTPServer() {
     Serial.print("SSID:"); Serial.println(ssid);
     Serial.print("Pass:"); Serial.println(password);
     WiFi.begin(ssid, password);
+    int wifiTime = 0;
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
+        wifiTime++;
+        if (wifiTime>WIFI_TIMEOUT_SEC*2) {
+            // failure
+            saveWiFiError("Connection timed out.");
+            return false;
+        }
         Serial.print(".");
     }
     free (ssid);

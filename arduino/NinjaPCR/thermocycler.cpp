@@ -114,8 +114,9 @@ iTargetLidTemp(0) {
   Serial.println("const 3");
   //init pins
   pinMode(15, INPUT); // TODO ?
-  pinMode(PIN_WELL_INA, OUTPUT);
   pinMode(PIN_LID_PWM, OUTPUT);
+  // Peltier pins
+  pinMode(PIN_WELL_INA, OUTPUT);
   pinMode(PIN_WELL_INB, OUTPUT);
   pinMode(PIN_WELL_PWM, OUTPUT);
 
@@ -230,7 +231,7 @@ static boolean lamp = false;
 
 // internal
 void Thermocycler::Loop() {
-  Serial.print(".-");
+  //Serial.print(".-");
   ipSerialControl->Process();
   return;
 #ifdef USE_STATUS_PINS
