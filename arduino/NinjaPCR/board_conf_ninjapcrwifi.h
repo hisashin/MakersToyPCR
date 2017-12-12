@@ -5,6 +5,10 @@
 /* Board Config */
 #define USE_ESP8266
 
+/* ADC (NAU7803 or MCP3554) */
+//#define USE_ADC_NAU7803
+#define USE_ADC_MCP3554
+
 #define USE_FAN
 #define PIN_FAN 13
 
@@ -37,18 +41,35 @@
 #define USE_ESP8266
 
 /* Well */
+#ifdef  USE_ADC_NAU7803
 #define PIN_WELL_INA 2
+#endif
+#ifdef USE_ADC_MCP3554
+#define PIN_WELL_INA 12
+#endif
 #define PIN_WELL_INB 0
 #define PIN_WELL_PWM 4
+#define PIN_WELL_HIGH_TEMP 16 /* TODO implement thermistor switching */
 
 /* SPI */
-#define PIN_WELL_DATAOUT 13//MOSI (Not used)
-#define PIN_WELL_DATAIN  12//MISO
-#define PIN_WELL_SPICLOCK  14//sck
-#define PIN_WELL_SLAVESELECT 5//ss
+#define PIN_WELL_MCP3554_DATAOUT 13//MOSI (Not used)
+#define PIN_WELL_MCP3554_DATAIN  12//MISO
+#define PIN_WELL_MCP3554_SPICLOCK  14//sck
+#define PIN_WELL_MCP3554_SLAVESELECT 5//ss
 
 
-#define PIN_SPI_SCK 14 /* HSPI_CLK */
-#define PIN_SPI_SDO 12 /* HSPI_MISO */
-#define PIN_SPI_CS 5 /* GPIO */
+/* SPI */
+#ifdef USE_ADC_MCP3554
+#define PIN_WELL_MCP3554_DATAOUT 13//MOSI (Not used)
+#define PIN_WELL_MCP3554_DATAIN  12//MISO
+#define PIN_WELL_MCP3554_SPICLOCK  14//sck
+#define PIN_WELL_MCP3554_SLAVESELECT 5//ss
+#endif /* USE_ADC_MCP3554 */
+
+#ifdef USE_ADC_NAU7803
+#define PIN_WELL_NAU7803_SCL
+#define PIN_WELL_NAU7803_SDA
+#define PIN_WELL_NAU7803_RDY
+#endif /* USE_ADC_NAU7803 */
+
 #endif /* ___BOARD_CONF_NINJAPCR___ */

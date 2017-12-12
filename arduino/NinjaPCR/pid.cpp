@@ -64,15 +64,18 @@ double CPIDController::Compute(double target, double currentValue) {
 const SPIDTuning* CPIDController::DetermineGainSchedule(double target) {
   const SPIDTuning* pGainScheduleItem = ipGainSchedule;
   
-  while (target > pGainScheduleItem->maxValueInclusive)
+  while (target > pGainScheduleItem->maxValueInclusive) {
     pGainScheduleItem++;
+  }
     
   return pGainScheduleItem;
 }
 //------------------------------------------------------------------------------
 void CPIDController::LatchValue(double* pValue, double minValue, double maxValue) {
-  if (*pValue < minValue)
+  if (*pValue < minValue) {
     *pValue = minValue;
-  else if (*pValue > maxValue)
+  }
+  else if (*pValue > maxValue) {
     *pValue = maxValue;
+  }
 }

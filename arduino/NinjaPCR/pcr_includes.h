@@ -21,10 +21,7 @@
 
 #include "Arduino.h"
 
-//#include "board_conf_ninjapcr.h"
-#include "board_conf_ninjapcrwifi.h"
-
-
+#include "board_conf.h"
 
 #define SERIAL_PREFIX "pcr"
 #define OPENPCR_FIRMWARE_VERSION_STRING "1.0.5"
