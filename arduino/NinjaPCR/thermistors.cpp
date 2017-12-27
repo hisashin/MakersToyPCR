@@ -18,6 +18,7 @@
 
 #include "pcr_includes.h"
 #include "thermistors.h"
+#include "adc.h"
 
 /*
 // lid resistance table, in Ohms

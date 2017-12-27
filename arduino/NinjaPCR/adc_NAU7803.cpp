@@ -1,5 +1,6 @@
 #include "adc.h"
 #include "board_conf.h"
+#include <Arduino.h>
 
 #ifdef USE_ADC_NAU7803
 

@@ -23,12 +23,15 @@
 #include "thermocycler.h"
 
 #ifdef USE_WIFI
+
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 #include "serialcontrol_chrome.h"
 #include "wifi_communicator.h"
+
+
 #endif /* USE_WIFI */
 
 Thermocycler* gpThermocycler = NULL;
@@ -65,19 +68,6 @@ void setup() {
 #ifdef FORCE_AP_MODE
   isApMode = true;
 #endif
-
-    // Simple EEPROM test
-    /*
-    if (isApMode) {
-      Serial.println("Writing.");
-      EEPROM.write(0, 123);
-      EEPROM.commit();
-    } else {
-      Serial.println("Read.");
-      Serial.println(EEPROM.read(0));
-    }
-    return;
-    */
 
 #ifdef FORCE_NORMAL_MODE
   isApMode = false;
