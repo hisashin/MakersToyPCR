@@ -5,6 +5,18 @@
 #include "thermocycler.h"
 #include <EEPROM.h>
 #include <WiFiClientSecure.h>
+#include <WiFiClient.h>
+#include <ESP8266mDNS.h>
+#include <ESP8266HTTPUpdateServer.h>
+
+
+/* OTA */
+const char* OTA_HOST = "ninjapcrwifi";
+const char* OTA_UPDATE_PATH = "/firmware";
+const char* OTA_UPDATE_USER_NAME = "hoge";
+const char* OTA_UPDATE_USER_PASSWORD = "fuga";
+// TODO flag
+bool isUpdateMode = true;
 
 /* Addresses of WiFi configuration */
 /* Wfite 0xF0 when WiFi configuration is done. */
@@ -28,6 +40,9 @@
 #define EEPROM_WIFI_LAST_IP_EXISTS_VAL 0xF0
 // flag 1byte + 4bytes
 ESP8266WebServer server(80);
+
+// OTA mode
+ESP8266HTTPUpdateServer httpUpdater;
 
 /* t_network_receive_interface */
 void wifi_receive () {
@@ -91,12 +106,11 @@ void requestHandler404 () {
 /* AP scanning (to show AP list) */
 // Find nearby SSIDs
 int apCount = 0;
-const int AP_MAX_NUMBER = 16;
+const int AP_MAX_NUMBER = 54;
 String SSIDs[AP_MAX_NUMBER];
 void scanNearbyAP() {
     // WiFi.scanNetworks will return the number of networks found
     int n = WiFi.scanNetworks();
-    apCount = n;
     Serial.println("scan done");
     if (n == 0) {
         Serial.println("no networks found");
@@ -104,16 +118,31 @@ void scanNearbyAP() {
     else {
         Serial.print(n);
         Serial.println(" networks found");
+        if (n>AP_MAX_NUMBER) {
+          n = AP_MAX_NUMBER;
+        }
+        apCount = 0;
         for (int i = 0; i < n; ++i) {
             // Print SSID and RSSI for each network found
-            Serial.print(i + 1);
+            String ssid = WiFi.SSID(i);
+            for (int j=0; j<apCount; j++) {
+              if (ssid==SSIDs[apCount]) {
+                Serial.println("Duplicate");
+                break;
+              }
+            }
+            Serial.print(apCount + 1);
             Serial.print(": ");
-            Serial.print(WiFi.SSID(i));
+            Serial.print(ssid);
             Serial.print(" (");
             Serial.print(WiFi.RSSI(i));
-            Serial.print(")");
-            SSIDs[i] = WiFi.SSID(i);
-            delay(10);
+            Serial.print(")\n");
+            SSIDs[apCount] = ssid;
+            delay(1);
+            apCount ++;
+            if (apCount >= AP_MAX_NUMBER) {
+              break;
+            }
         }
     }
     Serial.println("Scan done.");
@@ -159,7 +188,9 @@ void startWiFiAPMode () {
     server.on("/", requestHandlerConfInit);
     server.on("/join", requestHandlerConfJoin);
     server.onNotFound(requestHandler404);
-    Serial.println("Server Started.");
+    Serial.println("OK");
+    Serial.println("1. Connect API \"NinjaPCR\"");
+    Serial.println("2. Access http://192.168.1.1");
 }
 boolean isWiFiConnected () {
     return (WiFi.status() == WL_CONNECTED);
@@ -208,16 +239,19 @@ String getHTMLHeader () {
 }
 void requestHandlerConfInit () {
     // Send form
+    Serial.println("requestHandlerConfInit");
     String s = getHTMLHeader();
     if (hasPrevWifiError) {
         s += "<div style=\"color:red\">" + prevWifiError + "</div>";
     }
+    Serial.println("debug 1");
     s += "<form method=\"post\" action=\"join\">";
     s += "<div>SSID:<select name=\"s\"><option>----</option>";
     for (int i = 0; i < apCount; i++) {
         String ssid = SSIDs[i];
         s += "<option value=\"" + ssid + "\">" + ssid + "</option>";
     }
+    Serial.println("debug 2");
     s += "</select></div>";
     s += "<div>Password: <input type=\"password\" name=\"wp\"/></div>";
     s += "<div>Mail address: <input type=\"text\" name=\"m\"/></div>";
@@ -225,10 +259,13 @@ void requestHandlerConfInit () {
     s += "<div><input type=\"submit\" value=\"Join\"/></div>";
     s += "</form>";
     s += "</body></html>\n";
+    Serial.println("debug 3");
+    Serial.println(s);
     server.send(200, "text/html", s);
 }
 String BR_TAG = "<br/>";
 void requestHandlerConfJoin () {
+    Serial.println("requestHandlerConfJoin");
     String ssid = server.arg("s");
     String password = server.arg("wp");
     String email = server.arg("m");
@@ -385,6 +422,7 @@ boolean startWiFiHTTPServer() {
         Serial.println("WiFi config not found.");
         return false;
     }
+    
     // Load connection info from EEPROM
     int ssidIndex = 0;
     char *ssid = (char *) malloc(sizeof(char) * (EEPROM_WIFI_SSID_MAX_LENGTH+1));
@@ -395,6 +433,8 @@ boolean startWiFiHTTPServer() {
     Serial.print("SSID:"); Serial.println(ssid);
     Serial.print("Pass:"); Serial.println(password);
     WiFi.begin(ssid, password);
+
+    // Wait for connection establishment
     int wifiTime = 0;
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
@@ -409,11 +449,30 @@ boolean startWiFiHTTPServer() {
     free (ssid);
     free (password);
     
-    Serial.print("\nConnected.IP address: ");
+    Serial.print("\nConnected.IP=");
     Serial.println(WiFi.localIP());
 
+    // TODO replace AWS logic with LCD
     checkIPAddressChange();
-
+    if (isUpdateMode) {
+      startUpdaterServer();
+    } else {
+      startNormalOperationServer();
+    }
+    return true;
+}
+void startUpdaterServer () {
+  // OTA mode
+  MDNS.begin(OTA_HOST);
+  httpUpdater.setup(&server, OTA_UPDATE_PATH, OTA_UPDATE_USER_NAME, OTA_UPDATE_USER_PASSWORD);
+  server.begin();
+  Serial.println("Starting OTA mode (isUpdateMode=true)");
+  MDNS.addService("http", "tcp", 80);
+  Serial.printf("HTTPUpdateServer ready! Open http://%s.local%s in your browser and login with username '%s' and password '%s'\n", 
+    OTA_HOST, OTA_UPDATE_PATH, OTA_UPDATE_USER_NAME, OTA_UPDATE_USER_PASSWORD);
+}
+void startNormalOperationServer () {
+  // Normal PCR operation mode
     /* Add handlers for paths */
     server.on("/", requestHandlerTop);
     server.on("/command", requestHandlerCommand);
@@ -423,7 +482,6 @@ boolean startWiFiHTTPServer() {
     
     server.begin();
     Serial.println("Server started");
-    return true;
 }
 
 /* Handle HTTP request as a server */
