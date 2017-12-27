@@ -17,8 +17,8 @@
 #define PIN_THERMISTOR_RANGE_SWITCH 16 /* Analog switch */
 
 #define USE_WIFI /* Use WiFi functionalities */
-#define PIN_WIFI_MODE 16 /* Analog pin to  */
-#define VALUE_WIFI_MODE_AP HIGH /* Start with AP mode if value of PIN_WIFI_MODE agrees with this.  */
+#define PIN_WIFI_MODE 16 /* Digitai input pin to switch AP mode and Normal mode  */
+#define VALUE_WIFI_MODE_AP HIGH /* Start with AP (pairing) mode if value of PIN_WIFI_MODE agrees with this.  */
 // #define USE_LCD /* Use display */
 // #define USE_STATUS_PINS /* Use status LEDs */
 // #define DEBUG_DISPLAY
