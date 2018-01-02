@@ -41,7 +41,7 @@ NetworkCommunicator.prototype.scan = function (callback) {
 	var ipText = document.createElement("input");
 	ipText.placeholder = "XXX.XXX.XXX.XXX";
 	ipText.id = "device_ip";
-	ipText.value = "192.168.2.153";
+	ipText.value = "192.168.1.17"; // TODO dummy!
 	ipText.size = "24";
 	
 	var ipButton = document.createElement("input");
@@ -63,6 +63,12 @@ NetworkCommunicator.prototype.scan = function (callback) {
 	document.getElementById("ipInputContainer").appendChild(ipButton);
 	document.getElementById("ipInputContainer").appendChild(ipStatusLabel);
 };
+function loadJSONP (URL) {
+	var scriptTag = document.createElement("script");
+	scriptTag.type = "text/javascript";
+	scriptTag.src = URL;
+	document.body.appendChild(scriptTag);
+}
 NetworkCommunicator.prototype.sendRequestToDevice = function (path, param) {
 	var URL = "http://" + this.ip + path;
 	if (param) {
@@ -72,10 +78,7 @@ NetworkCommunicator.prototype.sendRequestToDevice = function (path, param) {
 		URL += param;
 	}
 	console.log("sendRequestToDevice URL=" + URL);
-	var scriptTag = document.createElement("script");
-	scriptTag.type = "text/javascript";
-	scriptTag.src = URL;
-	document.body.appendChild(scriptTag);
+	loadJSONP(URL);
 }
 NetworkCommunicator.prototype.setDeviceIP = function (ip) {
 	this.ip = ip;

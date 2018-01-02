@@ -39,6 +39,8 @@
   <script type="text/javascript" src="js/first_run.js"></script>
   <script type="text/javascript" src="js/experiments/default_experiment.js"></script>
   <script type="text/javascript" src="js/experiments/new_experiment.js"></script>
+  
+  <script type="text/javascript" src="js/wifiConfig.js"></script>
  
   <style type="text/css">
 </style>
@@ -52,11 +54,15 @@
 		<div id="ex1_p1" class="SlidingPanelsContent p1">
 			<div id="homeHeader" class="Header pcr_localize_appTitle">NinjaPCR</div>
 			<div id="ipInputContainer">
-			
+				<!-- IP input textbox will be inserted to this div. -->
 			</div>
 			<div>
 				<a href="PCR_wifi_configuration.html">How to setup NinjaPCR WiFi</a>
 			</div>
+			<div>
+				<input type="button" value="Config" id="configButton"/>
+			</div>
+			
 			<!-- Create a new blank experiment -->
 			<a href="#" id="newExperimentButton"><img src="images/new.png" style="vertical-align:middle;" ><span class="home_title pcr_localize_addNewExperiment">Add a new experiment</span></a>
 			<br /><br /><br />
@@ -260,10 +266,43 @@
 			</div>
 		</div>
 	<!-- END PANEL 3 -->
-</div>
-			<div id="starting" title="Starting">
-				<span class="pcr_localize_readySteadyGo">Ready. Steady. Go!</span>
-			</div>
-
+	</div>
+		
+		<!-- Starting popup -->
+		<div id="starting" title="Starting">
+			<span class="pcr_localize_readySteadyGo">Ready. Steady. Go!</span>
+		</div>
+		
+		<!-- Dialog to show OTA error -->
+		<div id="isOTAMode" title="OTA Mode">
+			<div>The device is started in firmware update mode.</div>
+			<input type="button" value="Open update page" id="buttonOTAModeOpenUpdate"/>
+			<input type="button" value="Cancel update" id="buttonOTAModeCancelUpdate"/>
+			<input type="button" value="Close this dialog" id="buttonOTAModeCloseDialog"/>
+	
+		</div>	
+			
+	</div>
+	<!-- Config Panel-->
+	<div id="config" style="display:none">
+		<h2>Firmware Update</h2>
+		<!--
+		<div>
+			<input type="radio" name="otaType" id="otaTypeLocalUpload" value="1" checked/>
+			<label for="otaTypeLocalUpload">Local Upload</label>: Upload .bin file from your local PC
+		</div>
+		<div>
+			<input type="radio" name="otaType" id="otaTypeWebDownload" value="2"/>
+			<label for="otaTypeWebDownload">Web Download</label>: Specify url of .bin file on web.
+		</div>
+		<div>
+			URL of Binary<input type="text" size="80" id="otaURL" value="https://www.tori.st"/>
+		</div>
+		-->
+		<input type="button" value="Start Firmware Update" id="buttonStartOTA"/>
+		<div id="otaAcceptedMessage" style="display:none">
+			Please restart the device and open <a href="http://ninjapcrwifi.local/">http://ninjapcrwifi.local/</a>.
+		</div>
+	</div>
 </body>
 </html>
