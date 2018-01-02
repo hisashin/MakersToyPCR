@@ -9,35 +9,49 @@
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPUpdateServer.h>
 
-
 /* OTA */
 const char* OTA_HOST = "ninjapcrwifi";
-const char* OTA_UPDATE_PATH = "/firmware";
+const char* OTA_UPDATE_PATH = "/update";
 const char* OTA_UPDATE_USER_NAME = "hoge";
 const char* OTA_UPDATE_USER_PASSWORD = "fuga";
-// TODO flag
-bool isUpdateMode = true;
+
+bool isUpdateMode = false;
 
 /* Addresses of WiFi configuration */
 /* Wfite 0xF0 when WiFi configuration is done. */
 #define EEPROM_WIFI_CONF_DONE_ADDR 0//512
 #define EEPROM_WIFI_CONF_DONE_VAL 0xF0
-#define EEPROM_WIFI_SSID_ADDR EEPROM_WIFI_CONF_DONE_ADDR+1
+#define EEPROM_WIFI_SSID_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+1)
 #define EEPROM_WIFI_SSID_MAX_LENGTH 31
 #define EEPROM_WIFI_PASSWORD_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+EEPROM_WIFI_SSID_MAX_LENGTH+1)
 #define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
-#define EEPROM_WIFI_EMAIL_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
-#define EEPROM_WIFI_EMAIL_MAX_LENGTH 254 // ref. RFC5321 4.5.3.1
-#define EEPROM_WIFI_EMAIL_PASS_ADDR (EEPROM_WIFI_EMAIL_ADDR+EEPROM_WIFI_EMAIL_MAX_LENGTH+1)
-#define EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH 31
 
-#define EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR (EEPROM_WIFI_EMAIL_PASS_ADDR+EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+1)
-#define EEPROM_WIFI_EMAIL_ERROR_FLAG_VAL 0xF0
-#define EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR (EEPROM_WIFI_EMAIL_PASS_ADDR+EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+2)
-#define EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH 128
+// OTA boot type (0:normal mode, 1:local upload, 2:web download)
+#define EEPROM_OTA_TYPE_ADDR  (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
+#define EEPROM_OTA_DOWNLOAD_URL_ADDR (EEPROM_OTA_TYPE_ADDR+1)
+#define EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH 128
 
-#define EEPROM_WIFI_LAST_IP_ADDR  (EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR+EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH+1)
-#define EEPROM_WIFI_LAST_IP_EXISTS_VAL 0xF0
+String PARAM_OTA_TYPE = "ot";
+String PARAM_OTA_URL = "ou";
+#define OTA_TYPE_NORMAL 0
+#define OTA_TYPE_LOCAL_UPLOAD 1
+#define OTA_TYPE_WEB_DOWNLOAD 2
+
+/*
+ #define EEPROM_WIFI_EMAIL_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
+ #define EEPROM_WIFI_EMAIL_MAX_LENGTH 254 // ref. RFC5321 4.5.3.1
+ #define EEPROM_WIFI_EMAIL_PASS_ADDR (EEPROM_WIFI_EMAIL_ADDR+EEPROM_WIFI_EMAIL_MAX_LENGTH+1)
+ #define EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH 31
+
+ #define EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR (EEPROM_WIFI_EMAIL_PASS_ADDR+EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+1)
+ #define EEPROM_WIFI_EMAIL_ERROR_FLAG_VAL 0xF0
+ #define EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR (EEPROM_WIFI_EMAIL_PASS_ADDR+EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+2)
+ #define EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH 128
+ #define EEPROM_WIFI_LAST_IP_ADDR  (EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR+EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH+1)
+ #define EEPROM_WIFI_LAST_IP_EXISTS_VAL 0xF0
+
+ */
+
 // flag 1byte + 4bytes
 ESP8266WebServer server(80);
 
@@ -45,21 +59,21 @@ ESP8266WebServer server(80);
 ESP8266HTTPUpdateServer httpUpdater;
 
 /* t_network_receive_interface */
-void wifi_receive () {
-  server.handleClient();
+void wifi_receive() {
+    server.handleClient();
 }
 /* t_network_send_interface */
-void wifi_send (char *response, char *funcName) {
-  Serial.println("wifi_send");
-  char *buff = (char *) malloc(32 + strlen(response) + strlen(funcName));
-  sprintf(buff, "DeviceResponse.%s(\"%s\");", funcName, response);
-  server.send(200, "text/plain", buff);
-  free(buff);
+void wifi_send(char *response, char *funcName) {
+    Serial.println("wifi_send");
+    char *buff = (char *) malloc(32 + strlen(response) + strlen(funcName));
+    sprintf(buff, "DeviceResponse.%s(%s);", funcName, response);
+    server.send(200, "text/plain", buff);
+    free(buff);
 }
 
 /* HTTP request handlers */
 /* Handle request to "/" */
-void requestHandlerTop () {
+void requestHandlerTop() {
     //server.send(200, "text/plain", "requestHandlerTop");
 }
 /* Handle request to "/command" */
@@ -68,16 +82,16 @@ void requestHandlerCommand() {
     wifi->ResetCommand();
     wifi->SendCommand();
     char buff[256];
-    for (uint8_t i= 0; i<server.args(); i++) {
+    for (uint8_t i = 0; i < server.args(); i++) {
         String sKey = server.argName(i);
         String sValue = server.arg(i);
         Serial.print(sKey);
         Serial.print("->");
         Serial.println(sValue);
-        char *key = (char *) malloc(sKey.length()+1);
-        char *value = (char *) malloc(sValue.length()+1);
-        sKey.toCharArray(key, sKey.length()+1);
-        sValue.toCharArray(value, sValue.length()+1);
+        char *key = (char *) malloc(sKey.length() + 1);
+        char *value = (char *) malloc(sValue.length() + 1);
+        sKey.toCharArray(key, sKey.length() + 1);
+        sValue.toCharArray(value, sValue.length() + 1);
         wifi->AddCommandParam(key, value, buff); //TODO
         free(key);
         free(value);
@@ -95,13 +109,84 @@ void requestHandlerStatus() {
 
 /* Handle request to "/connect" */
 void requestHandlerConnect() {
-  wifi_send("{connected:true,version:\"1.0.5\"}","connect");
+    wifi_send("{connected:true,version:\"1.0.5\"}", "connect");
 }
 
-void requestHandler404 () {
+void requestHandlerOTAError () {
+    wifi_send("{error:true}", "onErrorOTAMode");
+
+}
+
+/* Handle request to "/config"  (OTA conf) */
+void requestHandlerConfig() {
+    String type = server.arg("ot"); // Value of dropdown
+    String url = server.arg("ou"); // Value of dropdown
+    Serial.print("type=");
+    Serial.print(type);
+    Serial.print(", url=");
+    Serial.println(url);
+    wifi_send("{accepted:true}", "onConf");
+    
+
+    saveStringToEEPROM(type, EEPROM_OTA_TYPE_ADDR, 1);
+    saveStringToEEPROM(url, EEPROM_OTA_DOWNLOAD_URL_ADDR, EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH);
+    EEPROM.commit();
+}
+
+void requestHandlerOTATop () {
+    String s = getHTMLHeader();
+    s += "<h1>Firmware Update</h1>\n<ul>";
+    s += "<li><a href=\"/update\">Update by local upload</a></li>";
+    s += "<li><a href=\"/cancel\">Cancel (Back to normal mode)</a></li>";
+    s += "</ul></body></html>\n";
+    server.send(200, "text/html", s);
+  
+}
+void requestHandlerOTACancel () {
+    String s = getHTMLHeader();
+    s += "<h1>Firmware Update</h1>\n<ul>";
+    s += "<p>Firmware update is canceled. Please restart the device.</p></body></html>\n";
+    server.send(200, "text/html", s);
+    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NORMAL);
+    EEPROM.commit();
+  
+}
+
+void requestHandler404() {
     server.send(404, "text/plain", "requestHandler404");
 }
 
+
+/* Just load and print */
+int otaType = 0;
+String otaURL;
+void loadOTAConfig () {
+
+    char typeValueCh = EEPROM.read(EEPROM_OTA_TYPE_ADDR);
+    Serial.print(typeValueCh);
+    int otaType = typeValueCh - '0';
+    
+    Serial.print("OTA ch=");
+    Serial.println(otaType);
+    if (otaType==OTA_TYPE_LOCAL_UPLOAD) {
+        isUpdateMode = true;
+    } else if (otaType==OTA_TYPE_WEB_DOWNLOAD) {
+        char *urlValue = (char *) malloc(sizeof(char) * (EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH + 1));
+        readStringFromEEPROM(urlValue, EEPROM_OTA_DOWNLOAD_URL_ADDR, EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH);
+        String str(urlValue);
+        otaURL = str;
+        free(urlValue);
+        Serial.print("OTA URL=");
+        Serial.println(otaURL);
+        isUpdateMode = true;
+    } else {
+        otaType = 0;
+        isUpdateMode = false;
+    }
+    
+    Serial.print("OTA Type=");
+    Serial.println(otaType);
+}
 
 /* AP scanning (to show AP list) */
 // Find nearby SSIDs
@@ -118,18 +203,18 @@ void scanNearbyAP() {
     else {
         Serial.print(n);
         Serial.println(" networks found");
-        if (n>AP_MAX_NUMBER) {
-          n = AP_MAX_NUMBER;
+        if (n > AP_MAX_NUMBER) {
+            n = AP_MAX_NUMBER;
         }
         apCount = 0;
         for (int i = 0; i < n; ++i) {
             // Print SSID and RSSI for each network found
             String ssid = WiFi.SSID(i);
-            for (int j=0; j<apCount; j++) {
-              if (ssid==SSIDs[apCount]) {
-                Serial.println("Duplicate");
-                break;
-              }
+            for (int j = 0; j < apCount; j++) {
+                if (ssid == SSIDs[apCount]) {
+                    Serial.println("Duplicate");
+                    break;
+                }
             }
             Serial.print(apCount + 1);
             Serial.print(": ");
@@ -139,9 +224,9 @@ void scanNearbyAP() {
             Serial.print(")\n");
             SSIDs[apCount] = ssid;
             delay(1);
-            apCount ++;
+            apCount++;
             if (apCount >= AP_MAX_NUMBER) {
-              break;
+                break;
             }
         }
     }
@@ -169,14 +254,7 @@ void startAPMode() {
 bool hasPrevWifiError = false;
 String prevWifiError;
 
-void startWiFiAPMode () {
-    hasPrevWifiError = EEPROM.read(EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR)==EEPROM_WIFI_EMAIL_ERROR_FLAG_VAL;
-    if (hasPrevWifiError) {
-        char *msg = (char *) malloc(sizeof(char) * EEPROM_WIFI_EMAIL_MAX_LENGTH);
-        readStringFromEEPROM(msg, EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR, EEPROM_WIFI_EMAIL_MAX_LENGTH);
-        prevWifiError = String(msg);
-        free(msg);
-    }
+void startWiFiAPMode() {
     startScanMode();
     while (apCount == 0) {
         scanNearbyAP();
@@ -192,41 +270,36 @@ void startWiFiAPMode () {
     Serial.println("1. Connect API \"NinjaPCR\"");
     Serial.println("2. Access http://192.168.1.1");
 }
-boolean isWiFiConnected () {
+boolean isWiFiConnected() {
     return (WiFi.status() == WL_CONNECTED);
 }
 
-
 /* Check WiFi Connection in EEPROM */
-bool isWifiConfDone () {
-  Serial.print("isWifiConfDone=");
-  for (int i=0; i<32; i++) {
-    Serial.print(EEPROM.read(EEPROM_WIFI_CONF_DONE_ADDR+i));
-    Serial.print(" ");
-  }
+bool isWifiConfDone() {
     return EEPROM.read(EEPROM_WIFI_CONF_DONE_ADDR) == EEPROM_WIFI_CONF_DONE_VAL;
 }
-int min (int a, int b) {
-  return (a<b)?a:b;
+int min(int a, int b) {
+    return (a < b) ? a : b;
 }
-void saveStringToEEPROM (String str, int startAddress, int maxLength) {
+void saveStringToEEPROM(String str, int startAddress, int maxLength) {
     int len = min(str.length(), maxLength);
-    Serial.print("Length=");
+    Serial.print("to EEPROM ");
     Serial.print(len);
-    Serial.print(", Start=");
+    Serial.print("bytes @");
     Serial.println(startAddress);
-    for (int i = 0; i<len; i++) {
-        EEPROM.write(startAddress+i, str.charAt(i));
+    for (int i = 0; i < len; i++) {
+        EEPROM.write(startAddress + i, str.charAt(i));
     }
-    EEPROM.write(startAddress+len, 0x00); // Write \0
+    EEPROM.write(startAddress + len, 0x00); // Write \0
 }
 
-void saveWiFiConnectionInfo(String ssid, String password, String email, String emailPassword) {
+void saveWiFiConnectionInfo(String ssid, String password) {
     EEPROM.write(EEPROM_WIFI_CONF_DONE_ADDR, EEPROM_WIFI_CONF_DONE_VAL);
-    saveStringToEEPROM(ssid, EEPROM_WIFI_SSID_ADDR, EEPROM_WIFI_SSID_MAX_LENGTH);
-    saveStringToEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR, EEPROM_WIFI_PASSWORD_MAX_LENGTH);
-    saveStringToEEPROM(email, EEPROM_WIFI_EMAIL_ADDR, EEPROM_WIFI_EMAIL_MAX_LENGTH);
-    saveStringToEEPROM(emailPassword, EEPROM_WIFI_EMAIL_PASS_ADDR, EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH);
+    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NORMAL);
+    saveStringToEEPROM(ssid, EEPROM_WIFI_SSID_ADDR,
+            EEPROM_WIFI_SSID_MAX_LENGTH);
+    saveStringToEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR,
+            EEPROM_WIFI_PASSWORD_MAX_LENGTH);
     EEPROM.commit();
 }
 
@@ -234,80 +307,81 @@ void saveWiFiConnectionInfo(String ssid, String password, String email, String e
 #define PAGE_INIT 1
 #define PAGE_JOIN 2
 // Returned string ends with <body> tag.
-String getHTMLHeader () {
-    return "<!DOCTYPE HTML>\r\n<html><head>NinjaPCR</head><body>\r\n";
+String getHTMLHeader() {
+    return "<!DOCTYPE HTML>\r\n<html><head><title>NinjaPCR</title></head><body>\r\n";
 }
-void requestHandlerConfInit () {
+void requestHandlerConfInit() {
     // Send form
-    Serial.println("requestHandlerConfInit");
     String s = getHTMLHeader();
     if (hasPrevWifiError) {
         s += "<div style=\"color:red\">" + prevWifiError + "</div>";
     }
-    Serial.println("debug 1");
     s += "<form method=\"post\" action=\"join\">";
     s += "<div>SSID:<select name=\"s\"><option>----</option>";
     for (int i = 0; i < apCount; i++) {
         String ssid = SSIDs[i];
         s += "<option value=\"" + ssid + "\">" + ssid + "</option>";
     }
-    Serial.println("debug 2");
     s += "</select></div>";
+    s += "<div>SSID (text): <input type=\"password\" name=\"st\"/></div>";
     s += "<div>Password: <input type=\"password\" name=\"wp\"/></div>";
-    s += "<div>Mail address: <input type=\"text\" name=\"m\"/></div>";
-    s += "<div>Mail password: <input type=\"password\" name=\"mp\"/></div>";
     s += "<div><input type=\"submit\" value=\"Join\"/></div>";
     s += "</form>";
     s += "</body></html>\n";
-    Serial.println("debug 3");
-    Serial.println(s);
     server.send(200, "text/html", s);
 }
 String BR_TAG = "<br/>";
-void requestHandlerConfJoin () {
+void requestHandlerConfJoin() {
     Serial.println("requestHandlerConfJoin");
-    String ssid = server.arg("s");
+    String ssid = server.arg("s"); // Value of dropdown
     String password = server.arg("wp");
-    String email = server.arg("m");
-    String emailPassword = server.arg("mp");
     String emptyField = "";
     bool isValid = true;
-    if (ssid=="") { emptyField = "WiFi SSID"; isValid = false; }
-    if (password=="") { emptyField = "WiFi Password"; isValid = false; }
-    if (email=="") { emptyField = "E-mail address"; isValid = false; }
-    if (emailPassword=="") { emptyField = "E-mail password"; isValid = false; }
+    if (ssid == "") {
+        // Free text
+        ssid = server.arg("st");
+    }
+    if (ssid == "") {
+        emptyField = "WiFi SSID";
+        isValid = false;
+    }
+    if (password == "") {
+        emptyField = "WiFi Password";
+        isValid = false;
+    }
 
     String s = getHTMLHeader();
     if (!isValid) {
         // Has error
         s += BR_TAG;
         s += "ERROR: " + emptyField + " is empty.";
-    } else {
+    }
+    else {
         s += "Join.";
         s += "<div>SSID:" + ssid + BR_TAG;
         s += "Password:" + password + BR_TAG;
-        s += "Email:" + email + BR_TAG;
-        s += "Email pass:" + emailPassword;
+        s += "Please reset.";
     }
     s += "</body></html>\n";
     server.send(200, "text/html", s);
 
     if (isValid) {
-      Serial.println("Valid input. Saving...");
-        saveWiFiConnectionInfo(ssid, password, email, emailPassword);
-      Serial.println("saved.");
-    } else {
-      Serial.println("Invalid input.");
+        Serial.println("Valid input. Saving...");
+        saveWiFiConnectionInfo(ssid, password);
+        Serial.println("saved.");
     }
-    // TODO software reset (if possible)
+    else {
+        Serial.println("Invalid input.");
+    }
 }
 
-void readStringFromEEPROM (char *s, int startAddress, int maxLength) {
+void readStringFromEEPROM(char *s, int startAddress, int maxLength) {
     int index = 0;
     while (index < maxLength) {
-        char c = EEPROM.read(index+startAddress);
+        char c = EEPROM.read(index + startAddress);
         s[index++] = c;
-        if (c==0x00) return;
+        if (c == 0x00)
+            return;
     }
     s[maxLength] = 0x00;
 }
@@ -319,119 +393,36 @@ void readStringFromEEPROM (char *s, int startAddress, int maxLength) {
  *    (http://d3n332182mb98i.cloudfront.net/?i=XXX&m=XXX&p=XXX)
  */
 WiFiClientSecure httpsClient;
-String byteToHexStr (char c) {
-  char s[3];
-  sprintf(s, "%02X", c);
-  return String(s);
-}
-void checkIPAddressChange () {
-    char *email = (char *) malloc(sizeof(char) * (EEPROM_WIFI_EMAIL_MAX_LENGTH+1));
-    char *emailPassword = (char *) malloc(sizeof(char) * (EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+1));
-    Serial.print("Email:"); Serial.println(email);
-    readStringFromEEPROM(email, EEPROM_WIFI_EMAIL_ADDR, EEPROM_WIFI_EMAIL_MAX_LENGTH);
-    readStringFromEEPROM(emailPassword, EEPROM_WIFI_EMAIL_PASS_ADDR, EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH);
-    char *prevIP = (char *) malloc(sizeof(char) * 4);
-    bool ipAddressChanged = false;
-    // Compare IP addresses (if found in EEPROM)
-    if (EEPROM.read(EEPROM_WIFI_LAST_IP_ADDR)==EEPROM_WIFI_LAST_IP_EXISTS_VAL) {
-        for (int i=0; i<4; i++) {
-            if (EEPROM.read(EEPROM_WIFI_LAST_IP_ADDR+1+i)!=WiFi.localIP()[i]) {
-                ipAddressChanged = true;
-            }
-        }
-    } else {
-        ipAddressChanged = true;
-    }
-    if (ipAddressChanged) {
-        // Send IP address via AWS Lambda function (Lambda sends new IP address to specified e-mail address)
-        // http://d3n332182mb98i.cloudfront.net/?i=hoge&m=ninja@example.com&p=XXXXX
-        const char* lambdaHost = "d3n332182mb98i.cloudfront.net";
-        int lambdaPort = 443;
-        String url = "/?i=";
-        for (int i=0; i<4; i++) {
-          if (i>0) {
-              url += ".";
-          }
-          url += String(WiFi.localIP()[i]);//byteToHexStr(WiFi.localIP()[i]);
-        }
-        url += ("&m=" + String(email) + "&p=" + String(emailPassword));
-        free(email);
-        free(emailPassword);
-        free(prevIP);
-        Serial.println(url);
-
-        if (!httpsClient.connect(lambdaHost, lambdaPort)) {
-            Serial.println("Conn failed.");
-            return;
-        }
-
-        Serial.println("Connected. getting.");
-
-        httpsClient.println("GET " + url + " HTTP/1.1");
-        httpsClient.print("Host: ");
-        httpsClient.println(lambdaHost);
-        httpsClient.println("Conn: close");
-        httpsClient.println();
-
-        unsigned long timeout = millis();
-        while (httpsClient.available() == 0) {
-            if (millis() - timeout > 5000) {
-                Serial.println(">>> Client Timeout !");
-                httpsClient.stop();
-                return;
-            }
-        }
-        
-        /* Parse */
-        bool isSuccess = true;
-        String errorMessage = "";
-        while (httpsClient.available()) {
-            String line = httpsClient.readStringUntil('\n');
-            Serial.println(line);
-            if (line.indexOf("ERROR") >= 0) {
-                isSuccess = false;
-                errorMessage = line;
-            }
-        }
-        if (isSuccess) {
-            // Save new IP address
-            EEPROM.write(EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR, 0x00);
-            EEPROM.write(EEPROM_WIFI_LAST_IP_ADDR,EEPROM_WIFI_LAST_IP_EXISTS_VAL);
-            for (int i=0; i<4; i++) {
-                EEPROM.write(EEPROM_WIFI_LAST_IP_ADDR+1+i,WiFi.localIP()[i]);
-            }
-            EEPROM.commit();
-            
-        } else {
-            saveWiFiError(errorMessage);
-        }
-    }
-}
-void saveWiFiError(String errorMessage) {
-    EEPROM.write(EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR, EEPROM_WIFI_EMAIL_ERROR_FLAG_VAL);
-    saveStringToEEPROM (errorMessage, EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR, 
-            EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH);
-    EEPROM.commit();
+String byteToHexStr(char c) {
+    char s[3];
+    sprintf(s, "%02X", c);
+    return String(s);
 }
 
 #define WIFI_TIMEOUT_SEC 10
 /* Start network as a HTTP server */
 boolean startWiFiHTTPServer() {
     // Check existence of WiFi Config
-    if (!isWifiConfDone ()) {
+    if (!isWifiConfDone()) {
         Serial.println("WiFi config not found.");
         return false;
     }
-    
+
     // Load connection info from EEPROM
     int ssidIndex = 0;
-    char *ssid = (char *) malloc(sizeof(char) * (EEPROM_WIFI_SSID_MAX_LENGTH+1));
-    char *password = (char *)malloc(sizeof(char) * (EEPROM_WIFI_PASSWORD_MAX_LENGTH+1));
-    readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR, EEPROM_WIFI_SSID_MAX_LENGTH);
-    readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR, EEPROM_WIFI_PASSWORD_MAX_LENGTH);
+    char *ssid = (char *) malloc(
+            sizeof(char) * (EEPROM_WIFI_SSID_MAX_LENGTH + 1));
+    char *password = (char *) malloc(
+            sizeof(char) * (EEPROM_WIFI_PASSWORD_MAX_LENGTH + 1));
+    readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR,
+            EEPROM_WIFI_SSID_MAX_LENGTH);
+    readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR,
+            EEPROM_WIFI_PASSWORD_MAX_LENGTH);
     // Connect with saved SSID and password
-    Serial.print("SSID:"); Serial.println(ssid);
-    Serial.print("Pass:"); Serial.println(password);
+    Serial.print("SSID:");
+    Serial.println(ssid);
+    Serial.print("Pass:");
+    Serial.println(password);
     WiFi.begin(ssid, password);
 
     // Wait for connection establishment
@@ -439,56 +430,65 @@ boolean startWiFiHTTPServer() {
     while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         wifiTime++;
-        if (wifiTime>WIFI_TIMEOUT_SEC*2) {
+        if (wifiTime > WIFI_TIMEOUT_SEC * 2) {
             // failure
-            saveWiFiError("Connection timed out.");
             return false;
         }
         Serial.print(".");
     }
-    free (ssid);
-    free (password);
-    
+    free(ssid);
+    free(password);
+
     Serial.print("\nConnected.IP=");
     Serial.println(WiFi.localIP());
 
-    // TODO replace AWS logic with LCD
-    checkIPAddressChange();
+    Serial.println("Load OTA conf.");
+    loadOTAConfig();
     if (isUpdateMode) {
-      startUpdaterServer();
-    } else {
-      startNormalOperationServer();
+        startUpdaterServer();
+    }
+    else {
+        startNormalOperationServer();
     }
     return true;
 }
-void startUpdaterServer () {
-  // OTA mode
-  MDNS.begin(OTA_HOST);
-  httpUpdater.setup(&server, OTA_UPDATE_PATH, OTA_UPDATE_USER_NAME, OTA_UPDATE_USER_PASSWORD);
-  server.begin();
-  Serial.println("Starting OTA mode (isUpdateMode=true)");
-  MDNS.addService("http", "tcp", 80);
-  Serial.printf("HTTPUpdateServer ready! Open http://%s.local%s in your browser and login with username '%s' and password '%s'\n", 
-    OTA_HOST, OTA_UPDATE_PATH, OTA_UPDATE_USER_NAME, OTA_UPDATE_USER_PASSWORD);
+void startUpdaterServer() {
+    // OTA mode
+    Serial.println("Starting OTA mode (isUpdateMode=true)");
+    MDNS.begin(OTA_HOST);
+    httpUpdater.setup(&server, OTA_UPDATE_PATH, OTA_UPDATE_USER_NAME, OTA_UPDATE_USER_PASSWORD);
+    server.on("/", requestHandlerOTATop);
+    server.on("/cancel", requestHandlerOTACancel);
+    server.on("/command", requestHandlerOTAError);
+    server.on("/status", requestHandlerOTAError);
+    server.on("/connect", requestHandlerOTAError);
+    server.on("/config", requestHandlerOTAError);
+    server.begin();
+    MDNS.addService("http", "tcp", 80);
+    Serial.printf(
+            "HTTPUpdateServer ready! Open http://%s.local in your browser and login with username '%s' and password '%s'\n",
+            OTA_HOST, OTA_UPDATE_USER_NAME,
+            OTA_UPDATE_USER_PASSWORD);
 }
-void startNormalOperationServer () {
-  // Normal PCR operation mode
+void startNormalOperationServer() {
+    // Normal PCR operation mode
     /* Add handlers for paths */
     server.on("/", requestHandlerTop);
     server.on("/command", requestHandlerCommand);
     server.on("/status", requestHandlerStatus);
     server.on("/connect", requestHandlerConnect);
+    server.on("/config", requestHandlerConfig);
     server.onNotFound(requestHandler404);
-    
+
     server.begin();
     Serial.println("Server started");
 }
 
 /* Handle HTTP request as a server */
-void loopWiFiHTTPServer () {
+void loopWiFiHTTPServer() {
     server.handleClient();
 }
 /* Handle HTTP request as AP */
-void loopWiFiAP () {
+void loopWiFiAP() {
     server.handleClient();
 }
