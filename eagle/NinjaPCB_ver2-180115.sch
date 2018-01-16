@@ -2994,6 +2994,7 @@ http://www.st.com&lt;p&gt;
 <part name="IC2" library="st-microelectronics" deviceset="VNH5019/VNH3SP30-B" device="NC" value="VNH5019/VNH3SP30-BNC"/>
 <part name="U$1" library="adafruit" deviceset="2.1MMJACK" device="THM"/>
 <part name="RH2" library="PCR-RCL" deviceset="R0603" device="NC" value="30K HP"/>
+<part name="R4" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
 </parts>
 <sheets>
 <sheet>
@@ -3005,15 +3006,18 @@ http://www.st.com&lt;p&gt;
 <text x="290.83" y="246.38" size="3.81" layer="97">PELTIER_CTRL</text>
 <text x="34.29" y="233.68" size="3.81" layer="97">MCU</text>
 <text x="38.1" y="77.47" size="3.81" layer="97">POWER</text>
-<text x="171.45" y="26.67" size="1.778" layer="97">NOTES: 
-1. MOSFET TURNS ON ABOVE 4V, not 3V3
-2. (Rl, Rh) = IDEAL(30k, 15k), TEST(20k, 10k)
-3. Change Rx/Tx
-4. Pullup IO0 -done at next
+<text x="165.1" y="12.7" size="1.778" layer="97">NOTES: 
+1. (Rl, Rh) = IDEAL(30k, 15k), SOLDERED(20k, 10k)</text>
+<text x="165.1" y="31.75" size="1.778" layer="97">Need to update : 
 
+1. Change Rx/Tx
+2. MOSFET turns on above 4V, not 3V3
+3. MOSFET is in wrong config
 IO0の接続がなんだかあやしい
 * 電源を入れた状態だと、IO0ボタンを押しても離してもTX(@ESP 端から3番目のピン)と導通している
 * 本来PUされているはずなのだがボタンを離した状態で2.47Vという中途半端な電圧</text>
+<text x="165.1" y="22.86" size="1.778" layer="97">Diff from ver2-170831: 
+1. IO0 is pulled up</text>
 </plain>
 <instances>
 <instance part="GND1" gate="1" x="106.68" y="43.18"/>
@@ -3141,6 +3145,7 @@ IO0の接続がなんだかあやしい
 <instance part="IC2" gate="G$1" x="325.12" y="214.63"/>
 <instance part="U$1" gate="G$1" x="97.79" y="53.34"/>
 <instance part="RH2" gate="G$1" x="228.6" y="205.74" rot="R90"/>
+<instance part="R4" gate="G$1" x="33.02" y="100.33"/>
 </instances>
 <busses>
 </busses>
@@ -3467,8 +3472,13 @@ IO0の接続がなんだかあやしい
 </segment>
 <segment>
 <pinref part="3V6" gate="VCC" pin="VCC"/>
+<wire x1="24.13" y1="124.46" x2="26.67" y2="124.46" width="0.1524" layer="91"/>
 <pinref part="R9" gate="G$1" pin="1"/>
-<wire x1="24.13" y1="124.46" x2="29.21" y2="124.46" width="0.1524" layer="91"/>
+<pinref part="R4" gate="G$1" pin="1"/>
+<wire x1="26.67" y1="124.46" x2="29.21" y2="124.46" width="0.1524" layer="91"/>
+<wire x1="29.21" y1="100.33" x2="26.67" y2="100.33" width="0.1524" layer="91"/>
+<wire x1="26.67" y1="100.33" x2="26.67" y2="124.46" width="0.1524" layer="91"/>
+<junction x="26.67" y="124.46"/>
 </segment>
 </net>
 <net name="12V" class="0">
@@ -3738,6 +3748,9 @@ IO0の接続がなんだかあやしい
 <wire x1="62.23" y1="105.41" x2="62.23" y2="100.33" width="0.1524" layer="91"/>
 <junction x="62.23" y="100.33"/>
 <label x="64.77" y="100.33" size="1.778" layer="95"/>
+<pinref part="R4" gate="G$1" pin="2"/>
+<wire x1="39.37" y1="100.33" x2="36.83" y2="100.33" width="0.1524" layer="91"/>
+<junction x="39.37" y="100.33"/>
 </segment>
 </net>
 <net name="PEL_PWM" class="0">
