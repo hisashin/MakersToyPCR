@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -2995,6 +2995,8 @@ http://www.st.com&lt;p&gt;
 <part name="U$1" library="adafruit" deviceset="2.1MMJACK" device="THM"/>
 <part name="RH2" library="PCR-RCL" deviceset="R0603" device="NC" value="30K HP"/>
 <part name="R4" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
+<part name="GND11" library="supply1" deviceset="GND" device=""/>
+<part name="R7" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
 </parts>
 <sheets>
 <sheet>
@@ -3006,18 +3008,15 @@ http://www.st.com&lt;p&gt;
 <text x="290.83" y="246.38" size="3.81" layer="97">PELTIER_CTRL</text>
 <text x="34.29" y="233.68" size="3.81" layer="97">MCU</text>
 <text x="38.1" y="77.47" size="3.81" layer="97">POWER</text>
-<text x="165.1" y="12.7" size="1.778" layer="97">NOTES: 
+<text x="170.18" y="12.7" size="1.778" layer="97">NOTES: 
 1. (Rl, Rh) = IDEAL(30k, 15k), SOLDERED(20k, 10k)</text>
-<text x="165.1" y="31.75" size="1.778" layer="97">Need to update : 
-
+<text x="170.18" y="38.1" size="1.778" layer="97">Need to update : 
 1. Change Rx/Tx
 2. MOSFET turns on above 4V, not 3V3
-3. MOSFET is in wrong config
-IO0の接続がなんだかあやしい
-* 電源を入れた状態だと、IO0ボタンを押しても離してもTX(@ESP 端から3番目のピン)と導通している
-* 本来PUされているはずなのだがボタンを離した状態で2.47Vという中途半端な電圧</text>
-<text x="165.1" y="22.86" size="1.778" layer="97">Diff from ver2-170831: 
-1. IO0 is pulled up</text>
+3. MOSFET is in wrong config</text>
+<text x="170.18" y="24.13" size="1.778" layer="97">Diff from ver2-170831: 
+1. Pullup IO0
+2. Pulldown HEATER</text>
 </plain>
 <instances>
 <instance part="GND1" gate="1" x="106.68" y="43.18"/>
@@ -3146,6 +3145,8 @@ IO0の接続がなんだかあやしい
 <instance part="U$1" gate="G$1" x="97.79" y="53.34"/>
 <instance part="RH2" gate="G$1" x="228.6" y="205.74" rot="R90"/>
 <instance part="R4" gate="G$1" x="33.02" y="100.33"/>
+<instance part="GND11" gate="1" x="111.76" y="110.49"/>
+<instance part="R7" gate="G$1" x="111.76" y="119.38" rot="R90"/>
 </instances>
 <busses>
 </busses>
@@ -3363,6 +3364,11 @@ IO0の接続がなんだかあやしい
 <pinref part="GND21" gate="1" pin="GND1"/>
 <wire x1="363.22" y1="223.52" x2="363.22" y2="218.44" width="0.1524" layer="91"/>
 </segment>
+<segment>
+<pinref part="R7" gate="G$1" pin="1"/>
+<pinref part="GND11" gate="1" pin="GND"/>
+<wire x1="111.76" y1="115.57" x2="111.76" y2="113.03" width="0.1524" layer="91"/>
+</segment>
 </net>
 <net name="3V3" class="0">
 <segment>
@@ -3574,6 +3580,11 @@ IO0の接続がなんだかあやしい
 <wire x1="38.1" y1="203.2" x2="21.59" y2="203.2" width="0.1524" layer="91"/>
 <pinref part="SJ5" gate="1" pin="1"/>
 <label x="21.59" y="203.2" size="1.778" layer="95"/>
+</segment>
+<segment>
+<wire x1="111.76" y1="123.19" x2="111.76" y2="125.73" width="0.1524" layer="91"/>
+<wire x1="111.76" y1="125.73" x2="101.6" y2="125.73" width="0.1524" layer="91"/>
+<label x="101.6" y="125.73" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="INT_ADC" class="0">

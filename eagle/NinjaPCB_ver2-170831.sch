@@ -3006,14 +3006,13 @@ http://www.st.com&lt;p&gt;
 <text x="34.29" y="233.68" size="3.81" layer="97">MCU</text>
 <text x="38.1" y="77.47" size="3.81" layer="97">POWER</text>
 <text x="171.45" y="26.67" size="1.778" layer="97">NOTES: 
-1. MOSFET TURNS ON ABOVE 4V, not 3V3
 2. (Rl, Rh) = IDEAL(30k, 15k), TEST(20k, 10k)
-3. Change Rx/Tx
-4. Pullup IO0 -done at next
 
-IO0の接続がなんだかあやしい
-* 電源を入れた状態だと、IO0ボタンを押しても離してもTX(@ESP 端から3番目のピン)と導通している
-* 本来PUされているはずなのだがボタンを離した状態で2.47Vという中途半端な電圧</text>
+TODO:
+1. MOSFET TURNS ON ABOVE 4V, not 3V3 -todo
+3. Change Rx/Tx -todo
+4. Pullup IO0 -done
+5. Pulldown HEATER -done</text>
 </plain>
 <instances>
 <instance part="GND1" gate="1" x="106.68" y="43.18"/>
