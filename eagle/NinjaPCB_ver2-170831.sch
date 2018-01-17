@@ -2678,7 +2678,7 @@ http://www.st.com&lt;p&gt;
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="VNH5019/VNH3SP30-B">
+<deviceset name="VNH3SP30-B">
 <gates>
 <gate name="G$1" symbol="VNH5019/VNH3SP30-B" x="0" y="0"/>
 </gates>
@@ -2991,7 +2991,7 @@ http://www.st.com&lt;p&gt;
 <part name="C8" library="PCR-RCL" deviceset="CAP_E5-13-L30" device="30RINV" value="3300uF"/>
 <part name="GND21" library="openpcr" deviceset="GND1" device=""/>
 <part name="SJ17" library="jumper" deviceset="SJ2W" device=""/>
-<part name="IC2" library="st-microelectronics" deviceset="VNH5019/VNH3SP30-B" device="NC" value="VNH5019/VNH3SP30-BNC"/>
+<part name="IC2" library="st-microelectronics" deviceset="VNH3SP30-B" device="NC" value="VNH3SP30-BNC"/>
 <part name="U$1" library="adafruit" deviceset="2.1MMJACK" device="THM"/>
 <part name="RH2" library="PCR-RCL" deviceset="R0603" device="NC" value="30K HP"/>
 </parts>
@@ -3012,7 +3012,8 @@ TODO:
 1. MOSFET TURNS ON ABOVE 4V, not 3V3 -todo
 3. Change Rx/Tx -todo
 4. Pullup IO0 -done
-5. Pulldown HEATER -done</text>
+5. Pulldown HEATER -done
+6. Properly choose VNH5019 or VNH[23]SP30 -todo</text>
 </plain>
 <instances>
 <instance part="GND1" gate="1" x="106.68" y="43.18"/>

@@ -1330,7 +1330,7 @@ design rules under a new name.</description>
 <element name="SJ17" library="jumper" package="SJ_2" value="" x="65.555" y="-17.7394" smashed="yes" rot="R90">
 <attribute name="VALUE" x="65.555" y="-17.8395" size="0.02" layer="27" rot="R90"/>
 </element>
-<element name="IC2" library="st-microelectronics" package="MULTIPOWERSO-30-B-NOCREAM" value="VNH5019/VNH3SP30-BNC" x="28.806" y="-10.48" smashed="yes" rot="R90">
+<element name="IC2" library="st-microelectronics" package="MULTIPOWERSO-30-B-NOCREAM" value="VNH3SP30-BNC" x="28.806" y="-10.48" smashed="yes" rot="R90">
 <attribute name="NAME" x="25.296" y="-11.1354" size="1.27" layer="25"/>
 </element>
 <element name="U$1" library="adafruit" package="PJ-102A" value="2.1MMJACKTHM" x="-0.5" y="-5" rot="R90"/>

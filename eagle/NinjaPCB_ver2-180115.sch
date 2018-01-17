@@ -2678,7 +2678,7 @@ http://www.st.com&lt;p&gt;
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="VNH5019/VNH3SP30-B">
+<deviceset name="VNH3SP30-B">
 <gates>
 <gate name="G$1" symbol="VNH5019/VNH3SP30-B" x="0" y="0"/>
 </gates>
@@ -2991,7 +2991,7 @@ http://www.st.com&lt;p&gt;
 <part name="C8" library="PCR-RCL" deviceset="CAP_E5-13-L30" device="30RINV" value="3300uF"/>
 <part name="GND21" library="openpcr" deviceset="GND1" device=""/>
 <part name="SJ17" library="jumper" deviceset="SJ2W" device=""/>
-<part name="IC2" library="st-microelectronics" deviceset="VNH5019/VNH3SP30-B" device="NC" value="VNH5019/VNH3SP30-BNC"/>
+<part name="IC2" library="st-microelectronics" deviceset="VNH3SP30-B" device="NC" value="VNH3SP30-BNC"/>
 <part name="U$1" library="adafruit" deviceset="2.1MMJACK" device="THM"/>
 <part name="RH2" library="PCR-RCL" deviceset="R0603" device="NC" value="30K HP"/>
 <part name="R4" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
