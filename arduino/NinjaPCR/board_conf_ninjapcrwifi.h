@@ -8,6 +8,7 @@
 /* ADC (NAU7803 or MCP3554) */
 //#define USE_ADC_NAU7803
 #define USE_ADC_MCP3554
+#define TEHRMISTORS_NINJAPCR
 
 #define USE_FAN
 #define PIN_FAN 13
