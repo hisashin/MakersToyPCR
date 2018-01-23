@@ -20,6 +20,11 @@
 #include "thermistors.h"
 #include "adc.h"
 
+#ifdef TEHRMISTORS_OPENPCR_ORIGINAL
+
+
+// Original implementation for OpenPCR's lid and well thermistors
+
 /*
 // lid resistance table, in Ohms
 PROGMEM const unsigned int LID_RESISTANCE_TABLE[] = {
@@ -151,11 +156,9 @@ CPlateThermistor::CPlateThermistor():
 }
 //------------------------------------------------------------------------------
 void CPlateThermistor::ReadTemp() {
-  float voltage = getADCValue();
+  float voltageRatio = getADCValue();
   
-  
-  unsigned long voltage_mv = voltage * 1000;
-  resistance = voltage_mv * 22000 / (5000 - voltage_mv); // in hecto ohms
+  resistance = voltageRatio * 22000 / (1.0 - voltageRatio); // in hecto ohms
  
   iTemp = TableLookup(PLATE_RESISTANCE_TABLE, sizeof(PLATE_RESISTANCE_TABLE) / sizeof(PLATE_RESISTANCE_TABLE[0]), -40, resistance);
 }
@@ -169,3 +172,5 @@ char CPlateThermistor::SPITransfer(volatile char data) {
   return SPDR;                    // return the received byte
 #endif
 }
+
+#endif /* TEHRMISTORS_OPENPCR_ORIGINAL */

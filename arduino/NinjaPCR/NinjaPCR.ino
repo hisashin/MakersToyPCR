@@ -21,6 +21,7 @@
 
 #include "pcr_includes.h"
 #include "thermocycler.h"
+#include "thermistors.h"
 
 #ifdef USE_WIFI
 
@@ -57,7 +58,18 @@ bool isApMode = false;
 //#define FORCE_AP_MODE // For debug
 //#define FORCE_NORMAL_MODE // FOR DEBUG
 
-void setup() {
+void setup () {
+    Serial.begin(9600);
+    Serial.println("Hello NinjaPCR!");
+    CPlateThermistor iPlateThermistor;
+    CLidThermistor iLidThermistor;
+}
+
+void loop () {
+    
+    
+}
+void setup_ORIG() {
     
     Serial.begin(BAUD_RATE);
     EEPROM.begin(4096);
@@ -126,7 +138,7 @@ bool isSerialConnected = false;
 bool initDone = false;
 short INTERVAL_MSEC = 500;
 
-void loop() {
+void loop_ORIG() {
 #ifdef USE_WIFI
     if (isApMode) {
         loopWiFiAP();

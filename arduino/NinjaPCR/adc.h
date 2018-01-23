@@ -2,6 +2,7 @@
 #define ___ADC_H___
 
 void initADC ();
-double getADCValue ();
+// Return (ADC value)/(ADC resolution)
+float getADCValue ();
 
 #endif /* ___ADC_H___ */
