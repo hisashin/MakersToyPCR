@@ -111,16 +111,14 @@ void initADC () {
     return NO_ERR;
 
 }
-// TODO implement it
-double getADCValue () {
-    // Mbed code
+float getADCValue () {
     uint32_t adc_val = 0xFFFFFF;
     char read_out[3] = {0x00, 0x00, 0x00};
     i2c_err = wellADCReadRegVal(NAU7802_REG_ADCO_B2_ADDRESS,
             &read_out[0], 3);
     read_out[0] -= 0x80; // signed->unsigned
     adc_val = (read_out[0] << 16) | (read_out[1] << 8) | read_out[2];
-    return adc_val;
+    return (float) adc_val/(1.0 * 0x1000000);
 }
 
 #endif /* USE_ADC_NAU7803 */

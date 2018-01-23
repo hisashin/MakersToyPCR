@@ -14,7 +14,8 @@ void initADC () {
     pinMode(PIN_WELL_MCP3554_SLAVESELECT, OUTPUT);
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, HIGH); //disable device
 }
-double getADCValue () {
+// Return (ADC value)/(ADC resolution)
+float getADCValue () {
 
     /* ADC Start */
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, LOW);
@@ -33,9 +34,10 @@ double getADCValue () {
     unsigned long conv = (((unsigned long)spiBuf[3] >> 7) & 0x01) + ((unsigned long)spiBuf[2] << 1) + ((unsigned long)spiBuf[1] << 9) + (((unsigned long)spiBuf[0] & 0x1F) << 17); //((spiBuf[0] & 0x1F) << 16) + (spiBuf[1] << 8) + spiBuf[2];
 
     unsigned long adcDivisor = 0x1FFFFF;
-    float voltage = (float)conv * 5.0 / adcDivisor;
+    float voltage = (float)conv /* * 5.0 */ / adcDivisor;
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, HIGH);
     /* ADC End */
+    return voltage;
 
 }
 #endif /* USE_ADC_MCP3554 */
