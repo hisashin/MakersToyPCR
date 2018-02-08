@@ -197,7 +197,7 @@
 <text x="0.762" y="-8.382" size="1.016" layer="22" font="vector" rot="MR90">IO10</text>
 <text x="3.302" y="-8.382" size="1.016" layer="22" font="vector" rot="MR90">MOSI</text>
 <text x="5.842" y="-8.382" size="1.016" layer="22" font="vector" rot="MR90">SCLK</text>
-<text x="-5.8674" y="11.6586" size="1.016" layer="22" font="vector" rot="MR180">ESP-12F-BREAK</text>
+<text x="-7.8486" y="11.7856" size="1.016" layer="22" font="vector" rot="MR180">ESP-12F-ASIF-WR02</text>
 </plain>
 <libraries>
 <library name="pinhead">
