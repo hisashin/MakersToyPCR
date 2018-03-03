@@ -426,26 +426,6 @@
 </symbol>
 </symbols>
 <devicesets>
-<deviceset name="SMD-RES-3K-1%-1/10W(0603)" prefix="R" uservalue="yes">
-<description>301010170</description>
-<gates>
-<gate name="G$1" symbol="RES" x="0" y="0"/>
-</gates>
-<devices>
-<device name="" package="R0603">
-<connects>
-<connect gate="G$1" pin="1" pad="1"/>
-<connect gate="G$1" pin="2" pad="2"/>
-</connects>
-<technologies>
-<technology name="">
-<attribute name="MPN" value="RC0603FR-073KL" constant="no"/>
-<attribute name="VALUE" value="3K"/>
-</technology>
-</technologies>
-</device>
-</devices>
-</deviceset>
 <deviceset name="SMD-RES-2K-1%-1/10W(0603)" prefix="R" uservalue="yes">
 <description>301010221</description>
 <gates>
@@ -2241,7 +2221,6 @@ DIN A3, landscape with location and doc. field</description>
 <part name="RD2" library="PCR-RCL" deviceset="R0603" device="" value="30K HP"/>
 <part name="GND15" library="supply1" deviceset="GND" device=""/>
 <part name="C3" library="Seeed-Capacitor" deviceset="CERAMIC-100NF-50V-10%-X7R(0603)" device="" value="100nf"/>
-<part name="R10" library="Seeed-Resistor" deviceset="SMD-RES-3K-1%-1/10W(0603)" device="" value="3K"/>
 <part name="R14" library="Seeed-Resistor" deviceset="SMD-RES-2K-1%-1/10W(0603)" device="" value="2K"/>
 <part name="RL" library="PCR-RCL" deviceset="R0603" device="" value="30K HP"/>
 <part name="RH1" library="PCR-RCL" deviceset="R0603" device="" value="30K HP"/>
@@ -2319,7 +2298,8 @@ DIN A3, landscape with location and doc. field</description>
 3. Killed ADC MCP
 4. INT_ADC is moved to HEATER_TEMP
 5. RX/TX replaced
-6. USE ESP-WROOM-02-BREAK</text>
+6. Use ESP-WROOM-02-BREAK
+7. Use Relay instead of Motor Driver</text>
 </plain>
 <instances>
 <instance part="GND1" gate="1" x="92.71" y="34.29"/>
@@ -2363,7 +2343,6 @@ DIN A3, landscape with location and doc. field</description>
 <instance part="RD2" gate="G$1" x="223.52" y="132.08" rot="R180"/>
 <instance part="GND15" gate="1" x="160.02" y="135.89"/>
 <instance part="C3" gate="G$1" x="160.02" y="154.94" rot="R90"/>
-<instance part="R10" gate="G$1" x="241.3" y="154.94"/>
 <instance part="R14" gate="G$1" x="241.3" y="148.59"/>
 <instance part="RL" gate="G$1" x="209.55" y="219.71" rot="R90"/>
 <instance part="RH1" gate="G$1" x="209.55" y="207.01" rot="R90"/>
@@ -2858,13 +2837,13 @@ DIN A3, landscape with location and doc. field</description>
 <segment>
 <pinref part="IC6" gate="G$1" pin="VIN2P"/>
 <label x="213.36" y="154.94" size="1.778" layer="95"/>
-<wire x1="237.49" y1="154.94" x2="234.95" y2="154.94" width="0.1524" layer="91"/>
 <pinref part="R14" gate="G$1" pin="1"/>
 <wire x1="237.49" y1="148.59" x2="234.95" y2="148.59" width="0.1524" layer="91"/>
 <wire x1="234.95" y1="148.59" x2="234.95" y2="154.94" width="0.1524" layer="91"/>
-<pinref part="R10" gate="G$1" pin="1"/>
 <wire x1="209.55" y1="154.94" x2="234.95" y2="154.94" width="0.1524" layer="91"/>
 <junction x="234.95" y="154.94"/>
+<pinref part="J4" gate="G$1" pin="2"/>
+<wire x1="234.95" y1="154.94" x2="247.65" y2="154.94" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$4" class="0">
@@ -3300,13 +3279,6 @@ DIN A3, landscape with location and doc. field</description>
 <pinref part="PEL_BLK" gate="G$1" pin="1"/>
 <wire x1="334.01" y1="181.61" x2="328.93" y2="181.61" width="0.1524" layer="91"/>
 <wire x1="328.93" y1="181.61" x2="328.93" y2="186.69" width="0.1524" layer="91"/>
-</segment>
-</net>
-<net name="N$1" class="0">
-<segment>
-<pinref part="J4" gate="G$1" pin="2"/>
-<pinref part="R10" gate="G$1" pin="2"/>
-<wire x1="247.65" y1="154.94" x2="245.11" y2="154.94" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="PWR" class="0">

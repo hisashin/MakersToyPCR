@@ -208,8 +208,8 @@ TEMP</text>
 <text x="65.2018" y="77.6986" size="1.27" layer="22" ratio="11" rot="MR0">GND</text>
 <text x="20.0406" y="56.1848" size="1.27" layer="21" font="vector" ratio="11">RELAY</text>
 <text x="65.2018" y="72.6186" size="1.27" layer="22" ratio="11" rot="MR0">PWR</text>
-<text x="13.2842" y="2.9972" size="2.286" layer="21" ratio="11">NinjaPCB ver2-180115</text>
-<text x="57.1754" y="3.048" size="2.286" layer="22" ratio="11" rot="MR0">NinjaPCB ver2-180115</text>
+<text x="22.3266" y="2.8448" size="2.286" layer="21" ratio="11">NinjaPCB ver2-180115</text>
+<text x="50.5206" y="2.8448" size="2.286" layer="22" ratio="11" rot="MR0">NinjaPCB ver2-180115</text>
 </plain>
 <libraries>
 <library name="Seeed-Transistor">
@@ -2349,10 +2349,6 @@ design rules under a new name.</description>
 <attribute name="NAME" x="59.6242" y="76.073" size="1.27" layer="25" font="vector" ratio="11"/>
 <attribute name="NAME" x="60.0964" y="75.6054" size="0.635" layer="33" ratio="10" rot="R270"/>
 </element>
-<element name="R10" library="Seeed-Resistor" package="R0603" value="3K" x="31.115" y="76.6722" smashed="yes">
-<attribute name="MPN" value="RC0603FR-073KL" x="117.475" y="-17.3078" size="1.778" layer="27" display="off"/>
-<attribute name="NAME" x="31.75" y="78.374" size="1.27" layer="25" font="vector" ratio="11" rot="R90"/>
-</element>
 <element name="R14" library="Seeed-Resistor" package="R0603" value="2K" x="29.21" y="76.6722" smashed="yes">
 <attribute name="MPN" value="RC0603FR-072KL" x="120.65" y="-17.3078" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="29.8196" y="78.3994" size="1.27" layer="25" font="vector" ratio="11" rot="R90"/>
@@ -2497,8 +2493,8 @@ design rules under a new name.</description>
 <attribute name="NAME" x="60.6806" y="68.0824" size="1.27" layer="25" font="vector" ratio="10" rot="R90"/>
 <attribute name="VALUE" x="59.182" y="72.0748" size="1.27" layer="27" rot="R270"/>
 </element>
-<element name="U$1" library="PCR-Logo" package="TORI_0.25" value="" x="5.1816" y="0.381"/>
-<element name="U$2" library="PCR-Logo" package="TORI_0.25" value="" x="65.278" y="0.4318" rot="MR0"/>
+<element name="U$1" library="PCR-Logo" package="TORI_0.25" value="" x="14.224" y="0.2286"/>
+<element name="U$2" library="PCR-Logo" package="TORI_0.25" value="" x="58.6232" y="0.2286" rot="MR0"/>
 </elements>
 <signals>
 <signal name="GND">
@@ -2784,9 +2780,6 @@ design rules under a new name.</description>
 <wire x1="28.2448" y1="12.334" x2="28.4884" y2="12.0904" width="0.2032" layer="16"/>
 <wire x1="28.4884" y1="12.0904" x2="36.4236" y2="12.0904" width="0.2032" layer="16"/>
 <wire x1="38.3066" y1="20.0082" x2="38.4914" y2="20.193" width="0.2032" layer="1"/>
-<wire x1="38.4914" y1="20.193" x2="43.1546" y2="20.193" width="0.2032" layer="1"/>
-<wire x1="43.1546" y1="20.193" x2="43.2816" y2="20.066" width="0.2032" layer="1"/>
-<wire x1="43.2816" y1="20.066" x2="54.483" y2="20.066" width="0.2032" layer="1"/>
 <wire x1="54.483" y1="20.066" x2="54.5592" y2="19.9898" width="0.2032" layer="1"/>
 <wire x1="54.5592" y1="19.9898" x2="55.0926" y2="19.9898" width="0.2032" layer="1"/>
 <wire x1="53.9496" y1="24.145" x2="53.9496" y2="31.511" width="0.8128" layer="16"/>
@@ -2808,6 +2801,13 @@ design rules under a new name.</description>
 <wire x1="63.5254" y1="37.6682" x2="63.5254" y2="34.6606" width="0.2032" layer="1"/>
 <wire x1="63.5254" y1="34.6606" x2="62.9666" y2="34.1018" width="0.2032" layer="1"/>
 <wire x1="58.0898" y1="78.4248" x2="66.8528" y2="78.4248" width="0.2032" layer="16"/>
+<wire x1="38.3066" y1="20.066" x2="38.3066" y2="20.0082" width="0.8128" layer="1"/>
+<wire x1="38.3066" y1="20.066" x2="39.9576" y2="21.717" width="1.6256" layer="1"/>
+<wire x1="39.9576" y1="21.717" x2="44.4246" y2="21.717" width="1.6256" layer="1"/>
+<wire x1="44.4246" y1="21.717" x2="45.339" y2="20.8026" width="1.6256" layer="1"/>
+<wire x1="45.339" y1="20.8026" x2="52.2986" y2="20.8026" width="1.6256" layer="1"/>
+<wire x1="52.2986" y1="20.8026" x2="53.093" y2="20.0082" width="1.6256" layer="1"/>
+<wire x1="53.093" y1="20.0082" x2="54.8132" y2="20.0082" width="1.6256" layer="1"/>
 </signal>
 <signal name="3V3">
 <contactref element="U1" pad="2"/>
@@ -3041,19 +3041,25 @@ design rules under a new name.</description>
 <signal name="HEATER_TEMP">
 <contactref element="IC6" pad="P$5"/>
 <contactref element="R14" pad="1"/>
-<contactref element="R10" pad="1"/>
-<wire x1="29.21" y1="77.4342" x2="31.115" y2="77.4342" width="0.2032" layer="1"/>
 <via x="54.8894" y="75.4784" extent="1-16" drill="0.6"/>
-<wire x1="32.8168" y1="78.4756" x2="32.2072" y2="77.866" width="0.2032" layer="16"/>
-<wire x1="32.2072" y1="77.866" x2="32.2072" y2="77.4342" width="0.2032" layer="16"/>
-<via x="32.2072" y="77.4342" extent="1-16" drill="0.6"/>
-<wire x1="32.2072" y1="77.4342" x2="31.115" y2="77.4342" width="0.2032" layer="1"/>
-<wire x1="50.8762" y1="78.4756" x2="32.8168" y2="78.4756" width="0.2032" layer="16"/>
+<via x="31.4452" y="77.4342" extent="1-16" drill="0.6"/>
+<wire x1="50.8762" y1="78.4756" x2="32.4866" y2="78.4756" width="0.2032" layer="16"/>
 <wire x1="50.8762" y1="78.4756" x2="53.8734" y2="75.4784" width="0.2032" layer="16"/>
 <wire x1="53.8734" y1="75.4784" x2="54.8894" y2="75.4784" width="0.2032" layer="16"/>
 <wire x1="58.48" y1="72.4304" x2="56.5404" y2="72.4304" width="0.2032" layer="1"/>
 <wire x1="56.5404" y1="72.4304" x2="54.8894" y2="74.0814" width="0.2032" layer="1"/>
 <wire x1="54.8894" y1="74.0814" x2="54.8894" y2="75.4784" width="0.2032" layer="1"/>
+<contactref element="J4" pad="2"/>
+<wire x1="29.6164" y1="66.69" x2="29.6164" y2="74.4116" width="0.2032" layer="1"/>
+<wire x1="35.3314" y1="67.7848" x2="33.2512" y2="67.7848" width="0.2032" layer="1"/>
+<wire x1="33.2512" y1="67.7848" x2="31.8516" y2="66.3852" width="0.2032" layer="1"/>
+<wire x1="31.8516" y1="66.3852" x2="29.9212" y2="66.3852" width="0.2032" layer="1"/>
+<wire x1="29.9212" y1="66.3852" x2="29.6164" y2="66.69" width="0.2032" layer="1"/>
+<wire x1="29.21" y1="77.4342" x2="30.1752" y2="77.4342" width="0.2032" layer="1"/>
+<wire x1="30.1752" y1="77.4342" x2="31.4452" y2="77.4342" width="0.2032" layer="1"/>
+<wire x1="29.6164" y1="74.4116" x2="30.1752" y2="74.9704" width="0.2032" layer="1"/>
+<wire x1="30.1752" y1="74.9704" x2="30.1752" y2="77.4342" width="0.2032" layer="1"/>
+<wire x1="32.4866" y1="78.4756" x2="31.4452" y2="77.4342" width="0.2032" layer="16"/>
 </signal>
 <signal name="N$4">
 <contactref element="Q3" pad="2"/>
@@ -3627,16 +3633,6 @@ design rules under a new name.</description>
 <contactref element="PEL_BLK" pad="1"/>
 <wire x1="24.8412" y1="71.9626" x2="24.8412" y2="75.7578" width="5.08" layer="16"/>
 <wire x1="24.8412" y1="75.7578" x2="24.8412" y2="71.9732" width="5.08" layer="1"/>
-</signal>
-<signal name="N$1">
-<contactref element="J4" pad="2"/>
-<contactref element="R10" pad="2"/>
-<wire x1="29.6164" y1="66.69" x2="29.6164" y2="74.4116" width="0.2032" layer="1"/>
-<wire x1="29.6164" y1="74.4116" x2="31.115" y2="75.9102" width="0.2032" layer="1"/>
-<wire x1="35.3314" y1="67.7848" x2="33.2512" y2="67.7848" width="0.2032" layer="1"/>
-<wire x1="33.2512" y1="67.7848" x2="31.8516" y2="66.3852" width="0.2032" layer="1"/>
-<wire x1="31.8516" y1="66.3852" x2="29.9212" y2="66.3852" width="0.2032" layer="1"/>
-<wire x1="29.9212" y1="66.3852" x2="29.6164" y2="66.69" width="0.2032" layer="1"/>
 </signal>
 <signal name="PWR">
 <contactref element="SERIAL" pad="4"/>
