@@ -2299,7 +2299,8 @@ DIN A3, landscape with location and doc. field</description>
 <text x="24.13" y="68.58" size="3.81" layer="97">POWER</text>
 <text x="167.64" y="91.44" size="1.778" layer="97">Diff from ver2-170831: 
 1. Change RH1, RH2, RL, R14, RD1, RD2 
-    into RH, RL1, RL2, RT, RD1, RD2 to let them all 15K high precision registor</text>
+    into RH, RL1, RL2, RT, RD1, RD2 to let them all 15K high precision registor
+2. Add low ESR cap to DIVIDED</text>
 </plain>
 <instances>
 <instance part="GND1" gate="1" x="92.71" y="34.29"/>
