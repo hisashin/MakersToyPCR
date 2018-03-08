@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -2287,6 +2287,7 @@ DIN A3, landscape with location and doc. field</description>
 <part name="R5" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
 <part name="C1" library="Seeed-Capacitor" deviceset="CERAMIC-100NF-50V-10%-X7R(0603)" device="" value="100nf"/>
 <part name="RL1" library="PCR-RCL" deviceset="R0603" device="" value="15K HP"/>
+<part name="C4" library="Seeed-Capacitor" deviceset="TANTALUM-SMD-22UF-16V(AVX-B)" device="" value="22uf"/>
 </parts>
 <sheets>
 <sheet>
@@ -2337,9 +2338,9 @@ DIN A3, landscape with location and doc. field</description>
 <instance part="IC6" gate="G$1" x="204.47" y="172.72" rot="MR0"/>
 <instance part="P+10" gate="VCC" x="214.63" y="177.8"/>
 <instance part="P+12" gate="VCC" x="232.41" y="143.51" rot="R270"/>
-<instance part="GND13" gate="1" x="229.87" y="127"/>
+<instance part="GND13" gate="1" x="226.06" y="115.57"/>
 <instance part="RD1" gate="G$1" x="223.52" y="143.51"/>
-<instance part="RD2" gate="G$1" x="223.52" y="132.08"/>
+<instance part="RD2" gate="G$1" x="226.06" y="125.73" rot="R270"/>
 <instance part="GND15" gate="1" x="160.02" y="135.89"/>
 <instance part="C3" gate="G$1" x="160.02" y="154.94" rot="R90"/>
 <instance part="RT" gate="G$1" x="241.3" y="148.59"/>
@@ -2416,6 +2417,10 @@ DIN A3, landscape with location and doc. field</description>
 <instance part="R5" gate="G$1" x="26.67" y="76.2"/>
 <instance part="C1" gate="G$1" x="43.18" y="209.55"/>
 <instance part="RL1" gate="G$1" x="199.39" y="224.79"/>
+<instance part="C4" gate="G$1" x="218.44" y="125.73" smashed="yes" rot="R270">
+<attribute name="NAME" x="213.36" y="125.73" size="1.27" layer="95" ratio="10" rot="R270"/>
+<attribute name="VALUE" x="222.25" y="124.46" size="1.27" layer="96" ratio="10" rot="R270"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -2528,9 +2533,13 @@ DIN A3, landscape with location and doc. field</description>
 </segment>
 <segment>
 <pinref part="GND13" gate="1" pin="GND"/>
-<wire x1="229.87" y1="132.08" x2="229.87" y2="129.54" width="0.1524" layer="91"/>
 <pinref part="RD2" gate="G$1" pin="2"/>
-<wire x1="227.33" y1="132.08" x2="229.87" y2="132.08" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="121.92" x2="226.06" y2="119.38" width="0.1524" layer="91"/>
+<pinref part="C4" gate="G$1" pin="-"/>
+<wire x1="226.06" y1="119.38" x2="226.06" y2="118.11" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="119.38" x2="218.44" y2="119.38" width="0.1524" layer="91"/>
+<wire x1="218.44" y1="119.38" x2="218.44" y2="121.92" width="0.1524" layer="91"/>
+<junction x="226.06" y="119.38"/>
 </segment>
 <segment>
 <pinref part="GND15" gate="1" pin="GND"/>
@@ -3185,7 +3194,11 @@ DIN A3, landscape with location and doc. field</description>
 <junction x="218.44" y="137.16"/>
 <label x="207.01" y="137.16" size="1.778" layer="95"/>
 <pinref part="RD2" gate="G$1" pin="1"/>
-<wire x1="219.71" y1="132.08" x2="218.44" y2="132.08" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="129.54" x2="226.06" y2="132.08" width="0.1524" layer="91"/>
+<wire x1="226.06" y1="132.08" x2="218.44" y2="132.08" width="0.1524" layer="91"/>
+<pinref part="C4" gate="G$1" pin="+"/>
+<wire x1="218.44" y1="129.54" x2="218.44" y2="132.08" width="0.1524" layer="91"/>
+<junction x="218.44" y="132.08"/>
 </segment>
 <segment>
 <pinref part="IC6" gate="G$1" pin="VIN1N"/>
