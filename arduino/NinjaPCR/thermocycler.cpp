@@ -118,6 +118,8 @@ iTargetLidTemp(0) {
   // Peltier pins
   pinMode(PIN_WELL_INA, OUTPUT);
   pinMode(PIN_WELL_INB, OUTPUT);
+  digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
+  digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
   pinMode(PIN_WELL_PWM, OUTPUT);
 
 #ifdef PIN_LCD_CONTRAST
@@ -153,6 +155,7 @@ TCCR1A |= (1<<WGM11) | (1<<WGM10);
 #endif /* TCCR2A */
 #endif /* ifndef USE_WIFI */
   iszProgName[0] = '\0';
+  iPlateThermistor.start();
 }
 
 Thermocycler::~Thermocycler() {
@@ -498,7 +501,60 @@ void Thermocycler::UpdateEta() {
     iEstimatedTimeRemainingS = estimatedDurationS > elapsedTimeS ? estimatedDurationS - elapsedTimeS : 0;
   }
 }
+#ifdef SUPPRESS_PELTIER_SWITCHING
+/*
+ * Suppress frequent peltier's direction switching to
+ * reduce relay noise and save Peltier device
+ */
+// OFF, HEAT, COOL
+static ThermalDirection prevDirection = OFF; // Logical value by PID
+static int prevPWMDuty = 0; // Logical value by PID
+static ThermalDirection prevActualDirection = OFF; // Actual status of hardware
+static int prevActualPWMDuty = 0; // Actual status of hardware
 
+#define PWM_SWITCHING_THRESHOLD 10
+void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of peltier */) {
+    ThermalDirection dirActual;
+    int pwmActual;;
+  if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection) {
+      // Direction will be changed.
+      if (prevPWMDuty==0 && pwm > PWM_SWITCHING_THRESHOLD) {
+          pwmActual = pwm;
+          dirActual = dir;
+      } else {
+          // Once set zero without switching relay
+          pwmActual = 0;
+          dirActual = prevActualDirection;
+      }
+
+  } else {
+      // No need of switching direction.
+      dirActual = dir;
+      pwmActual = pwm;
+  }
+  if (dirActual == COOL) {
+    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_HIGH);
+    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
+  }
+  else if (dirActual == HEAT) {
+    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
+    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_HIGH);
+  }
+  else {
+      // Off
+    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
+    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
+  }
+
+  analogWrite(PIN_WELL_PWM, pwmActual);
+  analogValuePeltier = (dir==COOL)?-pwmActual:pwmActual;
+
+  prevDirection = dir;
+  prevPWMDuty = pwm;
+  prevActualDirection = dirActual;
+  prevActualPWMDuty = pwmActual;
+}
+#else
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm) {
   if (dir == COOL) {
     digitalWrite(PIN_WELL_INA, HIGH);
@@ -516,6 +572,7 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm) {
   analogWrite(PIN_WELL_PWM, pwm);
   analogValuePeltier = (dir==COOL)?-pwm:pwm;
 }
+#endif /* SUPPRESS_PELTIER_SWITCHING */
 
 void Thermocycler::ProcessCommand(SCommand& command) {
   if (command.command == SCommand::EStart) {

@@ -44,6 +44,8 @@
 
 /* ADC */
 #define USE_ADC_MCP3554
+//#define USE_ADC_NAU7803
+
 #define TEHRMISTORS_OPENPCR_ORIGINAL
 
 #endif /* ___BOARD_CONF_NINJAPCR___ */

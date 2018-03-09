@@ -20,6 +20,7 @@
 #include <EEPROM.h>
 
 #include "pcr_includes.h"
+#include "adc.h"
 #include "thermocycler.h"
 #include "thermistors.h"
 
@@ -61,8 +62,12 @@ bool isApMode = false;
 void setup () {
     Serial.begin(9600);
     Serial.println("Hello NinjaPCR!");
+    /*
+     * Instantiation test
     CPlateThermistor iPlateThermistor;
     CLidThermistor iLidThermistor;
+    */
+    initADC();
 }
 
 void loop () {

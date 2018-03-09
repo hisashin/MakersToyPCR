@@ -6,17 +6,23 @@
 #ifdef USE_ADC_MCP3554
 
 /* Implementation of USE_ADC_MCP3554 A/D Converter */
-void initADC () {
+static bool isAdcInitialized = false;1
+uint8_t initADC () {
+    if (isAdcInitialized) {
+        return 0;
+    }
+    isAdcInitialized = true;
     //spi setup
     pinMode(PIN_WELL_MCP3554_DATAOUT, OUTPUT);
     pinMode(PIN_WELL_MCP3554_DATAIN, INPUT);
     pinMode(PIN_WELL_MCP3554_SPICLOCK, OUTPUT);
     pinMode(PIN_WELL_MCP3554_SLAVESELECT, OUTPUT);
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, HIGH); //disable device
+    return 0;
 }
 // Return (ADC value)/(ADC resolution)
 float getADCValue () {
-
+    Serial.println("2_1???");
     /* ADC Start */
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, LOW);
 

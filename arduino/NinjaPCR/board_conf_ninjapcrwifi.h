@@ -6,8 +6,8 @@
 #define USE_ESP8266
 
 /* ADC (NAU7803 or MCP3554) */
-//#define USE_ADC_NAU7803
-#define USE_ADC_MCP3554
+#define USE_ADC_NAU7803
+//#define USE_ADC_MCP3554
 #define TEHRMISTORS_NINJAPCR
 
 #define USE_FAN
@@ -50,7 +50,15 @@
 #endif
 #define PIN_WELL_INB 0
 #define PIN_WELL_PWM 4
-#define PIN_WELL_HIGH_TEMP 16 /* TODO implement thermistor switching */
+#define PIN_WELL_HIGH_TEMP 16
+/* Suppress frequent switching of relay */
+#define SUPPRESS_PELTIER_SWITCHING
+/*
+ * Define on/off logic values according to
+ * polarity of transistors for the relay
+ */
+#define PIN_WELL_VALUE_ON LOW
+#define PIN_WELL_VALUE_OFF HIGH
 
 /* SPI */
 #define PIN_WELL_MCP3554_DATAOUT 13//MOSI (Not used)
@@ -68,9 +76,9 @@
 #endif /* USE_ADC_MCP3554 */
 
 #ifdef USE_ADC_NAU7803
-#define PIN_WELL_NAU7803_SCL
-#define PIN_WELL_NAU7803_SDA
-#define PIN_WELL_NAU7803_RDY
+#define PIN_WELL_NAU7803_SCL 14
+#define PIN_WELL_NAU7803_SDA 2
+#define PIN_WELL_NAU7803_RDY 5
 #endif /* USE_ADC_NAU7803 */
 
 #endif /* ___BOARD_CONF_NINJAPCR___ */
