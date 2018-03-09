@@ -151,8 +151,10 @@ void CLidThermistor::ReadTemp() {
 // Class CPlateThermistor
 CPlateThermistor::CPlateThermistor():
   iTemp(0.0) {
-  // ADC setup
-  initADC();
+}
+void CPlateThermistor::start() {
+    // ADC setup
+    initADC();
 }
 //------------------------------------------------------------------------------
 void CPlateThermistor::ReadTemp() {

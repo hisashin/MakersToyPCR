@@ -21,28 +21,37 @@
 
 class CLidThermistor {
 public:
-  CLidThermistor();
-  double& GetTemp() { return iTemp; }
-  unsigned long& GetResistance() { return resistance; }
-  void ReadTemp();
-  
+    CLidThermistor();
+    double& GetTemp() {
+        return iTemp;
+    }
+    unsigned long& GetResistance() {
+        return resistance;
+    }
+    void ReadTemp();
+
 private:
-  double iTemp;
-  unsigned long resistance;
+    double iTemp;
+    unsigned long resistance;
 };
 
 class CPlateThermistor {
 public:
-  CPlateThermistor();
-  double& GetTemp() { return iTemp; }
-  unsigned long& GetResistance() { return resistance; }
-  void ReadTemp();
+    CPlateThermistor();
+    double& GetTemp() {
+        return iTemp;
+    }
+    unsigned long& GetResistance() {
+        return resistance;
+    }
+    void ReadTemp();
+    void start();
 private:
-   char SPITransfer(volatile char data);
-   
+    char SPITransfer(volatile char data);
+
 private:
-  double iTemp;
-  unsigned long resistance;
+    double iTemp;
+    unsigned long resistance;
 };
 
 #endif
