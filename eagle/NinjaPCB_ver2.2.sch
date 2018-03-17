@@ -1981,7 +1981,7 @@ DIN A3, landscape with location and doc. field</description>
 <pad name="P$8" x="14.1" y="2.7" drill="2"/>
 <pad name="P$1" x="-14.1" y="-2.7" drill="2"/>
 <text x="-16.51" y="8.89" size="1.27" layer="21">&gt;NAME</text>
-<text x="-16.51" y="-10.16" size="1.27" layer="21">&gt;VALUE</text>
+<text x="-16.51" y="-10.16" size="1.27" layer="21">EP2-3N1S/EP2-3L3SAb</text>
 <text x="-15.24" y="3.81" size="2.54" layer="21">NEC</text>
 <circle x="-18.415" y="6.985" radius="1.27" width="0.127" layer="21"/>
 </package>
@@ -1999,7 +1999,7 @@ DIN A3, landscape with location and doc. field</description>
 <pad name="P$8" x="9.87" y="0" drill="1.6"/>
 <pad name="P$1" x="-9.87" y="0" drill="1.6"/>
 <text x="-11.43" y="7.62" size="1.27" layer="21">&gt;NAME</text>
-<text x="-11.43" y="-8.89" size="1.27" layer="21">&gt;VALUE</text>
+<text x="-11.43" y="-8.89" size="1.27" layer="21">ET2-N8</text>
 <text x="-10.16" y="2.54" size="2.54" layer="21">NEC</text>
 <circle x="-12.065" y="5.715" radius="0.635" width="0.127" layer="21"/>
 </package>
