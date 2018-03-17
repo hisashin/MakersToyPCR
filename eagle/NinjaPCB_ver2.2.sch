@@ -1967,25 +1967,7 @@ DIN A3, landscape with location and doc. field</description>
 </library>
 <library name="PCR-Switch">
 <packages>
-<package name="NEC-ET2-N8">
-<wire x1="-11" y1="6.4" x2="11" y2="6.4" width="0.127" layer="21"/>
-<wire x1="11" y1="6.4" x2="11" y2="-6.4" width="0.127" layer="21"/>
-<wire x1="11" y1="-6.4" x2="-11" y2="-6.4" width="0.127" layer="21"/>
-<wire x1="-11" y1="-6.4" x2="-11" y2="6.4" width="0.127" layer="21"/>
-<pad name="P$5" x="-1" y="5.25" drill="1.5"/>
-<pad name="P$4" x="0.4" y="-2.95" drill="1.5"/>
-<pad name="P$2" x="-7.3" y="-4.35" drill="1.1"/>
-<pad name="P$3" x="-3.6" y="-4.35" drill="1.1"/>
-<pad name="P$6" x="3.6" y="4.35" drill="1.1"/>
-<pad name="P$7" x="7.3" y="4.35" drill="1.1"/>
-<pad name="P$8" x="9.87" y="0" drill="1.6"/>
-<pad name="P$1" x="-9.87" y="0" drill="1.6"/>
-<text x="-11.43" y="7.62" size="1.27" layer="21">&gt;NAME</text>
-<text x="-11.43" y="-8.89" size="1.27" layer="21">&gt;VALUE</text>
-<text x="-10.16" y="2.54" size="2.54" layer="21">NEC</text>
-<circle x="-12.065" y="5.715" radius="0.635" width="0.127" layer="21"/>
-</package>
-<package name="NEC-EP2-3L3SAB">
+<package name="NEC-EP2">
 <wire x1="-16.5" y1="8" x2="16.5" y2="8" width="0.127" layer="21"/>
 <wire x1="16.5" y1="8" x2="16.5" y2="-8" width="0.127" layer="21"/>
 <wire x1="16.5" y1="-8" x2="-16.5" y2="-8" width="0.127" layer="21"/>
@@ -2002,6 +1984,24 @@ DIN A3, landscape with location and doc. field</description>
 <text x="-16.51" y="-10.16" size="1.27" layer="21">&gt;VALUE</text>
 <text x="-15.24" y="3.81" size="2.54" layer="21">NEC</text>
 <circle x="-18.415" y="6.985" radius="1.27" width="0.127" layer="21"/>
+</package>
+<package name="NEC-ET2">
+<wire x1="-11" y1="6.4" x2="11" y2="6.4" width="0.127" layer="21"/>
+<wire x1="11" y1="6.4" x2="11" y2="-6.4" width="0.127" layer="21"/>
+<wire x1="11" y1="-6.4" x2="-11" y2="-6.4" width="0.127" layer="21"/>
+<wire x1="-11" y1="-6.4" x2="-11" y2="6.4" width="0.127" layer="21"/>
+<pad name="P$5" x="-1" y="5.25" drill="1.5"/>
+<pad name="P$4" x="0.4" y="-2.95" drill="1.5"/>
+<pad name="P$2" x="-7.3" y="-4.35" drill="1.1"/>
+<pad name="P$3" x="-3.6" y="-4.35" drill="1.1"/>
+<pad name="P$6" x="3.6" y="4.35" drill="1.1"/>
+<pad name="P$7" x="7.3" y="4.35" drill="1.1"/>
+<pad name="P$8" x="9.87" y="0" drill="1.6"/>
+<pad name="P$1" x="-9.87" y="0" drill="1.6"/>
+<text x="-11.43" y="7.62" size="1.27" layer="21">&gt;NAME</text>
+<text x="-11.43" y="-8.89" size="1.27" layer="21">&gt;VALUE</text>
+<text x="-10.16" y="2.54" size="2.54" layer="21">NEC</text>
+<circle x="-12.065" y="5.715" radius="0.635" width="0.127" layer="21"/>
 </package>
 </packages>
 <symbols>
@@ -2054,7 +2054,7 @@ DIN A3, landscape with location and doc. field</description>
 <gate name="G$1" symbol="RELAY2" x="0" y="0"/>
 </gates>
 <devices>
-<device name="EP2" package="NEC-EP2-3L3SAB">
+<device name="EP2" package="NEC-EP2">
 <connects>
 <connect gate="G$1" pin="1" pad="P$1"/>
 <connect gate="G$1" pin="2" pad="P$2"/>
@@ -2069,7 +2069,7 @@ DIN A3, landscape with location and doc. field</description>
 <technology name=""/>
 </technologies>
 </device>
-<device name="ET2" package="NEC-ET2-N8">
+<device name="ET2" package="NEC-ET2">
 <connects>
 <connect gate="G$1" pin="1" pad="P$1"/>
 <connect gate="G$1" pin="2" pad="P$2"/>
@@ -3199,7 +3199,8 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 3. ESP-WROOM-02-break is not breakout. Solder one of MCUs you want to use.
    CP1 and CP2 should be close to VCC. no need to solder both as ESPs.
 4. Add fiducial markers for mounter and pogo-pins
-5. Add MODE jumper to use same source for 4x4 and 2x2</text>
+5. Add MODE jumper to use same source for 4x4 and 2x2
+6. Use bigger EP2-3L3SAb instead of ET2-N8, compatible EP2-3N1S can be found in Mouser</text>
 <text x="30.48" y="128.27" size="3.81" layer="97">CONFIG</text>
 <text x="142.24" y="83.82" size="1.778" layer="97">Layout Notice :
 1. place all MOSFETs to edge not to touch other parts without screwing
