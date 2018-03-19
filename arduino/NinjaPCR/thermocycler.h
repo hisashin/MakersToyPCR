@@ -50,7 +50,7 @@ public:
   };
   
   enum ThermalDirection {
-    OFF,
+    OFF = 0,
     HEAT,
     COOL
   };

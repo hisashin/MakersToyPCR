@@ -399,7 +399,7 @@ void Thermocycler::CalcPlateTarget() {
 }
 
 void Thermocycler::ControlPeltier() {
-  ThermalDirection newDirection = OFF;
+  Thermocycler::ThermalDirection newDirection = Thermocycler::ThermalDirection::OFF;
 
   if (iProgramState == ERunning || (iProgramState == EComplete && ipCurrentStep != NULL)) {
     // Check whether we are nearing target and should switch to PID control
@@ -507,14 +507,14 @@ void Thermocycler::UpdateEta() {
  * reduce relay noise and save Peltier device
  */
 // OFF, HEAT, COOL
-static ThermalDirection prevDirection = OFF; // Logical value by PID
+static Thermocycler::ThermalDirection prevDirection = Thermocycler::ThermalDirection::OFF; // Logical value by PID
 static int prevPWMDuty = 0; // Logical value by PID
-static ThermalDirection prevActualDirection = OFF; // Actual status of hardware
+static Thermocycler::ThermalDirection prevActualDirection = Thermocycler::ThermalDirection::OFF; // Actual status of hardware
 static int prevActualPWMDuty = 0; // Actual status of hardware
 
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of peltier */) {
-    ThermalDirection dirActual;
+    Thermocycler::ThermalDirection dirActual;
     int pwmActual;;
   if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection) {
       // Direction will be changed.
@@ -533,12 +533,12 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
       pwmActual = pwm;
   }
   if (dirActual == COOL) {
-    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_HIGH);
+    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_ON);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
   }
   else if (dirActual == HEAT) {
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
-    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_HIGH);
+    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_ON);
   }
   else {
       // Off
@@ -555,7 +555,7 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
   prevActualPWMDuty = pwmActual;
 }
 #else
-void Thermocycler::SetPeltier(ThermalDirection dir, int pwm) {
+void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm) {
   if (dir == COOL) {
     digitalWrite(PIN_WELL_INA, HIGH);
     digitalWrite(PIN_WELL_INB, LOW);
