@@ -16,18 +16,25 @@ const char* OTA_UPDATE_USER_NAME = "hoge";
 const char* OTA_UPDATE_USER_PASSWORD = "fuga";
 
 bool isUpdateMode = false;
+String DEFAULT_HOST_NAME = "NinjaPCR";
+String hostName = DEFAULT_HOST_NAME;
 
 /* Addresses of WiFi configuration */
 /* Wfite 0xF0 when WiFi configuration is done. */
 #define EEPROM_WIFI_CONF_DONE_ADDR 0//512
 #define EEPROM_WIFI_CONF_DONE_VAL 0xF0
+
 #define EEPROM_WIFI_SSID_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+1)
 #define EEPROM_WIFI_SSID_MAX_LENGTH 31
-#define EEPROM_WIFI_PASSWORD_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+EEPROM_WIFI_SSID_MAX_LENGTH+1)
+
+#define EEPROM_WIFI_PASSWORD_ADDR (EEPROM_WIFI_SSID_ADDR+EEPROM_WIFI_SSID_MAX_LENGTH+1)
 #define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
 
+#define EEPROM_WIFI_MDNS_HOST_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
+#define EEPROM_WIFI_MDNS_HOST_MAX_LENGTH 31
+
 // OTA boot type (0:normal mode, 1:local upload, 2:web download)
-#define EEPROM_OTA_TYPE_ADDR  (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
+#define EEPROM_OTA_TYPE_ADDR  (EEPROM_WIFI_MDNS_HOST_ADDR+EEPROM_WIFI_MDNS_HOST_MAX_LENGTH+1)
 #define EEPROM_OTA_DOWNLOAD_URL_ADDR (EEPROM_OTA_TYPE_ADDR+1)
 #define EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH 128
 
@@ -267,7 +274,7 @@ void startWiFiAPMode() {
     server.on("/join", requestHandlerConfJoin);
     server.onNotFound(requestHandler404);
     Serial.println("OK");
-    Serial.println("1. Connect API \"NinjaPCR\"");
+    Serial.println("1. Connect AP \"NinjaPCR\"");
     Serial.println("2. Access http://192.168.1.1");
 }
 boolean isWiFiConnected() {
@@ -293,13 +300,17 @@ void saveStringToEEPROM(String str, int startAddress, int maxLength) {
     EEPROM.write(startAddress + len, 0x00); // Write \0
 }
 
-void saveWiFiConnectionInfo(String ssid, String password) {
+void saveWiFiConnectionInfo(String ssid, String password, String host) {
+    // Flags
     EEPROM.write(EEPROM_WIFI_CONF_DONE_ADDR, EEPROM_WIFI_CONF_DONE_VAL);
     EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NORMAL);
+    // Values
     saveStringToEEPROM(ssid, EEPROM_WIFI_SSID_ADDR,
             EEPROM_WIFI_SSID_MAX_LENGTH);
     saveStringToEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR,
             EEPROM_WIFI_PASSWORD_MAX_LENGTH);
+    saveStringToEEPROM(host, EEPROM_WIFI_MDNS_HOST_ADDR,
+            EEPROM_WIFI_MDNS_HOST_MAX_LENGTH);
     EEPROM.commit();
 }
 
@@ -325,16 +336,35 @@ void requestHandlerConfInit() {
     s += "</select></div>";
     s += "<div>SSID (text): <input type=\"password\" name=\"st\"/></div>";
     s += "<div>Password: <input type=\"password\" name=\"wp\"/></div>";
+    s += "<div>Host name: <input name=\"h\" value=\"" + hostName + "\"/></div>";
     s += "<div><input type=\"submit\" value=\"Join\"/></div>";
     s += "</form>";
     s += "</body></html>\n";
     server.send(200, "text/html", s);
 }
 String BR_TAG = "<br/>";
+bool isValidHostName (String host) {
+    // Length (1 to EEPROM_WIFI_MDNS_HOST_MAX_LENGTH) a-zA-Z0-9, "-"
+    if (host.length() < 4 || host.length() > EEPROM_WIFI_MDNS_HOST_MAX_LENGTH) {
+        Serial.println("Invalid Length");
+        return false;
+    }
+    for (int i=0; i<host.length(); i++) {
+        char c = host.charAt(i);
+        if (!( ('A'<=c&&c<='Z') || ('a'<=c&&c<='z') || ('0'<=c&&c<='9') || c=='-')) {
+            Serial.print("Invalid char:");
+            Serial.println(c);
+            return false;
+        }
+    }
+    // Characters
+    return true;
+}
 void requestHandlerConfJoin() {
     Serial.println("requestHandlerConfJoin");
     String ssid = server.arg("s"); // Value of dropdown
     String password = server.arg("wp");
+    String host = server.arg("h");
     String emptyField = "";
     bool isValid = true;
     if (ssid == "") {
@@ -349,6 +379,11 @@ void requestHandlerConfJoin() {
         emptyField = "WiFi Password";
         isValid = false;
     }
+    if (!isValidHostName(host)) {
+        emptyField = "Host name";
+        isValid = false;
+        
+    }
 
     String s = getHTMLHeader();
     if (!isValid) {
@@ -360,14 +395,14 @@ void requestHandlerConfJoin() {
         s += "Join.";
         s += "<div>SSID:" + ssid + BR_TAG;
         s += "Password:" + password + BR_TAG;
-        s += "Please reset.";
+        s += "Please reset and access \"http://" + host + ".local\".";
     }
     s += "</body></html>\n";
     server.send(200, "text/html", s);
 
     if (isValid) {
         Serial.println("Valid input. Saving...");
-        saveWiFiConnectionInfo(ssid, password);
+        saveWiFiConnectionInfo(ssid, password, host);
         Serial.println("saved.");
     }
     else {
@@ -414,15 +449,22 @@ boolean startWiFiHTTPServer() {
             sizeof(char) * (EEPROM_WIFI_SSID_MAX_LENGTH + 1));
     char *password = (char *) malloc(
             sizeof(char) * (EEPROM_WIFI_PASSWORD_MAX_LENGTH + 1));
+    char *host = (char *) malloc(
+                sizeof(char) * (EEPROM_WIFI_MDNS_HOST_MAX_LENGTH + 1));
+    
     readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR,
             EEPROM_WIFI_SSID_MAX_LENGTH);
     readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR,
             EEPROM_WIFI_PASSWORD_MAX_LENGTH);
+    readStringFromEEPROM(host, EEPROM_WIFI_MDNS_HOST_ADDR,
+            EEPROM_WIFI_MDNS_HOST_MAX_LENGTH);
     // Connect with saved SSID and password
     Serial.print("SSID:");
     Serial.println(ssid);
     Serial.print("Pass:");
     Serial.println(password);
+    Serial.print("Host:");
+    Serial.println(host);
     WiFi.begin(ssid, password);
 
     // Wait for connection establishment
@@ -436,8 +478,11 @@ boolean startWiFiHTTPServer() {
         }
         Serial.print(".");
     }
+    beginMDNS(host);
+    Serial.println("MDNS ok.");
     free(ssid);
     free(password);
+    free(host);
 
     Serial.print("\nConnected.IP=");
     Serial.println(WiFi.localIP());
@@ -450,12 +495,18 @@ boolean startWiFiHTTPServer() {
     else {
         startNormalOperationServer();
     }
+    
     return true;
+}
+int beginMDNS (const char *hostName) {
+    MDNS.begin(hostName);
+    MDNS.addService("http", "tcp", 80);
+    Serial.println("MDNS started.");
+    Serial.println(hostName);
 }
 void startUpdaterServer() {
     // OTA mode
     Serial.println("Starting OTA mode (isUpdateMode=true)");
-    MDNS.begin(OTA_HOST);
     httpUpdater.setup(&server, OTA_UPDATE_PATH, OTA_UPDATE_USER_NAME, OTA_UPDATE_USER_PASSWORD);
     server.on("/", requestHandlerOTATop);
     server.on("/cancel", requestHandlerOTACancel);
@@ -464,7 +515,6 @@ void startUpdaterServer() {
     server.on("/connect", requestHandlerOTAError);
     server.on("/config", requestHandlerOTAError);
     server.begin();
-    MDNS.addService("http", "tcp", 80);
     Serial.printf(
             "HTTPUpdateServer ready! Open http://%s.local in your browser and login with username '%s' and password '%s'\n",
             OTA_HOST, OTA_UPDATE_USER_NAME,
