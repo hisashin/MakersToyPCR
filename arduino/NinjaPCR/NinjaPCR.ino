@@ -56,25 +56,20 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 
 bool isApMode = false;
 
-//#define FORCE_AP_MODE // For debug
-//#define FORCE_NORMAL_MODE // FOR DEBUG
+// #define FORCE_AP_MODE // For debug
+#define FORCE_NORMAL_MODE // FOR DEBUG
 
+/*
 void setup () {
     Serial.begin(9600);
     Serial.println("Hello NinjaPCR!");
-    /*
-     * Instantiation test
     CPlateThermistor iPlateThermistor;
     CLidThermistor iLidThermistor;
-    */
     initADC();
 }
+*/
 
-void loop () {
-    
-    
-}
-void setup_ORIG() {
+void setup() {
     
     Serial.begin(BAUD_RATE);
     EEPROM.begin(4096);
@@ -84,9 +79,11 @@ void setup_ORIG() {
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
 #ifdef FORCE_AP_MODE
   isApMode = true;
+  Serial.println("FORCE_AP_MODE");
 #endif
 
 #ifdef FORCE_NORMAL_MODE
+  Serial.println("FORCE_NORMAL_MODE");
   isApMode = false;
 #endif
     if (isApMode) {
@@ -143,7 +140,7 @@ bool isSerialConnected = false;
 bool initDone = false;
 short INTERVAL_MSEC = 500;
 
-void loop_ORIG() {
+void loop() {
 #ifdef USE_WIFI
     if (isApMode) {
         loopWiFiAP();
