@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -495,6 +495,26 @@
 <technology name="">
 <attribute name="MPN" value="RC0603FR-072KL" constant="no"/>
 <attribute name="VALUE" value="2K"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="SMD-RES-100K-5%-1/10W(0603)" prefix="R" uservalue="yes">
+<description>301010089</description>
+<gates>
+<gate name="G$1" symbol="RES" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="R0603">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="MPN" value="RC0603JR-07100KL" constant="no"/>
+<attribute name="VALUE" value="100K 1/10W" constant="no"/>
 </technology>
 </technologies>
 </device>
@@ -3008,15 +3028,15 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 <part name="Q4" library="Seeed-Transistor" deviceset="SMD-TRANSISTORS-PNP-25V-500MA-S8550(SOT-23)" device="" value="S8550"/>
 <part name="R8" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
 <part name="R11" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
-<part name="R13" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
-<part name="R17" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
+<part name="R13" library="Seeed-Resistor" deviceset="SMD-RES-100K-5%-1/10W(0603)" device="" value="100K 1/10W"/>
+<part name="R17" library="Seeed-Resistor" deviceset="SMD-RES-100K-5%-1/10W(0603)" device="" value="100K 1/10W"/>
 <part name="Q5" library="Seeed-Transistor" deviceset="DIP-MOSFET-N-CH-100V-9.7A-IRF520NPBF(TO-220AB)" device="CORRECT" value="IRF520NPBF"/>
 <part name="GND3" library="supply1" deviceset="GND" device=""/>
 <part name="P+1" library="supply1" deviceset="VCC" device="" value="12V"/>
 <part name="R18" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
 <part name="Q6" library="Seeed-Transistor" deviceset="SMD-TRANSISTORS-PNP-25V-500MA-S8550(SOT-23)" device="" value="S8550"/>
 <part name="R19" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
-<part name="R20" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
+<part name="R20" library="Seeed-Resistor" deviceset="SMD-RES-100K-5%-1/10W(0603)" device="" value="100K 1/10W"/>
 <part name="RELAY" library="PCR-Switch" deviceset="NEC-RELAY2" device="EP2" value="NEC-RELAY2EP2"/>
 <part name="D1" library="Seeed-Diode" deviceset="DIODE-GEN-PURPOSE-1KV-1A(DO-214AC)" device="" value="1N4007"/>
 <part name="D2" library="Seeed-Diode" deviceset="DIODE-GEN-PURPOSE-1KV-1A(DO-214AC)" device="" value="1N4007"/>
@@ -3085,7 +3105,8 @@ new: Attribute TP_SIGNAL_NAME&lt;br&gt;
 3. Horizontal 6pin/4pin Serial or sidebent
 4. Use Sidebent ATX connector
 5. Put all PNP transistors in same orientation as possible. Perfect if in line
-6. Mind about hand-mount easiness</text>
+6. Mind about hand-mount easiness
+7. Consult with ver2.1 : no thin wire around hand solder pad like MOSFET and other DIP parts. No SMD around NAU for soldering by hand</text>
 </plain>
 <instances>
 <instance part="GND1" gate="1" x="218.44" y="43.18"/>
