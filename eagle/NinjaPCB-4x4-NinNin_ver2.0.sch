@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="yes" active="no"/>
@@ -3803,7 +3803,7 @@ grid 2.54 mm</description>
 <instance part="GND27" gate="1" x="125.73" y="99.06"/>
 <instance part="3V11" gate="VCC" x="125.73" y="121.92"/>
 <instance part="SERIAL4" gate="A" x="113.03" y="109.22" rot="MR0"/>
-<instance part="U$1" gate="G$1" x="331.47" y="168.91"/>
+<instance part="U$1" gate="G$1" x="312.42" y="189.23" rot="R180"/>
 <instance part="Q2" gate="G$1" x="314.96" y="181.61" smashed="yes">
 <attribute name="NAME" x="318.77" y="176.53" size="1.778" layer="95"/>
 <attribute name="VALUE" x="318.77" y="173.99" size="1.778" layer="96"/>
@@ -4662,9 +4662,13 @@ grid 2.54 mm</description>
 </net>
 <net name="N$3" class="0">
 <segment>
-<wire x1="317.5" y1="196.85" x2="317.5" y2="186.69" width="0.1524" layer="91"/>
+<wire x1="317.5" y1="196.85" x2="317.5" y2="189.23" width="0.1524" layer="91"/>
 <pinref part="RELAY" gate="G$1" pin="5"/>
 <pinref part="Q2" gate="G$1" pin="D"/>
+<wire x1="317.5" y1="189.23" x2="317.5" y2="186.69" width="0.1524" layer="91"/>
+<wire x1="314.96" y1="189.23" x2="317.5" y2="189.23" width="0.1524" layer="91"/>
+<junction x="317.5" y="189.23"/>
+<pinref part="U$1" gate="G$1" pin="P$1"/>
 </segment>
 </net>
 <net name="N$5" class="0">
