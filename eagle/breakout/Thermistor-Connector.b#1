@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="1" unitdist="mil" unit="mil" style="lines" multiple="1" display="no" altdistance="0.025" altunitdist="inch" altunit="inch"/>
+<grid distance="1" unitdist="mil" unit="mm" style="lines" multiple="1" display="no" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -296,8 +296,12 @@ design rules under a new name.</description>
 </pass>
 </autorouter>
 <elements>
-<element name="JP1" library="pinhead" package="1X02" value="" x="5.5" y="0" rot="R90"/>
-<element name="JP2" library="pinhead" package="1X02" value="" x="-5.5" y="0" rot="R90"/>
+<element name="JP1" library="pinhead" package="1X02" value="" x="5.5" y="0" smashed="yes" rot="R90">
+<attribute name="VALUE" x="8.675" y="-2.54" size="1.27" layer="27" rot="R90"/>
+</element>
+<element name="JP2" library="pinhead" package="1X02" value="" x="-5.5" y="0" smashed="yes" rot="R90">
+<attribute name="VALUE" x="-2.325" y="-2.54" size="1.27" layer="27" rot="R90"/>
+</element>
 </elements>
 <signals>
 <signal name="N$1">
