@@ -57,7 +57,7 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 bool isApMode = false;
 
 // #define FORCE_AP_MODE // For debug
-#define FORCE_NORMAL_MODE // FOR DEBUG
+//#define FORCE_NORMAL_MODE // FOR DEBUG
 
 /*
 void setup () {

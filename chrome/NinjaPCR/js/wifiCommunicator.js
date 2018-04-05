@@ -36,13 +36,14 @@ var NetworkCommunicator = function () {
 NetworkCommunicator.prototype.scan = function (callback) {
 	// callback(port)
 	DeviceResponse.onDeviceFound = callback;
-	var ipLabel = document.createTextNode("http://")
+	var prefixLabel = document.createTextNode("http://");
+	var suffixLabel = document.createTextNode(".local");
 	
-	var ipText = document.createElement("input");
-	ipText.placeholder = "XXX.XXX.XXX.XXX";
-	ipText.id = "device_ip";
-	ipText.value = "192.168.1.17"; // TODO dummy!
-	ipText.size = "24";
+	var hostText = document.createElement("input");
+	hostText.placeholder = "XXX.XXX.XXX.XXX";
+	hostText.id = "device_host";
+	hostText.value = "ninjapcr"; // TODO dummy!
+	hostText.size = "12";
 	
 	var ipButton = document.createElement("input");
 	ipButton.value = "Connect";
@@ -50,16 +51,17 @@ NetworkCommunicator.prototype.scan = function (callback) {
 	
 	var scope = this;
 	ipButton.addEventListener("click", function(e) {
-		console.log("Check IP: " + ipText.value);
-		scope.setDeviceIP(ipText.value);
+		console.log("Check IP: " + hostText.value);
+		scope.setDeviceIP(hostText.value);
 		scope.connect();
 	}, true);
 	
 	var ipStatusLabel = document.createElement("span");
 	ipStatusLabel.id = "ip_status";
 
-	document.getElementById("ipInputContainer").appendChild(ipLabel);
-	document.getElementById("ipInputContainer").appendChild(ipText);
+	document.getElementById("ipInputContainer").appendChild(prefixLabel);
+	document.getElementById("ipInputContainer").appendChild(hostText);
+	document.getElementById("ipInputContainer").appendChild(suffixLabel);
 	document.getElementById("ipInputContainer").appendChild(ipButton);
 	document.getElementById("ipInputContainer").appendChild(ipStatusLabel);
 };
@@ -70,7 +72,7 @@ function loadJSONP (URL) {
 	document.body.appendChild(scriptTag);
 }
 NetworkCommunicator.prototype.sendRequestToDevice = function (path, param) {
-	var URL = "http://" + this.ip + path;
+	var URL = getDeviceHost() + path;
 	if (param) {
 		if (param.charAt(0)!="?") {
 			URL += "?";

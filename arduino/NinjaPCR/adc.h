@@ -5,6 +5,7 @@
 
 uint8_t initADC ();
 // Return (ADC value)/(ADC resolution)
-float getADCValue ();
+float getWellADCValue ();
+float getLidADCValue ();
 
 #endif /* ___ADC_H___ */

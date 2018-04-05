@@ -32,13 +32,13 @@
 /* Implementation of NAU7803 A/D Converter */
 char i2c_err;
 static char wellADCWriteRegVal (uint8_t reg_address, char *data,
-        uint8_t size)
+        uint8_t dataSize)
 {
     //char *write_block = (char*)malloc(sizeof(char)*16);
     int i;
     //write_block[0] = reg_address;
     Wire.write(reg_address);
-    for (i = 0; i < size; i++) {
+    for (i = 0; i < dataSize; i++) {
         //write_block[i + 1] = data[i];
         Wire.write(data[i]);
     }
@@ -62,18 +62,18 @@ static char wellADCWriteRegByte(uint8_t reg_address, uint8_t b)
 }
 
 static uint8_t wellADCReadRegVal(char reg_address, char *out,
-        uint8_t size)
+        uint8_t dataSize)
 {
 
     Wire.beginTransmission(NAU7802_DEVICE_ADDRESS); // transmit to device #0x2A
     Wire.write(reg_address);// sends 1 byte
     Wire.endTransmission(false);// stop transmitting
     Wire.beginTransmission(NAU7802_DEVICE_ADDRESS);// transmit to device #0x2A
-    Wire.requestFrom(NAU7802_DEVICE_ADDRESS, size);// request 6 bytes from slave device #0x2A
+    Wire.requestFrom(NAU7802_DEVICE_ADDRESS, dataSize);// request 6 bytes from slave device #0x2A
 
     uint8_t reg_val = 0;
     int index = 0;
-    while(Wire.available() && index<size)// slave may send less than requested
+    while(Wire.available() && index<dataSize)// slave may send less than requested
     { 
         char c = Wire.read(); // receive a byte as character
         out[index++] = c;
@@ -83,6 +83,9 @@ static uint8_t wellADCReadRegVal(char reg_address, char *out,
 }
 
 static bool isAdcInitialized = false;
+
+
+static uint8_t adc_default_conf = 0b0010000;
 uint8_t initADC () {
     if (isAdcInitialized) {
         return 0;
@@ -93,7 +96,7 @@ uint8_t initADC () {
     char read_out[1] = {0xFF};
     char write_init_block[1] = {0x16};
     char write_calib_block[1] = {0x04};
-    char write_rate_block[1] = {0b0010000}; // 111=320SPS
+    char write_rate_block[1] = {adc_default_conf}; // 111=320SPS
 
     // Select slave device (0x2A)
     delay(10);
@@ -133,8 +136,6 @@ uint8_t initADC () {
   Wire.endTransmission();    // stop transmitting
 
   return NO_ERR;
-  
-
 }
 
 uint8_t readRegister (uint8_t reg_addr) {
@@ -173,17 +174,25 @@ void printRevisionCode () {
   Serial.println(0+read_out[0]);
 
 }
-// TODO
+
 uint8_t prev_channel = 0;
 float getADCValueAt (uint8_t channel) {
-
-
   if (channel != prev_channel) {
     // Switch channel
-    char calib = 0b0010000  | (channel <<  7);
-    wellADCWriteRegByte(NAU7802_REG_CTRL2_ADDRESS, calib);
+    // clear bit
+    char calib;
+    if (channel==1) {
+        // 2ch (set bit 7)
+        calib = adc_default_conf | (1<<7); //これまちがってる
+    } else {
+        // 1ch (clear bit 7)
+        calib = adc_default_conf & ~(1<<7);
+    }
+    wellADCWriteRegByte(NAU7802_REG_CTRL2_ADDRESS, calib);  //0x02
+    Serial.print("Switch ");
+    Serial.println(calib, (0xFF&HEX));
     prev_channel = channel;
-    delay(1);
+    delay(100);
   }
 
   if (channel==0) {
@@ -207,8 +216,13 @@ float getADCValueAt (uint8_t channel) {
  
 }
 // Read ADC value of channel 0
-float getADCValue () {
+float getWellADCValue () {
   return getADCValueAt(0);
+}
+
+// Read ADC value of channel 1
+float getLidADCValue () {
+  return getADCValueAt(1);
 }
 
 #endif /* USE_ADC_NAU7803 */
