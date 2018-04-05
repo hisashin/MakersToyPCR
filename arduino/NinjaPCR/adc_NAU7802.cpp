@@ -3,7 +3,7 @@
 #include <Arduino.h>
 #include <Wire.h>
 
-#ifdef USE_ADC_NAU7803
+#ifdef USE_ADC_NAU7802
 
 #define NAU7802_DEVICE_ADDRESS  /*(0x2A<<1)*/0x2A
 #define NAU7802_REG_PU_CTRL_ADDRESS 0x00 // Initialization
@@ -25,11 +25,11 @@
 #define NO_ERR 0x00
 /*
  *
- #define PIN_WELL_NAU7803_SCL
- #define PIN_WELL_NAU7803_SDA
- #define PIN_WELL_NAU7803_RDY
+ #define PIN_WELL_NAU7802_SCL
+ #define PIN_WELL_NAU7802_SDA
+ #define PIN_WELL_NAU7802_RDY
  */
-/* Implementation of NAU7803 A/D Converter */
+/* Implementation of NAU7802 A/D Converter */
 char i2c_err;
 static char wellADCWriteRegVal (uint8_t reg_address, char *data,
         uint8_t dataSize)
@@ -92,7 +92,7 @@ uint8_t initADC () {
     }
     isAdcInitialized = true;
     /*
-    Wire.begin(PIN_WELL_NAU7803_SDA, PIN_WELL_NAU7803_SCL); //sda, scl
+    Wire.begin(PIN_WELL_NAU7802_SDA, PIN_WELL_NAU7802_SCL); //sda, scl
     char read_out[1] = {0xFF};
     char write_init_block[1] = {0x16};
     char write_calib_block[1] = {0x04};
@@ -127,7 +127,7 @@ uint8_t initADC () {
     return NO_ERR;
     */
     
-  Wire.begin(PIN_WELL_NAU7803_SDA, PIN_WELL_NAU7803_SCL);
+  Wire.begin(PIN_WELL_NAU7802_SDA, PIN_WELL_NAU7802_SCL);
   
   delay(50);
   Wire.beginTransmission(NAU7802_DEVICE_ADDRESS); // transmit to device #0x2A
@@ -225,4 +225,4 @@ float getLidADCValue () {
   return getADCValueAt(1);
 }
 
-#endif /* USE_ADC_NAU7803 */
+#endif /* USE_ADC_NAU7802 */

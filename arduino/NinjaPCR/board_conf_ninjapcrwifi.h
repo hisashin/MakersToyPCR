@@ -5,8 +5,8 @@
 /* Board Config */
 #define USE_ESP8266
 
-/* ADC (NAU7803 or MCP3554) */
-#define USE_ADC_NAU7803
+/* ADC (NAU7802 or MCP3554) */
+#define USE_ADC_NAU7802
 //#define USE_ADC_MCP3554
 #define TEHRMISTORS_NINJAPCR
 
@@ -40,7 +40,7 @@
 #define USE_ESP8266
 
 /* Well */
-#ifdef  USE_ADC_NAU7803
+#ifdef  USE_ADC_NAU7802
 #define PIN_WELL_INA 2
 #endif
 #ifdef USE_ADC_MCP3554
@@ -80,10 +80,10 @@
 #define PIN_WELL_MCP3554_SLAVESELECT 5//ss
 #endif /* USE_ADC_MCP3554 */
 
-#ifdef USE_ADC_NAU7803
-#define PIN_WELL_NAU7803_SCL 14
-#define PIN_WELL_NAU7803_SDA 2
-#define PIN_WELL_NAU7803_RDY 5
-#endif /* USE_ADC_NAU7803 */
+#ifdef USE_ADC_NAU7802
+#define PIN_WELL_NAU7802_SCL 14
+#define PIN_WELL_NAU7802_SDA 2
+#define PIN_WELL_NAU7802_RDY 5
+#endif /* USE_ADC_NAU7802 */
 
 #endif /* ___BOARD_CONF_NINJAPCR___ */
