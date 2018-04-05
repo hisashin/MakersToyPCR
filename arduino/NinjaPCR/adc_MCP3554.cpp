@@ -21,8 +21,7 @@ uint8_t initADC () {
     return 0;
 }
 // Return (ADC value)/(ADC resolution)
-float getADCValue () {
-    Serial.println("2_1???");
+float getWellADCValue () {
     /* ADC Start */
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, LOW);
 
@@ -44,6 +43,10 @@ float getADCValue () {
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, HIGH);
     /* ADC End */
     return voltage;
+
+}
+float getLidADCValue () {
+    return analogRead(PIN_LID_THERMISTOR_AIN) / 1024.0;
 
 }
 #endif /* USE_ADC_MCP3554 */

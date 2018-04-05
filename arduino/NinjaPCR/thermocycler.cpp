@@ -118,6 +118,12 @@ iTargetLidTemp(0) {
   // Peltier pins
   pinMode(PIN_WELL_INA, OUTPUT);
   pinMode(PIN_WELL_INB, OUTPUT);
+  // Fan
+#ifdef USE_FAN
+  Serial.println("USE_FAN defined.");
+  pinMode(PIN_FAN, OUTPUT);
+  digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
+#endif
   digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
   digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
   pinMode(PIN_WELL_PWM, OUTPUT);
@@ -410,8 +416,9 @@ void Thermocycler::ControlPeltier() {
     }
 
     // Apply control mode
-    if (iPlateControlMode == EBangBang)
+    if (iPlateControlMode == EBangBang) {
       iPeltierPwm = iTargetPlateTemp > GetPlateTemp() ? MAX_PELTIER_PWM : MIN_PELTIER_PWM;
+    }
     iPlatePid.Compute();
 
     if (iDecreasing && iTargetPlateTemp > PLATE_PID_DEC_LOW_THRESHOLD) {
@@ -440,11 +447,25 @@ void Thermocycler::ControlLid() {
     drive = iLidPid.Compute(iTargetLidTemp, GetLidTemp());
 
 #ifdef USE_ESP8266
-  // Use on-off control instead of PWM because ESP8266 does not have enough pins
-  digitalWrite(PIN_LID_PWM, (drive>MAX_PELTIER_PWM/2));
+
+// Use on-off control instead of PWM because ESP8266 does not have enough pins
+#ifdef PIN_LID_PWM_ACTIVE_LOW
+  digitalWrite(PIN_LID_PWM, !(drive>(MAX_PELTIER_PWM/2)));
 #else
+  digitalWrite(PIN_LID_PWM, (drive>(MAX_PELTIER_PWM/2)));
+#endif /* PIN_LID_PWM_ACTIVE_LOW */
+
+#else
+
+#ifdef PIN_LID_PWM_ACTIVE_LOW
+  analogWrite(PIN_LID_PWM, MAX_LID_PWM-drive);
+#else
+  // Active high
   analogWrite(PIN_LID_PWM, drive);
+#endif /* PIN_LID_PWM_ACTIVE_LOW */
+
 #endif
+
   analogValueLid = drive;
 }
 
@@ -545,8 +566,11 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
   }
-
+#ifdef PIN_WELL_PWM_ACTIVE_LOW
+  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-pwmActual);
+#else
   analogWrite(PIN_WELL_PWM, pwmActual);
+#endif /* PIN_WELL_PWM_ACTIVE_LOW */
   analogValuePeltier = (dir==COOL)?-pwmActual:pwmActual;
 
   prevDirection = dir;
@@ -569,7 +593,11 @@ void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm) {
     digitalWrite(PIN_WELL_INB, LOW);
   }
 
+#ifdef PIN_WELL_PWM_ACTIVE_LOW
+  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-5pwm);
+#else
   analogWrite(PIN_WELL_PWM, pwm);
+#endif /* PIN_WELL_PWM_ACTIVE_LOW */
   analogValuePeltier = (dir==COOL)?-pwm:pwm;
 }
 #endif /* SUPPRESS_PELTIER_SWITCHING */
