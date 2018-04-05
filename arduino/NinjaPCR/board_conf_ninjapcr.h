@@ -44,7 +44,7 @@
 
 /* ADC */
 #define USE_ADC_MCP3554
-//#define USE_ADC_NAU7803
+//#define USE_ADC_NAU7802
 
 #define TEHRMISTORS_OPENPCR_ORIGINAL
 
