@@ -137,12 +137,8 @@ CLidThermistor::CLidThermistor():
 }
 //------------------------------------------------------------------------------
 void CLidThermistor::ReadTemp() {
-#ifdef USE_ESP8266
-  // Use "TOUT" pin (0.0V-1.0V, 0-1023)
-  unsigned long voltage_mv = (unsigned long)analogRead(0) * 1000 / 1024;
-#else
+
   unsigned long voltage_mv = (unsigned long)analogRead(PIN_LID_THERMISTOR_AIN) * 5000 / 1024;
-#endif
   resistance = voltage_mv * 2200 / (5000 - voltage_mv);
   iTemp = TableLookup(LID_RESISTANCE_TABLE, sizeof(LID_RESISTANCE_TABLE) / sizeof(LID_RESISTANCE_TABLE[0]), 0, resistance);
 }
@@ -158,7 +154,7 @@ void CPlateThermistor::start() {
 }
 //------------------------------------------------------------------------------
 void CPlateThermistor::ReadTemp() {
-  float voltageRatio = getADCValue();
+  float voltageRatio = getWellADCValue();
   
   resistance = voltageRatio * 22000 / (1.0 - voltageRatio); // in hecto ohms
  
