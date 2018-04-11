@@ -2,6 +2,7 @@
 #define ___PCR_COMMUNICATOR___
 
 #include "thermocycler.h"
+#include <Arduino.h>
 
 #define START_CODE    0xFF
 #define ESCAPE_CODE   0xFE
@@ -35,6 +36,7 @@ public:
   Communicator();
   ~Communicator();
 
+  void ProcessDummyMessage (unsigned char _currentCommand, String command);
   void Process();
   byte* GetBuffer() { return buf; } //used for stored program parsing at start-up only if no serial command received
   boolean CommandReceived() { return iReceivedStatusRequest; }

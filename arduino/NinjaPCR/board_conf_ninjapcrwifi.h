@@ -41,7 +41,7 @@
 
 /* Well */
 #ifdef  USE_ADC_NAU7802
-#define PIN_WELL_INA 2
+#define PIN_WELL_INA 12
 #endif
 #ifdef USE_ADC_MCP3554
 #define PIN_WELL_INA 12
@@ -55,7 +55,7 @@
 #define USE_FAN
 #define PIN_FAN 13
 #define PIN_FAN_VALUE_ON LOW
-#define PIN_FAN_VALUE_OFF ON
+#define PIN_FAN_VALUE_OFF HIGH
 /* Suppress frequent switching of relay */
 #define SUPPRESS_PELTIER_SWITCHING
 /*
