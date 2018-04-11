@@ -34,7 +34,7 @@ SerialControl::SerialControl(Display* pDisplay) : Communicator () {
 }
 
 boolean SerialControl::ParseWholeMessage() {
-  serialStart = millis();
+  Serial.println(".");
   SERIAL_STATUS serialStatus = SERIAL_CONTINUE;
   do {
     serialStatus = ReadPacket();
@@ -46,17 +46,24 @@ boolean SerialControl::ParseWholeMessage() {
   return false;
 }
 
+// #define USE_DEMO_CODE //TODO
 SERIAL_STATUS SerialControl::ReadPacket() {
   if (Serial.available()) {
     unsigned char readByte = Serial.read();
+#ifdef USE_DEMO_CODE
+    unsigned char startCode = '\\';
+    unsigned char endCode = '\\';
+#else
     unsigned char startCode = 0xFF;
     unsigned char endCode = 0xFE;
+#endif
 
     if (waitingForMessage && readByte == startCode) {
       // Start code found.
       startFound = true;
       waitingForMessage = false;
       nextByteIndex++;
+      Serial.println("START FOUND");
     }
     else if (nextByteIndex == 1) {
       // Read command code

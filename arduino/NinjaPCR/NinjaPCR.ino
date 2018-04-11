@@ -24,6 +24,7 @@
 #include "thermocycler.h"
 #include "thermistors.h"
 
+#define OFFLINE_DEMO // No WiFi
 #ifdef USE_WIFI
 
 #include <ESP8266WiFi.h>
@@ -70,9 +71,19 @@ void setup () {
 */
 
 void setup() {
-    
     Serial.begin(BAUD_RATE);
     EEPROM.begin(4096);
+#ifdef OFFLINE_DEMO
+    // Skip network
+    Serial.println("OFFLINE DEMO.");
+    gpThermocycler = new Thermocycler(false);
+    gpThermocycler->ipSerialControl = new SerialControl(NULL);
+    // Profile
+    Serial.println("Input demo profile");
+    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[3|95|Initial Step|0])(2[30|95|Step|0][30|55|Step|0][60|72|Step|0])(1[0|20|Final Hold|0]) ");
+    Serial.println("Start!");
+    return;
+#endif
 #ifdef USE_WIFI
     Serial.println("Starting NinjaPCR WiFi");
     pinMode(PIN_WIFI_MODE, INPUT);
@@ -141,6 +152,12 @@ bool initDone = false;
 short INTERVAL_MSEC = 500;
 
 void loop() {
+#ifdef OFFLINE_DEMO
+    gpThermocycler->Loop();
+    gpThermocycler->ipSerialControl->ProcessDummyMessage(STATUS_REQ, "");
+    delay(1000);
+    return;
+#endif
 #ifdef USE_WIFI
     if (isApMode) {
         loopWiFiAP();
@@ -148,6 +165,7 @@ void loop() {
     }
     gpThermocycler->Loop();
     delay(1000);
+    // TODO accurate timing
     if (isWiFiConnected()) {
         loopWiFiHTTPServer();
     } else {

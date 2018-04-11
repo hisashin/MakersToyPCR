@@ -36,30 +36,40 @@ void Communicator::ProcessMessage() {
 
   switch (currentCommand) {
   case SEND_CMD:
-    Serial.println("ProcessMessage CMD");
+    Serial.println("ProcessMessage SEND_CMD");
     SCommand command;
     pCommandBuf = (char*) (commandBody);
 
     //store start commands for restart
     //ProgramStore::StoreProgram(pCommandBuf); TODO
-    Serial.println("CMD 1");
     CommandParser::ParseCommand(command, pCommandBuf);
-    Serial.println("CMD 2");
     GetThermocycler().ProcessCommand(command);
-    Serial.println("CMD 3");
     iCommandId = command.commandId;
     SendCommandResponse();
-    Serial.println("CMD 4");
     break;
 
   case STATUS_REQ:
-    Serial.println("ProcessMessage REQ");
+    Serial.println("ProcessMessage STATUS_REQ");
     iReceivedStatusRequest = true;
     SendStatus();
     break;
   default:
+    Serial.println("ProcessMessage UNKNOWN");
     break;
   }
+}
+
+// For testing with demo profile
+void Communicator::ProcessDummyMessage (unsigned char _currentCommand, String command) {
+    currentCommand = _currentCommand;
+    char *str = (char *)malloc(250*sizeof(char));
+    command.toCharArray(str, min(command.length(), 256));
+    for (int i=0; i<256; i++) {
+      commandBody[i] = (unsigned char)str[i];
+    }
+    free(str);
+    ProcessMessage();
+    FinishReading();
 }
 
 #define STATUS_FILE_LEN 100
