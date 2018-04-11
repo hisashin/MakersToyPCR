@@ -102,7 +102,6 @@ iPlatePid(&iPlateThermistor.GetTemp(),
 &iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
 iLidPid(LID_PID_GAIN_SCHEDULE, MIN_LID_PWM, MAX_LID_PWM),
 iTargetLidTemp(0) {
-  Serial.println("Thermocycler 0");
 #ifndef USE_WIFI
 #ifdef USE_LCD
   ipDisplay = new Display();
@@ -111,7 +110,6 @@ iTargetLidTemp(0) {
 #endif /* USE_LCD */
   ipSerialControl = new SerialControl(ipDisplay);
 #endif /* USE_WIFI */
-  Serial.println("const 3");
   //init pins
   pinMode(15, INPUT); // TODO ?
   pinMode(PIN_LID_PWM, OUTPUT);
@@ -120,7 +118,6 @@ iTargetLidTemp(0) {
   pinMode(PIN_WELL_INB, OUTPUT);
   // Fan
 #ifdef USE_FAN
-  Serial.println("USE_FAN defined.");
   pinMode(PIN_FAN, OUTPUT);
   digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
 #endif
@@ -240,9 +237,8 @@ static boolean lamp = false;
 
 // internal
 void Thermocycler::Loop() {
-  //Serial.print(".-");
+  
   ipSerialControl->Process();
-  return;
 #ifdef USE_STATUS_PINS
 	digitalWrite(PIN_STATUS_A, (!lamp)?HIGH:LOW);
     digitalWrite(PIN_STATUS_B, (lamp)?HIGH:LOW);
@@ -324,9 +320,10 @@ void Thermocycler::Loop() {
 
   //program
   UpdateEta();
+ #ifdef USE_LCD
   ipDisplay->Update();
+  #endif
   ipSerialControl->Process();
-
 }
 
 void Thermocycler::SetCommunicator(Communicator *comm) {

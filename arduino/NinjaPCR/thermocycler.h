@@ -114,11 +114,11 @@ private:
   void AdvanceToNextStep();
   void SetPlateControlStrategy();
   void SetPeltier(ThermalDirection dir, int pwm);
-  
+public:
+  Communicator* ipSerialControl;
 private:
   // components
   Display* ipDisplay;
-  Communicator* ipSerialControl;
   CLidThermistor iLidThermistor;
   CPlateThermistor iPlateThermistor;
   ProgramComponentPool<Cycle, 4> iCyclePool;
