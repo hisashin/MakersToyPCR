@@ -34,7 +34,6 @@ SerialControl::SerialControl(Display* pDisplay) : Communicator () {
 }
 
 boolean SerialControl::ParseWholeMessage() {
-  Serial.println(".");
   SERIAL_STATUS serialStatus = SERIAL_CONTINUE;
   do {
     serialStatus = ReadPacket();

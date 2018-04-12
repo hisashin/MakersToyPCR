@@ -70,12 +70,13 @@
 #define MIN_PELTIER_PWM -1023
 #define MAX_PELTIER_PWM 1023
 
-#define MAX_LID_PWM 255
+#define MAX_LID_PWM 1023
 #define MIN_LID_PWM 0
 
 #define STARTUP_DELAY 4000
 
 //pid parameters
+/*
 const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
   //maxTemp, kP, kI, kD
   { 
@@ -83,6 +84,15 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
   ,
   { 
     200, 80, 1.1, 10   }
+};
+*/
+const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
+  //maxTemp, kP, kI, kD
+  { 
+    70, 160, 0.15, 60   }
+  ,
+  { 
+    200, 320, 1.1, 10   }
 };
 //public
 Thermocycler::Thermocycler(boolean restarted):
@@ -312,14 +322,16 @@ void Thermocycler::Loop() {
   //lid 
   iLidThermistor.ReadTemp();
   ControlLid();
-
   //plate  
   iPlateThermistor.ReadTemp();
   CalcPlateTarget();
-  ControlPeltier();
+  Serial.print("F");
+  ControlPeltier(); //ステップの切替時にここでおちてるよ!!
+  Serial.print("G");
 
   //program
   UpdateEta();
+  Serial.print("H");
  #ifdef USE_LCD
   ipDisplay->Update();
   #endif
@@ -403,26 +415,28 @@ void Thermocycler::CalcPlateTarget() {
 
 void Thermocycler::ControlPeltier() {
   Thermocycler::ThermalDirection newDirection = Thermocycler::ThermalDirection::OFF;
-
   if (iProgramState == ERunning || (iProgramState == EComplete && ipCurrentStep != NULL)) {
     // Check whether we are nearing target and should switch to PID control
     if (iPlateControlMode == EBangBang && absf(iTargetPlateTemp - GetPlateTemp()) < PLATE_BANGBANG_THRESHOLD) {
       iPlateControlMode = EPIDPlate;
-      iPlatePid.SetMode(AUTOMATIC);
+      iPlatePid.SetMode(AUTOMATIC); //ここでおちた
       iPlatePid.ResetI();
     }
 
     // Apply control mode
     if (iPlateControlMode == EBangBang) {
+      // Full drive
       iPeltierPwm = iTargetPlateTemp > GetPlateTemp() ? MAX_PELTIER_PWM : MIN_PELTIER_PWM;
     }
     iPlatePid.Compute();
 
     if (iDecreasing && iTargetPlateTemp > PLATE_PID_DEC_LOW_THRESHOLD) {
-      if (iTargetPlateTemp < GetPlateTemp())
+      if (iTargetPlateTemp < GetPlateTemp()) {
         iPlatePid.ResetI();
-      else
+      }
+      else {
         iDecreasing = false;
+      }
     } 
 
     if (iPeltierPwm > 0)
@@ -440,24 +454,35 @@ void Thermocycler::ControlPeltier() {
 }
 void Thermocycler::ControlLid() {
   int drive = 0;  
-  if (iProgramState == ERunning || iProgramState == ELidWait)
-    drive = iLidPid.Compute(iTargetLidTemp, GetLidTemp());
-
+  if (iProgramState == ERunning || iProgramState == ELidWait) {
+    float temp = GetLidTemp();
+    drive = iLidPid.Compute(iTargetLidTemp, temp);
+    Serial.print(temp);
+    Serial.print("<=>");
+    Serial.println(iTargetLidTemp);
+    Serial.print(" Drive=");
+    Serial.print(drive);
+  }
 #ifdef USE_ESP8266
-
 // Use on-off control instead of PWM because ESP8266 does not have enough pins
 #ifdef PIN_LID_PWM_ACTIVE_LOW
-  digitalWrite(PIN_LID_PWM, !(drive>(MAX_PELTIER_PWM/2)));
+  Serial.println(" AL");
+  analogWrite(PIN_LID_PWM, 1023-drive);
+  //digitalWrite(PIN_LID_PWM, !(drive>(MAX_PELTIER_PWM/2)));
 #else
-  digitalWrite(PIN_LID_PWM, (drive>(MAX_PELTIER_PWM/2)));
+  //digitalWrite(PIN_LID_PWM, (drive>(MAX_PELTIER_PWM/2)));
+  Serial.println(" AH");
+  analogWrite(PIN_LID_PWM, drive);
 #endif /* PIN_LID_PWM_ACTIVE_LOW */
 
 #else
 
 #ifdef PIN_LID_PWM_ACTIVE_LOW
-  analogWrite(PIN_LID_PWM, MAX_LID_PWM-drive);
+  Serial.println(" L");
+  analogWrite(PIN_LID_PWM, 1023-drive);
 #else
   // Active high
+  Serial.println(" H");
   analogWrite(PIN_LID_PWM, drive);
 #endif /* PIN_LID_PWM_ACTIVE_LOW */
 
@@ -550,22 +575,35 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
       dirActual = dir;
       pwmActual = pwm;
   }
+    /*
+     * Peltier
+     * (Cool) A->HIGH, B->LOW, PWM->LOW
+     * (Heat) A->LOW, B->HIGH, PWM->LOW
+     */
   if (dirActual == COOL) {
-    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_ON);
-    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
-  }
-  else if (dirActual == HEAT) {
+    Serial.print(" P_COOL ");
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_ON);
   }
+  else if (dirActual == HEAT) {
+    Serial.print("P_HEAT ");
+    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_ON);
+    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
+  }
   else {
       // Off
+    Serial.print("P_OFF ");
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
   }
+   Serial.println(" v=");
+   Serial.println(pwmActual);
+     
 #ifdef PIN_WELL_PWM_ACTIVE_LOW
+  Serial.println(MAX_PELTIER_PWM-pwmActual);
   analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-pwmActual);
 #else
+  Serial.println(pwmActual);
   analogWrite(PIN_WELL_PWM, pwmActual);
 #endif /* PIN_WELL_PWM_ACTIVE_LOW */
   analogValuePeltier = (dir==COOL)?-pwmActual:pwmActual;

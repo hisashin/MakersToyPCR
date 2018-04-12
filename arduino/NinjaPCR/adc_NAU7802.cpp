@@ -134,7 +134,7 @@ float getADCValueAt (uint8_t channel) {
   } else {
     Serial.print("2ch ");
   }
-  printRevisionCode(); // Test
+  // printRevisionCode(); // Test
   
   if (channel != prev_channel) {
     // Switch channel
