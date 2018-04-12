@@ -80,7 +80,8 @@ void setup() {
     gpThermocycler->ipSerialControl = new SerialControl(NULL);
     // Profile
     Serial.println("Input demo profile");
-    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[3|95|Initial Step|0])(2[30|95|Step|0][30|55|Step|0][60|72|Step|0])(1[0|20|Final Hold|0]) ");
+    //93℃に達したら落ちた
+    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=100&n=Simple test&p=(1[30|95|Initial Step|0])(3[30|95|Step|0][30|55|Step|0][60|72|Step|0])(1[0|20|Final Hold|0]) ");
     Serial.println("Start!");
     return;
 #endif
@@ -151,11 +152,19 @@ bool isSerialConnected = false;
 bool initDone = false;
 short INTERVAL_MSEC = 500;
 
+int sec = 0;
 void loop() {
 #ifdef OFFLINE_DEMO
+    long startMillis = millis();
     gpThermocycler->Loop();
     gpThermocycler->ipSerialControl->ProcessDummyMessage(STATUS_REQ, "");
-    delay(1000);
+    long elapsed =  millis() - startMillis;
+    Serial.print(sec++);
+    Serial.print("Elapsed=");Serial.println(elapsed);
+    if (elapsed<0 || elapsed > 1000) {
+      elapsed = 0;
+    }
+    delay(1000-elapsed);
     return;
 #endif
 #ifdef USE_WIFI

@@ -15,10 +15,9 @@
 PID::PID(double* Input, double* Output, double* Setpoint,
         double Kp, double Ki, double Kd, int ControllerDirection)
 {
+    Serial.println("::PID init");
   
-  Serial.println("PID 0");
-    return; // TODO remove
-	PID::SetOutputLimits(0, 255);				//default output limit corresponds to 
+	  PID::SetOutputLimits(0, 1023);				//default output limit corresponds to
 												//the arduino pwm limits
 
     SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
@@ -53,6 +52,9 @@ void PID::Compute()
       /*Compute all the working error variables*/
       double input = *myInput;
       double error = *mySetpoint - input;
+      Serial.print(input);
+      Serial.print("<=>");
+      Serial.println(*mySetpoint);
       ITerm += (ki * error);
 
       if (ITerm > outMax)
@@ -147,12 +149,16 @@ void PID::SetOutputLimits(double Min, double Max)
  ******************************************************************************/ 
 void PID::SetMode(int Mode)
 {
+  Serial.println("SM0");
     bool newAuto = (Mode == AUTOMATIC);
     if(newAuto == !inAuto)
     {  /*we just went from manual to auto*/
-        PID::Initialize();
+  Serial.println("SM1");
+        PID::Initialize(); //ここでおちてる
+  Serial.println("SM2");
     }
     inAuto = newAuto;
+  Serial.println("SM3");
 }
  
 /* Initialize()****************************************************************
@@ -161,11 +167,18 @@ void PID::SetMode(int Mode)
  ******************************************************************************/ 
 void PID::Initialize()
 {
-   ITerm = *myOutput;
-   lastInput = *myInput;
+    Serial.println("in0");
+   ITerm = *myOutput; //OK
+    Serial.println("in1");
+   lastInput = *myInput; //ここで落ちてる
+    Serial.println("in2");
    lastTime = millis() -SampleTime;
-   if(ITerm > outMax) ITerm = outMax;
-   else if(ITerm < outMin) ITerm = outMin;
+   if(ITerm > outMax) {
+    ITerm = outMax;
+   }
+   else if(ITerm < outMin) {
+    ITerm = outMin;
+   }
 }
 
 /* SetControllerDirection(...)*************************************************
