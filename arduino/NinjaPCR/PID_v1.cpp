@@ -15,8 +15,6 @@
 PID::PID(double* Input, double* Output, double* Setpoint,
         double Kp, double Ki, double Kd, int ControllerDirection)
 {
-    Serial.println("::PID init");
-  
 	  PID::SetOutputLimits(0, 1023);				//default output limit corresponds to
 												//the arduino pwm limits
 
@@ -52,9 +50,6 @@ void PID::Compute()
       /*Compute all the working error variables*/
       double input = *myInput;
       double error = *mySetpoint - input;
-      Serial.print(input);
-      Serial.print("<=>");
-      Serial.println(*mySetpoint);
       ITerm += (ki * error);
 
       if (ITerm > outMax)

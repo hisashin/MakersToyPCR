@@ -125,17 +125,7 @@ void printRevisionCode () {
 }
 
 uint8_t prev_channel = 0;
-float getADCValueAt (uint8_t channel) {
-
-  uint32_t adc_val = 0xFFFFFF;
-  char read_out[3] = {0xFF, 0xFF, 0xFF};
-  if (channel == 0) {
-    Serial.print("1ch ");
-  } else {
-    Serial.print("2ch ");
-  }
-  // printRevisionCode(); // Test
-  
+void switchChannelTo (uint8_t channel) {
   if (channel != prev_channel) {
     // Switch channel
     if (channel == 1) {
@@ -150,6 +140,19 @@ float getADCValueAt (uint8_t channel) {
     waitForFlag(NAU7802_REG_ADDR_CTRL2, 2, false);
     prev_channel = channel;
   }
+}
+float getADCValueAt (uint8_t channel) {
+
+  uint32_t adc_val = 0xFFFFFF;
+  char read_out[3] = {0xFF, 0xFF, 0xFF};
+  
+  if (channel == 0) {
+    Serial.print("1ch ");
+  } else {
+    Serial.print("2ch ");
+  }
+  switchChannelTo(channel);
+  // printRevisionCode(); // Test
 
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CS);
   waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CR, true); // Cycle ready
@@ -163,6 +166,12 @@ float getADCValueAt (uint8_t channel) {
   Serial.print(read_out[2], (0xFF & HEX));
   Serial.print(" / ");
   read_out[0] -= 0x80; // signed->unsigned
+  if (switchChannelTo == 0) {
+    switchChannelTo(1);
+  } else {
+    switchChannelTo(0);
+  }
+  switchChannelTo(channel);
   adc_val = (read_out[0] << 16) | (read_out[1] << 8) | read_out[2];
   float ratio =  (float) adc_val / (1.0 * 0x1000000);
   return ratio;
