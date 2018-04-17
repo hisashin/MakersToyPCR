@@ -42,6 +42,10 @@
 //#define CYCLE_START_TOLERANCE 8.0
 //#define LID_START_TOLERANCE 12.0
 
+// #define PID_CONF_ORIGINAL_OPENPCR
+#define PID_CONF_NINJAPCR_WIFI
+
+#ifdef PID_CONF_ORIGINAL_OPENPCR
 #define PLATE_PID_INC_NORM_P 1000
 #define PLATE_PID_INC_NORM_I 250
 #define PLATE_PID_INC_NORM_D 250
@@ -66,6 +70,37 @@
 #define PLATE_PID_DEC_LOW_D 200
 
 #define PLATE_BANGBANG_THRESHOLD 2.0
+#endif
+
+#ifdef PID_CONF_NINJAPCR_WIFI
+
+#define PLATE_PID_INC_NORM_P 2000
+#define PLATE_PID_INC_NORM_I 250
+#define PLATE_PID_INC_NORM_D 250
+
+#define PLATE_PID_INC_LOW_THRESHOLD 40
+#define PLATE_PID_INC_LOW_P 1200
+#define PLATE_PID_INC_LOW_I 200
+#define PLATE_PID_INC_LOW_D 400
+
+#define PLATE_PID_DEC_HIGH_THRESHOLD 70
+#define PLATE_PID_DEC_LOW_THRESHOLD 35
+
+#define PLATE_PID_DEC_HIGH_P 1600
+#define PLATE_PID_DEC_HIGH_I 700
+#define PLATE_PID_DEC_HIGH_D 300
+
+#define PLATE_PID_DEC_NORM_P 2000
+#define PLATE_PID_DEC_NORM_I 500
+#define PLATE_PID_DEC_NORM_D 200
+
+#define PLATE_PID_DEC_LOW_P 4000
+#define PLATE_PID_DEC_LOW_I 100
+#define PLATE_PID_DEC_LOW_D 200
+
+#define PLATE_BANGBANG_THRESHOLD 1.5
+
+#endif /* PID_CONF_NINJAPCR_WIFI */
 
 #define MIN_PELTIER_PWM -1023
 #define MAX_PELTIER_PWM 1023
@@ -121,7 +156,6 @@ iTargetLidTemp(0) {
   ipSerialControl = new SerialControl(ipDisplay);
 #endif /* USE_WIFI */
   //init pins
-  pinMode(15, INPUT); // TODO ?
   pinMode(PIN_LID_PWM, OUTPUT);
   // Peltier pins
   pinMode(PIN_WELL_INA, OUTPUT);
@@ -129,7 +163,7 @@ iTargetLidTemp(0) {
   // Fan
 #ifdef USE_FAN
   pinMode(PIN_FAN, OUTPUT);
-  digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
+  digitalWrite(PIN_FAN, PIN_FAN_VALUE_OFF);
 #endif
   digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
   digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
@@ -315,8 +349,12 @@ void Thermocycler::Loop() {
     break;
 
   case EComplete:
-    if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetPlateTemp()) <= CYCLE_START_TOLERANCE)
+    if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetPlateTemp()) <= CYCLE_START_TOLERANCE) {
       iRamping = false;
+    }
+    // TODO NinjaPCR keep lid temp to avoid condensation
+    iLidThermistor.ReadTemp();
+    ControlLid();
     break;
   }
   //lid 
@@ -417,7 +455,13 @@ void Thermocycler::ControlPeltier() {
   Thermocycler::ThermalDirection newDirection = Thermocycler::ThermalDirection::OFF;
   if (iProgramState == ERunning || (iProgramState == EComplete && ipCurrentStep != NULL)) {
     // Check whether we are nearing target and should switch to PID control
-    if (iPlateControlMode == EBangBang && absf(iTargetPlateTemp - GetPlateTemp()) < PLATE_BANGBANG_THRESHOLD) {
+    float plateTemp = GetPlateTemp();
+    /*
+    Serial.print(plateTemp);
+    Serial.print("<=>");
+    Serial.println(iTargetPlateTemp);
+    */
+    if (iPlateControlMode == EBangBang && absf(iTargetPlateTemp - plateTemp) < PLATE_BANGBANG_THRESHOLD) {
       iPlateControlMode = EPIDPlate;
       iPlatePid.SetMode(AUTOMATIC); //ここでおちた
       iPlatePid.ResetI();
@@ -457,22 +501,28 @@ void Thermocycler::ControlLid() {
   if (iProgramState == ERunning || iProgramState == ELidWait) {
     float temp = GetLidTemp();
     drive = iLidPid.Compute(iTargetLidTemp, temp);
+    /*
     Serial.print(temp);
     Serial.print("<=>");
     Serial.println(iTargetLidTemp);
+    */
     Serial.print(" Drive=");
     Serial.print(drive);
   }
 #ifdef USE_ESP8266
 // Use on-off control instead of PWM because ESP8266 does not have enough pins
 #ifdef PIN_LID_PWM_ACTIVE_LOW
-  Serial.println(" AL");
-  analogWrite(PIN_LID_PWM, 1023-drive);
-  //digitalWrite(PIN_LID_PWM, !(drive>(MAX_PELTIER_PWM/2)));
+  //analogWrite(PIN_LID_PWM, 1023-drive);
+  int v = (int)(!(drive>(MAX_PELTIER_PWM/2)));
+  digitalWrite(PIN_LID_PWM, v);
+  Serial.print(" AL ");
+  Serial.println(v);
 #else
-  //digitalWrite(PIN_LID_PWM, (drive>(MAX_PELTIER_PWM/2)));
-  Serial.println(" AH");
-  analogWrite(PIN_LID_PWM, drive);
+  int v = (int)(drive>(MAX_PELTIER_PWM/2));
+  digitalWrite(PIN_LID_PWM, v);
+  Serial.println(" AH ");
+  Serial.println(v);
+  //analogWrite(PIN_LID_PWM, drive);
 #endif /* PIN_LID_PWM_ACTIVE_LOW */
 
 #else
@@ -558,8 +608,9 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of peltier */) {
     Thermocycler::ThermalDirection dirActual;
-    int pwmActual;;
-  if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection) {
+    int pwmActual;
+    Serial.print("Dir=");Serial.print(dir);Serial.print(" prev=");Serial.println(prevActualDirection);
+  if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
       // Direction will be changed.
       if (prevPWMDuty==0 && pwm > PWM_SWITCHING_THRESHOLD) {
           pwmActual = pwm;
@@ -584,26 +635,36 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
     Serial.print(" P_COOL ");
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_ON);
+#ifdef USE_FAN
+    Serial.print("(Fan on)");
+  digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
+#endif
   }
   else if (dirActual == HEAT) {
     Serial.print("P_HEAT ");
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_ON);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
+#ifdef USE_FAN
+  Serial.print("(Fan on)");
+  digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
+#endif
   }
   else {
       // Off
     Serial.print("P_OFF ");
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
+#ifdef USE_FAN
+    Serial.print("(Fan on)");
+  digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
+#endif
   }
-   Serial.println(" v=");
+   Serial.print(" v=");
    Serial.println(pwmActual);
      
 #ifdef PIN_WELL_PWM_ACTIVE_LOW
-  Serial.println(MAX_PELTIER_PWM-pwmActual);
   analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-pwmActual);
 #else
-  Serial.println(pwmActual);
   analogWrite(PIN_WELL_PWM, pwmActual);
 #endif /* PIN_WELL_PWM_ACTIVE_LOW */
   analogValuePeltier = (dir==COOL)?-pwmActual:pwmActual;

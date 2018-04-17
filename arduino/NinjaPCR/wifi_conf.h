@@ -1,5 +1,8 @@
-//#define WIFI_TORI
-#define WIFI_BENKYO_CAFE
+#ifndef ___WIFI_CONF___
+#define ___WIFI_CONF___
+
+#define WIFI_TORI
+//#define WIFI_BENKYO_CAFE
 //#define WIFI_EDA
 
 #ifdef WIFI_TORI
@@ -16,3 +19,4 @@ char password[] = "akihabarals02015";
 char ssid[] = "WARPSTAR-53D17F";
 char password[] = "BD4CEE58E089D";
 #endif
+#endif /* ___WIFI_CONF___ */

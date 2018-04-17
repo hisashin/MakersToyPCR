@@ -73,15 +73,26 @@ void setup () {
 void setup() {
     Serial.begin(BAUD_RATE);
     EEPROM.begin(4096);
+    
 #ifdef OFFLINE_DEMO
     // Skip network
     Serial.println("OFFLINE DEMO.");
+    /*
+    slack_connectWifi();
+    slack_send("NinjaPCR_profile_finished.");
+    */
     gpThermocycler = new Thermocycler(false);
     gpThermocycler->ipSerialControl = new SerialControl(NULL);
     // Profile
     Serial.println("Input demo profile");
-    //93℃に達したら落ちた
-    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=100&n=Simple test&p=(1[30|95|Initial Step|0])(3[30|95|Step|0][30|55|Step|0][60|72|Step|0])(1[0|20|Final Hold|0]) ");
+    /*
+95℃ 2分
+95℃ 30秒→
+55℃ 30秒→
+72℃ 30秒 × 35回
+     */
+     Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
+    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
     Serial.println("Start!");
     return;
 #endif
@@ -153,18 +164,29 @@ bool initDone = false;
 short INTERVAL_MSEC = 500;
 
 int sec = 0;
+bool finishSent = false;
 void loop() {
+  
 #ifdef OFFLINE_DEMO
     long startMillis = millis();
     gpThermocycler->Loop();
     gpThermocycler->ipSerialControl->ProcessDummyMessage(STATUS_REQ, "");
     long elapsed =  millis() - startMillis;
-    Serial.print(sec++);
-    Serial.print("Elapsed=");Serial.println(elapsed);
+    sec++;
+    //Serial.print();Serial.print(sec++);
+    //Serial.print("Elapsed=");Serial.println(elapsed);
     if (elapsed<0 || elapsed > 1000) {
       elapsed = 0;
     }
     delay(1000-elapsed);
+    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
+      Serial.println("COMPLETE");
+      if (!finishSent) {
+        //slack_connectWifi();
+        //slack_send("NinjaPCR_profile_finished_" + String(sec) + "sec");
+         finishSent = true;
+      }
+    }
     return;
 #endif
 #ifdef USE_WIFI
