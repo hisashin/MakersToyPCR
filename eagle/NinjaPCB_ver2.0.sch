@@ -2428,7 +2428,7 @@ DIN A3, landscape with location and doc. field</description>
 </library>
 <library name="PCR-Switch">
 <packages>
-<package name="NEC-EP2">
+<package name="NEC-EN2">
 <wire x1="-16.5" y1="8" x2="16.5" y2="8" width="0.127" layer="21"/>
 <wire x1="16.5" y1="8" x2="16.5" y2="-8" width="0.127" layer="21"/>
 <wire x1="16.5" y1="-8" x2="-16.5" y2="-8" width="0.127" layer="21"/>
@@ -2515,7 +2515,7 @@ DIN A3, landscape with location and doc. field</description>
 <gate name="G$1" symbol="RELAY2" x="0" y="0"/>
 </gates>
 <devices>
-<device name="EP2" package="NEC-EP2">
+<device name="EN2" package="NEC-EN2">
 <connects>
 <connect gate="G$1" pin="1" pad="P$1"/>
 <connect gate="G$1" pin="2" pad="P$2"/>
@@ -3683,7 +3683,7 @@ grid 2.54 mm</description>
 <part name="R12" library="Seeed-Resistor" deviceset="SMD-RES-1K-5%-1/10W(0603)" device="" value="1K 1/10W"/>
 <part name="R13" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
 <part name="R14" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
-<part name="RELAY" library="PCR-Switch" deviceset="NEC-RELAY2" device="EP2" value="NEC-RELAY2EP2"/>
+<part name="RELAY" library="PCR-Switch" deviceset="NEC-RELAY2" device="EN2" value="NEC-RELAY2EN2"/>
 <part name="D1" library="Seeed-Diode" deviceset="DIODE-GEN-PURPOSE-1KV-1A(DO-214AC)" device="" value="1N4007"/>
 <part name="D2" library="Seeed-Diode" deviceset="DIODE-GEN-PURPOSE-1KV-1A(DO-214AC)" device="" value="1N4007"/>
 <part name="R10" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>

@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="1" unitdist="mil" unit="mil" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="inch" altunit="inch"/>
+<grid distance="1" unitdist="mil" unit="mm" style="lines" multiple="1" display="yes" altdistance="0.025" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="yes" active="yes"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -743,7 +743,7 @@ TEMP</text>
 </library>
 <library name="PCR-Switch">
 <packages>
-<package name="NEC-EP2">
+<package name="NEC-EN2">
 <wire x1="-16.5" y1="8" x2="16.5" y2="8" width="0.127" layer="21"/>
 <wire x1="16.5" y1="8" x2="16.5" y2="-8" width="0.127" layer="21"/>
 <wire x1="16.5" y1="-8" x2="-16.5" y2="-8" width="0.127" layer="21"/>
@@ -2605,7 +2605,7 @@ design rules under a new name.</description>
 <element name="R14" library="Seeed-Resistor" package="R0603" value="10K 1/10W" x="34.036" y="42.164" smashed="yes" rot="R270">
 <attribute name="MPN" value="RC0603JR-0710KL" x="-58.674" y="1.524" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
-<element name="RELAY" library="PCR-Switch" package="NEC-EP2" value="NEC-RELAY2EP2" x="20.2176" y="63.7048" smashed="yes" rot="R270"/>
+<element name="RELAY" library="PCR-Switch" package="NEC-EN2" value="NEC-RELAY2EN2" x="20.2176" y="63.7048" smashed="yes" rot="R270"/>
 <element name="D1" library="Seeed-Diode" package="DO-214AC" value="1N4007" x="10.243" y="74.684" smashed="yes" rot="R270">
 <attribute name="MPN" value="1N4007" x="-68.497" y="2.294" size="1.778" layer="27" rot="R270" display="off"/>
 </element>
