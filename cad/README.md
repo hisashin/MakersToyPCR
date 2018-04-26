@@ -1,2 +1,2 @@
-[3D model](https://a360.co/2vQjNeu)
-[Laser cut data](https://github.com/hisashin/NinjaPCR/tree/master/cad/2d)
+- [3D model](https://a360.co/2vQjNeu)
+- [Laser cut data](https://github.com/hisashin/NinjaPCR/tree/master/cad/2d)
