@@ -67,7 +67,8 @@ void setRegisterBit (uint8_t reg_addr, int index) {
 
 }
 static bool isAdcInitialized = false;
-static uint8_t adc_default_conf = 0b0111100; //320sps (OK)
+//static uint8_t adc_default_conf = 0b0111100; //320sps (111)(OK)
+static uint8_t adc_default_conf = 0b0010100; //40sps (010)
 //static uint8_t adc_default_conf = 0b0110100;
 
 void waitForFlag (uint8_t regAddress, int flagIndex, bool flagValue) {
@@ -135,11 +136,13 @@ float getADCValueAt (uint8_t channel) {
 
   uint32_t adc_val = 0xFFFFFF;
   char read_out[3] = {0xFF, 0xFF, 0xFF};
+  /*
   if (channel == 0) {
     Serial.print("1ch ");
   } else {
     Serial.print("2ch ");
   }
+  */
   
   if (channel != prev_channel) {
     // Switch channel
@@ -160,14 +163,16 @@ float getADCValueAt (uint8_t channel) {
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CS);
   waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CR, true); // Cycle ready
 
-  delay(40);
+  delay(50);
   i2c_err = wellADCReadRegValues(NAU7802_REG_ADDR_ADCO_B2,
                                  &read_out[0], 3);
+                                 /*
   Serial.print("Raw=");
   Serial.print(read_out[0], (0xFF & HEX)); Serial.print(",");
   Serial.print(read_out[1], (0xFF & HEX)); Serial.print(",");
   Serial.print(read_out[2], (0xFF & HEX));
   Serial.print(" / ");
+  */
   read_out[0] -= 0x80; // signed->unsigned
   adc_val = (read_out[0] << 16) | (read_out[1] << 8) | read_out[2];
   float ratio =  (float) adc_val / (1.0 * 0x1000000);

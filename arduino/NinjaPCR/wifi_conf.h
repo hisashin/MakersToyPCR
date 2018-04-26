@@ -7,7 +7,7 @@
 
 #ifdef WIFI_TORI
 char ssid[] = "tori_wifi";
-char password[] = "2718271828";
+char password[] = "2718281828";
 #endif
 
 #ifdef WIFI_BENKYO_CAFE
