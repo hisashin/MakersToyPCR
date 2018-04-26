@@ -1,3 +1,5 @@
+var STORAGE_KEY_LAST_HOST_NAME = "ninjapcr_host";
+var DEFAULT_HOST = "ninjapcr";
 var DeviceResponse = {
 		onDeviceFound : null,
 		onReceiveCommandResponse : null,
@@ -10,7 +12,13 @@ DeviceResponse.connect = function (obj) {
 	console.log("DeviceResponse.connect:" + obj);
 	if (obj && obj.connected) {
 		// Connected
-		$("#ip_status").text("Connected");
+		$("#DeviceConnectionStatus").attr("class","connected");
+		$("#DeviceConnectionStatusLabel").text("Connected");
+		if (localStorage) {
+			localStorage.setItem(STORAGE_KEY_LAST_HOST_NAME, host);
+		} else {
+			localStorage.setItem(STORAGE_KEY_LAST_HOST_NAME, DEFAULT_HOST);
+		}
 		communicator.firmwareVersionversion = obj.version;
 		console.log("Firmware version=" + communicator.firmwareVersionversion);
 		DeviceResponse.onDeviceFound("DEVICE");
@@ -28,7 +36,6 @@ DeviceResponse.status = function (obj) {
 	}
 };
 
-// TODO rename class
 var NetworkCommunicator = function () {
 	this.firmwareVersion = "1.0.5";
 };
@@ -36,34 +43,18 @@ var NetworkCommunicator = function () {
 NetworkCommunicator.prototype.scan = function (callback) {
 	// callback(port)
 	DeviceResponse.onDeviceFound = callback;
-	var prefixLabel = document.createTextNode("http://");
-	var suffixLabel = document.createTextNode(".local");
-	
-	var hostText = document.createElement("input");
-	hostText.placeholder = "XXX.XXX.XXX.XXX";
-	hostText.id = "device_host";
-	hostText.value = "ninjapcr"; // TODO dummy!
-	hostText.size = "12";
-	
-	var ipButton = document.createElement("input");
-	ipButton.value = "Connect";
-	ipButton.type = "button";
-	
+	if (localStorage && localStorage.getItem(STORAGE_KEY_LAST_HOST_NAME)) {
+		$("#HostText").val(localStorage.getItem(STORAGE_KEY_LAST_HOST_NAME));
+	}
 	var scope = this;
-	ipButton.addEventListener("click", function(e) {
-		console.log("Check IP: " + hostText.value);
-		scope.setDeviceIP(hostText.value);
+	$("#ConnectButton").click(function(e) {
+		console.log("Check IP: " + $("#HostText").val());
+		scope.setDeviceHost($("#HostText").val());
 		scope.connect();
-	}, true);
-	
-	var ipStatusLabel = document.createElement("span");
-	ipStatusLabel.id = "ip_status";
-
-	document.getElementById("ipInputContainer").appendChild(prefixLabel);
-	document.getElementById("ipInputContainer").appendChild(hostText);
-	document.getElementById("ipInputContainer").appendChild(suffixLabel);
-	document.getElementById("ipInputContainer").appendChild(ipButton);
-	document.getElementById("ipInputContainer").appendChild(ipStatusLabel);
+	});
+	$("#NewDevice").click(function(){
+		$("#DeviceSettings").toggle();
+	});
 };
 function loadJSONP (URL) {
 	var scriptTag = document.createElement("script");
@@ -82,12 +73,13 @@ NetworkCommunicator.prototype.sendRequestToDevice = function (path, param) {
 	console.log("sendRequestToDevice URL=" + URL);
 	loadJSONP(URL);
 }
-NetworkCommunicator.prototype.setDeviceIP = function (ip) {
-	this.ip = ip;
+NetworkCommunicator.prototype.setDeviceHost = function (newHost) {
+	host = newHost;
 }
-NetworkCommunicator.prototype.connect = function (ip) {
+NetworkCommunicator.prototype.connect = function () {
 	this.sendRequestToDevice("/connect");
-	$("#ip_status").text("Connecting...");
+	$("#DeviceConnectionStatus").attr("class","connecting");
+	$("#DeviceConnectionStatusLabel").text("Connecting...");
 }
 
 NetworkCommunicator.prototype.scanOngoingExperiment = function () {

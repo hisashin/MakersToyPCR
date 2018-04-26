@@ -14,13 +14,14 @@ boolean WifiCommunicator::ParseWholeMessage() {
   return hasMessage;
 }
 void WifiCommunicator::SendCommandResponse () {
-  Serial.println("SendCommandResponse 1");
   networkSendInterface("true", "command");
 }
 void WifiCommunicator::SendStatusResponse(char *response, int size) {
-  Serial.println("SendStatusResponse 1");
   if (networkSendInterface) {
-    networkSendInterface(response, "status");
+    char *content = (char *) malloc (sizeof(char) * (strlen(response)+3));
+    sprintf(content, "\"%s\"", response);
+    networkSendInterface(content, "status");
+    free(content);
   }
 }
 

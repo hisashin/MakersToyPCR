@@ -8,6 +8,7 @@
   <link rel="stylesheet" type="text/css" media="all" href="css/style.css" />
   <link rel="stylesheet" type="text/css" media="all" href="css/buttons.css" />
   <link href="css/SprySlidingPanels.css" rel="stylesheet" type="text/css" />
+  <link href="css/wifi.css" rel="stylesheet" type="text/css" />
   
   <script type="text/javascript" src="js/lib/jquery-1.9.1.min.js"></script>
   <script type="text/javascript" src="js/lib/jquery-ui-1.10.3.custom.min.js"></script>
@@ -52,15 +53,46 @@
 	
 	<!-- PANEL 1: Home Screen -->
 		<div id="ex1_p1" class="SlidingPanelsContent p1">
-			<div id="homeHeader" class="Header pcr_localize_appTitle">NinjaPCR</div>
-			<div id="ipInputContainer">
-				<!-- IP input textbox will be inserted to this div. -->
-			</div>
-			<div>
-				<a href="PCR_wifi_configuration.html">How to setup NinjaPCR WiFi</a>
-			</div>
-			<div>
-				<input type="button" value="Config" id="configButton"/>
+			<div id="homeHeader" class="Header pcr_localize_appTitle">NinjaPCR WiFi</div>
+			<div id="device_conf">
+				<h2 id="DeviceConnectionStatus" class="disconnected"><span id="DeviceConnectionStatusLabel">Device disconnected</span></h2>
+				<a href="#" id="NewDevice">新しいデバイスを設定する/再設定する</a>
+				<section style="display:none" id="DeviceSettings">
+				<h3>Setup New Device / Change WiFi Settings</h3>
+				<p>
+				<ul>
+					<li>NinjaPCR WiFiを電源に接続してください。</li>
+					<li>NinjaPCR WiFiの "Setup" ボタンを押しながら "Reset" ボタンを押し、"Reset" ボタンを離してから "Setup" ボタンを離してください。</li>
+					<li>PCのWiFi設定を開き、アクセスポイント一覧の中から "NinjaPCR" を選択します。</li>
+					<li>
+						<a href="http://192.168.1.1" target="_blank">http://192.168.1.1</a>に接続しWiFiの設定をします。
+						<dl>
+							<dt>SSID</dt><dd>利用したいアクセスポイントのSSIDを選んでください。</dd>
+							<dt>SSID(text)</dt><dd>SSIDのリストにない場合は手動で入力してください。</dd>
+							<dt>Password</dt><dd>WiFiパスワードです。</dd>
+							<dt>Host</dt><dd>ホスト名です。</dd>
+						</dl>
+						これらを入力したら "送信" を押してください。
+					</li>
+					<li>設定に成功したら本体をリセットします。</li>
+					<li>PCのWiFi設定を開き、元の接続先に戻します。</li>
+				</ul>
+				</p>
+				</section>
+				<section>
+				<p id="ipInputContainer">
+					http://<input type="text" id="HostText"/>.local
+					<input type="button" value="connect" id="ConnectButton"/>
+					<!-- IP input textbox will be inserted to this div. -->
+				</p>
+				</section>
+				<section style="display:none">
+				<h3>Update Device</h3>
+				<p>
+					ファームウェアのアップデートがあります。
+					<input type="button" value="アップデートする" id="configButton"/>
+				</p>
+				</section>
 			</div>
 			
 			<!-- Create a new blank experiment -->
@@ -71,7 +103,6 @@
 			<a href="#" id="listSubmitButton"><img src="images/rerun.png" style="vertical-align:middle;">
 				<span class="home_title pcr_localize_reRunExperiment">Re-run an experiment</span></a>
 			<div id="reRun" align="right"></div>
-			<div id="portLabel" class="pcr_localize_searching">Searching for a device...</div>
 			<div id="update_dialog" style="display:none">
 				<div id="update_dialog_content"></div>
 				<a class="pcr_localize_download" id="OpenDownloadPage">Open Download Page</a>

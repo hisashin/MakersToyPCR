@@ -114,23 +114,18 @@ void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
   memset(&command, NULL, sizeof(command));
   char buf[32];
 
-  Serial.println("ParseCommand 2");
   gpThermocycler->Stop(); //need to stop here to reset program pools
-  Serial.println("ParseCommand 3");
     
   char* pParam = strtok(pCommandBuf, "&");
   while (pParam) {  
     pValue = strchr(pParam, '=');
     *pValue++ = '\0';
-    Serial.println("ParseCommand A1");
-    Serial.println(pParam);
+    Serial.print("ParseCommand ");
+    Serial.print(pParam);Serial.print("=");
     Serial.println(pValue);
     AddComponent(&command, pParam[0], pValue);
-    Serial.println("ParseCommand A2");
     pParam = strtok(NULL, "&");
-    Serial.println("ParseCommand A3");
   }
-  Serial.println("ParseCommand 4");
 }
 /*
 const char STATUS_START[] PROGMEM = "start";
@@ -171,7 +166,9 @@ Cycle* CommandParser::ParseProgram(char* pBuffer) {
   pProgram->SetNumCycles(1);
 	
   char* pCycBuf = strtok(pBuffer, "()");
+  Serial.print("PP1:");
   while (pCycBuf != NULL) {
+    Serial.print("PP2:");
     Serial.println(pCycBuf);
     pProgram->AddComponent(ParseCycle(pCycBuf));
     pCycBuf = strtok(NULL, "()");
@@ -182,7 +179,6 @@ Cycle* CommandParser::ParseProgram(char* pBuffer) {
 
 ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
   char countBuf[5];
-	
   //find first step
   char* pStep = strchr(pBuffer, '[');
 	

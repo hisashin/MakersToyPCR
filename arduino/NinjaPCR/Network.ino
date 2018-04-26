@@ -71,11 +71,29 @@ void wifi_receive() {
 }
 /* t_network_send_interface */
 void wifi_send(char *response, char *funcName) {
-    Serial.println("wifi_send");
-    char *buff = (char *) malloc(32 + strlen(response) + strlen(funcName));
-    sprintf(buff, "DeviceResponse.%s(%s);", funcName, response);
+    Serial.print(funcName);
+    Serial.print("+");
+    Serial.println(response);
+    Serial.print("wifi_send len=");
+    Serial.println(strlen(response));
+    String str = "DeviceResponse.";
+    str += String(funcName);
+    Serial.print("str=");
+    Serial.println(str);
+    str += "(";
+    str += String(response);
+    Serial.print("str=");
+  Serial.println(str);
+    str += ");"; //ここでおちた (メッセージなし)
+    Serial.print("str=");
+    Serial.println(str);
+    char *buff = (char*)malloc(sizeof(char) * (str.length()+1));
+    str.toCharArray(buff, str.length()+1);
+    Serial.print("buff=");
+    Serial.println(buff);
     server.send(200, "text/plain", buff);
     free(buff);
+    Serial.println("sent.");
 }
 
 /* HTTP request handlers */
@@ -85,9 +103,13 @@ void requestHandlerTop() {
 }
 /* Handle request to "/command" */
 void requestHandlerCommand() {
+    Serial.print("rc.");
     Serial.println(server.uri());
+    Serial.print("1");
     wifi->ResetCommand();
+    Serial.print("2");
     wifi->SendCommand();
+    Serial.print("3");
     char buff[256];
     for (uint8_t i = 0; i < server.args(); i++) {
         String sKey = server.argName(i);
@@ -478,6 +500,8 @@ boolean startWiFiHTTPServer() {
         }
         Serial.print(".");
     }
+    Serial.println("Connected.");
+    slack_send("NinjaPCR_test 1");
     beginMDNS(host);
     Serial.println("MDNS ok.");
     free(ssid);
@@ -496,6 +520,7 @@ boolean startWiFiHTTPServer() {
         startNormalOperationServer();
     }
     
+        slack_send("NinjaPCR_test 2");
     return true;
 }
 int beginMDNS (const char *hostName) {

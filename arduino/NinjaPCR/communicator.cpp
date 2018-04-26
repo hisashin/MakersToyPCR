@@ -36,6 +36,7 @@ void Communicator::ProcessMessage() {
 
   switch (currentCommand) {
   case SEND_CMD:
+    Serial.println("ProcessMessage SEND_CMD");
     SCommand command;
     pCommandBuf = (char*) (commandBody);
 
@@ -53,7 +54,6 @@ void Communicator::ProcessMessage() {
     SendStatus();
     break;
   default:
-    Serial.println("ProcessMessage UNKNOWN");
     break;
   }
 }
