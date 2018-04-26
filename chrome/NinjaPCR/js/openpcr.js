@@ -263,7 +263,6 @@ function newExperimentButtons() {
  * The Enter/Return key doesn't do anything right now
  */
 function disableEnterKey(e) {
-	console.verbose("disableEnterKey");
 	var key;
 	if (window.event)
 		key = window.event.keyCode; //IE

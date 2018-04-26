@@ -37,7 +37,7 @@
 #define MCP342X_18_BIT     0X0C // 18-bit 3.75 SPS
 #define MCP342X_BUSY       0X80 // read: output not ready
 
-#define CYCLE_START_TOLERANCE 0.2
+#define CYCLE_START_TOLERANCE 0.5
 #define LID_START_TOLERANCE 1.0
 //#define CYCLE_START_TOLERANCE 8.0
 //#define LID_START_TOLERANCE 12.0
@@ -281,8 +281,6 @@ static boolean lamp = false;
 
 // internal
 void Thermocycler::Loop() {
-  
-  ipSerialControl->Process();
 #ifdef USE_STATUS_PINS
 	digitalWrite(PIN_STATUS_A, (!lamp)?HIGH:LOW);
     digitalWrite(PIN_STATUS_B, (lamp)?HIGH:LOW);
@@ -363,9 +361,7 @@ void Thermocycler::Loop() {
   //plate  
   iPlateThermistor.ReadTemp();
   CalcPlateTarget();
-  Serial.print("F");
-  ControlPeltier(); //ステップの切替時にここでおちてるよ!!
-  Serial.print("G");
+  ControlPeltier();
 
   //program
   UpdateEta();
@@ -373,7 +369,10 @@ void Thermocycler::Loop() {
  #ifdef USE_LCD
   ipDisplay->Update();
   #endif
+  Serial.print("I");
+  
   ipSerialControl->Process();
+  Serial.print("J");
 }
 
 void Thermocycler::SetCommunicator(Communicator *comm) {

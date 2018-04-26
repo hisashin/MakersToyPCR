@@ -74,7 +74,7 @@ public:
   int GetCurrentCycleNum();
   const char* GetProgName() { return iszProgName; }
   Display* GetDisplay() { return ipDisplay; }
-  ProgramComponentPool<Cycle, 4>& GetCyclePool() { return iCyclePool; }
+  ProgramComponentPool<Cycle, 6>& GetCyclePool() { return iCyclePool; }
   ProgramComponentPool<Step, 20>& GetStepPool() { return iStepPool; }
   void SetCommunicator(Communicator *comm);
   
@@ -121,7 +121,7 @@ private:
   Display* ipDisplay;
   CLidThermistor iLidThermistor;
   CPlateThermistor iPlateThermistor;
-  ProgramComponentPool<Cycle, 4> iCyclePool;
+  ProgramComponentPool<Cycle, 6> iCyclePool;
   ProgramComponentPool<Step, 20> iStepPool;
   
   // state

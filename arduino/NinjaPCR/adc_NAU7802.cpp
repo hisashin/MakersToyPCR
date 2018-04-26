@@ -5,8 +5,8 @@
 #include "adc_NAU7803.h"
 
 #ifdef USE_ADC_NAU7802
-
-
+/* Skip init sequence and return dummy values. This mode is for testing board without */
+// #define ADC_DUMMY_MODE 
 #define NO_ERR 0x00
 
 /* Implementation of NAU7802 A/D Converter */
@@ -67,8 +67,9 @@ void setRegisterBit (uint8_t reg_addr, int index) {
 
 }
 static bool isAdcInitialized = false;
-static uint8_t adc_default_conf = 0b0111100; //320sps (OK)
-//static uint8_t adc_default_conf = 0b0110100;
+static uint8_t adc_default_conf = 0b0111100; //320sps (111)(OK)
+//static uint8_t adc_default_conf = 0b0010100; //40sps (010)
+//static uint8_t adc_default_conf = 0b0001100; //80sps (010)
 
 void waitForFlag (uint8_t regAddress, int flagIndex, bool flagValue) {
   bool flagResult;
@@ -142,7 +143,6 @@ void switchChannelTo (uint8_t channel) {
   }
 }
 float getADCValueAt (uint8_t channel) {
-
   uint32_t adc_val = 0xFFFFFF;
   char read_out[3] = {0xFF, 0xFF, 0xFF};
   
@@ -151,6 +151,9 @@ float getADCValueAt (uint8_t channel) {
   } else {
     Serial.print("2ch ");
   }
+#ifdef ADC_DUMMY_MODE
+  return 0;
+#endif /* ADC_DUMMY_MODE */
   switchChannelTo(channel);
   // printRevisionCode(); // Test
 
