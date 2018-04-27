@@ -138,7 +138,40 @@ void requestHandlerStatus() {
 
 /* Handle request to "/connect" */
 void requestHandlerConnect() {
-    wifi_send("{connected:true,version:\"1.0.5\"}", "connect");
+    /*
+    EStartup = 0,
+    EStopped,
+    ELidWait,
+    ERunning,
+    EComplete,
+    EError,
+    EClear //for Display clearing only
+    */
+    boolean isRunning = false;
+    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EStartup) {
+      Serial.println("EStartup");
+      isRunning = true;
+    }
+    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EStopped) {
+      Serial.println("EStopped");
+    }
+    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ELidWait) {
+      Serial.println("ELidWait");
+      isRunning = true;
+    }
+    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ERunning) {
+      Serial.println("ERunning");
+      isRunning = true;
+    }
+    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
+      Serial.println("EComplete");
+      isRunning = true;
+    }
+    if (isRunning) {
+      wifi_send("{connected:true,version:\"1.0.5\",running:true}", "connect");
+    } else {
+      wifi_send("{connected:true,version:\"1.0.5\",running:false}", "connect");
+    }
 }
 
 void requestHandlerOTAError () {
