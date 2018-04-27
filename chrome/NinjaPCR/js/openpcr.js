@@ -322,6 +322,7 @@ var experimentLogger = null;
 function startPCR() {
 	experimentLogger = new ExperimentLogger();
 	experimentLog = [];
+	
 	// check if the form is validated
 	if (false == ($("#pcrForm").validate().form())) {
 		return 0;
@@ -343,8 +344,7 @@ function startPCR() {
 	// check that the entire protocol isn't >252 bytes
 	console.verbose("encodedProgram=" + encodedProgram);
 	if (encodedProgram.length > 512) {
-		chromeUtil
-				.alert(getLocalizedMessage('lengthLimit').replace('___LENGTH___', encodedProgram.length));
+		chromeUtil.alert(getLocalizedMessage('lengthLimit').replace('___LENGTH___', encodedProgram.length));
 		return 0;
 	}
 
@@ -364,18 +364,9 @@ function startPCR() {
 
 	//debug
 	console.verbose(encodedProgram);
+	
 	// go to the Running dashboard
-	sp2.showPanel(2);
-	$("#ex2_p3").hide();
-	// go to the top of the page
-	scrollTo(0, 0);
-	//hide the home button on the running page
-	$("#homeButton").hide();
-	$("#download").hide();
-	// show the "stop" button
-	$("#cancelButton").show();
-
-	$('#starting').dialog('open');
+	showRunningDashboard();
 	
 	// write out the file to the OpenPCR device
 	communicator.sendStartCommand(encodedProgram);
@@ -391,6 +382,22 @@ function startPCR() {
 	}, 100);
 	// also, reset the command_id_counter
 	window.command_id_counter = 0;
+}
+
+function showRunningDashboard () {
+
+	// go to the Running dashboard
+	sp2.showPanel(2);
+	$("#ex2_p3").hide();
+	// go to the top of the page
+	scrollTo(0, 0);
+	//hide the home button on the running page
+	$("#homeButton").hide();
+	$("#download").hide();
+	// show the "stop" button
+	$("#cancelButton").show();
+
+	$('#starting').dialog('open');
 }
 
 /*****************
@@ -764,8 +771,7 @@ $(function() {
 		});
 	 */
 	// Settings Dialog			
-	$('#settings_dialog')
-			.dialog( //TODO Control LCD
+	$('#settings_dialog').dialog( //TODO Control LCD
 					{
 						autoOpen : false,
 						width : 400,

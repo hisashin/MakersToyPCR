@@ -19,6 +19,30 @@ DeviceResponse.connect = function (obj) {
 		} else {
 			localStorage.setItem(STORAGE_KEY_LAST_HOST_NAME, DEFAULT_HOST);
 		}
+		
+		if (obj.running) {
+			console.log("Device is RUNNING");
+			// Resume
+			experimentLogger = new ExperimentLogger();
+			experimentLog = [];
+			showRunningDashboard();
+			
+			// write out the file to the OpenPCR device
+			experimentLogger.start();
+			running();
+			
+			// then close windows it after 1 second
+			setTimeout(function() {
+				$('#starting').dialog('close');
+			}, 5000);
+			setTimeout(function() {
+				$('#ex2_p3').show();
+			}, 100);
+			// also, reset the command_id_counter
+			window.command_id_counter = 0;
+		} else {
+			console.log("Device is IDLE");
+		}
 		communicator.firmwareVersionversion = obj.version;
 		console.log("Firmware version=" + communicator.firmwareVersionversion);
 		DeviceResponse.onDeviceFound("DEVICE");
