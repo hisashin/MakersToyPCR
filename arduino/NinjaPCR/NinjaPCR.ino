@@ -77,11 +77,7 @@ void setup_slack_test () {
 }
 void setup() {
     Serial.begin(BAUD_RATE);
-    slack_connectWifi();
-    slack_send("NinjaPCR_profile_finished11");
-    slack_send("NinjaPCR_profile_finished12");
     EEPROM.begin(4096);
-    slack_send("NinjaPCR_profile_finished13");
     
 #ifdef OFFLINE_DEMO
     // Skip network
