@@ -608,7 +608,7 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of peltier */) {
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
-    Serial.print("Dir=");Serial.print(dir);Serial.print(" prev=");Serial.println(prevActualDirection);
+    //Serial.print("Dir=");Serial.print(dir);Serial.print(" prev=");Serial.println(prevActualDirection);
   if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
       // Direction will be changed.
       if (prevPWMDuty==0 && pwm > PWM_SWITCHING_THRESHOLD) {
@@ -631,30 +631,24 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
      * (Heat) A->LOW, B->HIGH, PWM->LOW
      */
   if (dirActual == COOL) {
-    Serial.print(" P_COOL ");
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_ON);
 #ifdef USE_FAN
-    Serial.print("(Fan on)");
   digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
 #endif
   }
   else if (dirActual == HEAT) {
-    Serial.print("P_HEAT ");
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_ON);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
 #ifdef USE_FAN
-  Serial.print("(Fan on)");
   digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
 #endif
   }
   else {
       // Off
-    Serial.print("P_OFF ");
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
 #ifdef USE_FAN
-    Serial.print("(Fan on)");
   digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
 #endif
   }

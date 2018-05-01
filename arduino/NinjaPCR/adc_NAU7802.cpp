@@ -6,7 +6,7 @@
 
 #ifdef USE_ADC_NAU7802
 /* Skip init sequence and return dummy values. This mode is for testing board without */
-// #define ADC_DUMMY_MODE 
+//#define ADC_DUMMY_MODE 
 #define NO_ERR 0x00
 
 /* Implementation of NAU7802 A/D Converter */
@@ -115,7 +115,7 @@ uint8_t initADC () {
   // Start conversion
   setRegisterBit(NAU7802_REG_ADDR_CTRL2, NAU7802_BIT_CS);
   
-  Serial.print("Initial NAU7802_REG_ADDR_CTRL2=");
+  Serial.print("CTRL2=");
   Serial.println(wellADCReadRegValue(NAU7802_REG_ADDR_CTRL2));
   return NO_ERR;
 }
@@ -146,11 +146,6 @@ float getADCValueAt (uint8_t channel) {
   uint32_t adc_val = 0xFFFFFF;
   char read_out[3] = {0xFF, 0xFF, 0xFF};
   
-  if (channel == 0) {
-    Serial.print("1ch ");
-  } else {
-    Serial.print("2ch ");
-  }
 #ifdef ADC_DUMMY_MODE
   return 0;
 #endif /* ADC_DUMMY_MODE */
@@ -163,7 +158,7 @@ float getADCValueAt (uint8_t channel) {
   delay(40);
   i2c_err = wellADCReadRegValues(NAU7802_REG_ADDR_ADCO_B2,
                                  &read_out[0], 3);
-  Serial.print("Raw=");
+  Serial.print("V=");
   Serial.print(read_out[0], (0xFF & HEX)); Serial.print(",");
   Serial.print(read_out[1], (0xFF & HEX)); Serial.print(",");
   Serial.print(read_out[2], (0xFF & HEX));

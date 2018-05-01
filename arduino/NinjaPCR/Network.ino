@@ -71,25 +71,14 @@ void wifi_receive() {
 }
 /* t_network_send_interface */
 void wifi_send(char *response, char *funcName) {
-    Serial.print(funcName);
-    Serial.print("+");
-    Serial.println(response);
-    Serial.print("wifi_send len=");
-    Serial.println(strlen(response));
     String str = "DeviceResponse.";
     str += String(funcName);
-    Serial.print("str=");
-    Serial.println(str);
     str += "(";
     str += String(response);
-    Serial.print("str=");
-  Serial.println(str);
-    str += ");"; //ここでおちた (メッセージなし)
-    Serial.print("str=");
-    Serial.println(str);
+    str += ");";
     char *buff = (char*)malloc(sizeof(char) * (str.length()+1));
     str.toCharArray(buff, str.length()+1);
-    Serial.print("buff=");
+    Serial.print("WiFi Sendss");
     Serial.println(buff);
     server.send(200, "text/plain", buff);
     free(buff);
@@ -148,23 +137,10 @@ void requestHandlerConnect() {
     EClear //for Display clearing only
     */
     boolean isRunning = false;
-    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EStartup) {
-      Serial.println("EStartup");
-      isRunning = true;
-    }
-    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EStopped) {
-      Serial.println("EStopped");
-    }
-    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ELidWait) {
-      Serial.println("ELidWait");
-      isRunning = true;
-    }
-    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ERunning) {
-      Serial.println("ERunning");
-      isRunning = true;
-    }
-    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
-      Serial.println("EComplete");
+    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EStartup ||
+      gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ELidWait ||
+      gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ERunning ||
+      gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
       isRunning = true;
     }
     if (isRunning) {
@@ -197,7 +173,7 @@ void requestHandlerConfig() {
 
 void requestHandlerOTATop () {
     String s = getHTMLHeader();
-    s += "<h1>Firmware Update</h1>\n<ul>";
+    s += "<h1>Device Update</h1>\n<ul>";
     s += "<li><a href=\"/update\">Update by local upload</a></li>";
     s += "<li><a href=\"/cancel\">Cancel (Back to normal mode)</a></li>";
     s += "</ul></body></html>\n";
@@ -206,8 +182,8 @@ void requestHandlerOTATop () {
 }
 void requestHandlerOTACancel () {
     String s = getHTMLHeader();
-    s += "<h1>Firmware Update</h1>\n<ul>";
-    s += "<p>Firmware update is canceled. Please restart the device.</p></body></html>\n";
+    s += "<h1>Device Update</h1>\n<ul>";
+    s += "<p>Device update is canceled. Please restart the device.</p></body></html>\n";
     server.send(200, "text/html", s);
     EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NORMAL);
     EEPROM.commit();
@@ -258,13 +234,12 @@ String SSIDs[AP_MAX_NUMBER];
 void scanNearbyAP() {
     // WiFi.scanNetworks will return the number of networks found
     int n = WiFi.scanNetworks();
-    Serial.println("scan done");
     if (n == 0) {
         Serial.println("no networks found");
     }
     else {
         Serial.print(n);
-        Serial.println(" networks found");
+        Serial.println(" found");
         if (n > AP_MAX_NUMBER) {
             n = AP_MAX_NUMBER;
         }
@@ -534,7 +509,7 @@ boolean startWiFiHTTPServer() {
         Serial.print(".");
     }
     Serial.println("Connected.");
-    slack_send("NinjaPCR_test 1");
+    //slack_send("NinjaPCR_test 1");
     beginMDNS(host);
     Serial.println("MDNS ok.");
     free(ssid);
@@ -553,7 +528,7 @@ boolean startWiFiHTTPServer() {
         startNormalOperationServer();
     }
     
-        slack_send("NinjaPCR_test 2");
+    //slack_send("NinjaPCR_test 2");
     return true;
 }
 int beginMDNS (const char *hostName) {
