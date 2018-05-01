@@ -1,6 +1,6 @@
 LOCALIZE_CLASS_REGEXP = new RegExp('.*pcr_localize_([^ ]+)');
 function getLocalizedMessage (messageId) {
-	if (chrome && chrome.i18n) {
+	if (window.chrome && chrome.i18n) {
 		chrome.i18n.getMessage(messageId);
 	} else if (window.MESSAGE) {
 		if (window.MESSAGE[messageId] && window.MESSAGE[messageId]["message"]) {

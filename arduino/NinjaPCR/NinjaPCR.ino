@@ -58,23 +58,8 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 bool isApMode = false;
 
 // #define FORCE_AP_MODE // For debug
-// #define FORCE_NORMAL_MODE // FOR DEBUG
+#define FORCE_NORMAL_MODE // FOR DEBUG
 
-/*
-void setup () {
-    Serial.begin(9600);
-    Serial.println("Hello NinjaPCR!");
-    CPlateThermistor iPlateThermistor;
-    CLidThermistor iLidThermistor;
-    initADC();
-}
-*/
-void setup_slack_test () {
-    Serial.begin(BAUD_RATE);
-    Serial.println("Setup for slack");
-    slack_connectWifi();
-    slack_send("NinjaPCR_profile_finished.");
-}
 void setup() {
     Serial.begin(BAUD_RATE);
     EEPROM.begin(4096);
@@ -82,31 +67,23 @@ void setup() {
 #ifdef OFFLINE_DEMO
     // Skip network
     Serial.println("OFFLINE DEMO.");
-    /*
-    slack_connectWifi();
-    slack_send("NinjaPCR_profile_finished.");
-    */
     gpThermocycler = new Thermocycler(false);
     gpThermocycler->ipSerialControl = new SerialControl(NULL);
     // Profile
     Serial.println("Input demo profile");
     /*
-95℃ 2min
-95℃ 30sec→
-55℃ 30sec→
-72℃ 30sec × 35
+    95℃ 2min
+    (95℃ 30sec / 55℃ 30sec / 72℃ 30sec ) x 35
      */
-     Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
+     //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
     gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
     
 
     /*
-* 94˚C initial denaturation, 10 sec
-94˚C denaturation, 4 sec
-65˚C annealing, 4 sec
-72˚C extension, 1 sec
-Repeat x 25 cycles
-72˚C Final extension, 10 sec
+     * Fast demo
+    94˚C initial denaturation, 10 sec
+    (94˚C denaturation, 4 sec / 65˚C annealing, 4 sec / 72˚C extension, 1 sec) * 25
+    72˚C Final extension, 10 sec
      */
      /*
      Serial.println("s=ACGTC&c=start&d=30261&l=105&n=MiniDemo&p=(1[10|94|Initial|0])(25[4|94|High|0][4|65|Low|0][1|72|Med|0])(1[10|72|Final Ex|0])(1[0|20|Final Hold|0])");
@@ -116,16 +93,16 @@ Repeat x 25 cycles
     return;
 #endif
 #ifdef USE_WIFI
-    Serial.println("Starting NinjaPCR WiFi");
+    Serial.println("NinjaPCR WiFi");
     pinMode(PIN_WIFI_MODE, INPUT);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
 #ifdef FORCE_AP_MODE
   isApMode = true;
-  Serial.println("FORCE_AP_MODE");
+  Serial.println("FORCE_AP");
 #endif /* FORCE_AP_MODE */
 
 #ifdef FORCE_NORMAL_MODE
-  Serial.println("FORCE_NORMAL_MODE");
+  Serial.println("FORCE_NORMA");
   isApMode = false;
 #endif /* FORCE_NORMAL_MODE */
     if (isApMode) {
@@ -137,7 +114,6 @@ Repeat x 25 cycles
         setup_normal();
         wifi = new WifiCommunicator(wifi_receive, wifi_send);
         gpThermocycler->SetCommunicator(wifi);
-        Serial.println("Starting WiFi...");
         
         startWiFiHTTPServer();
     }
@@ -173,9 +149,7 @@ void setup_normal() {
     digitalWrite(PIN_STATUS_A, HIGH);
 #endif /* USE_STATUS_PINS */
 
-    Serial.println("Init Thermocycler 0");
     gpThermocycler = new Thermocycler(restarted);
-    Serial.println("Init Thermocycler 1");
 
 }
 
@@ -217,10 +191,9 @@ void loop() {
     gpThermocycler->Loop();
     // TODO accurate timing
     if (isWiFiConnected()) {
-        Serial.print("L");
         loopWiFiHTTPServer();
     } else {
-        Serial.println("WiFi Disconnected");
+        Serial.println("Disconnected");
     }
     long elapsed =  millis() - startMillis;
     if (elapsed<0 || elapsed > 1000) {
@@ -229,7 +202,7 @@ void loop() {
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
       Serial.println("COMPLETE");
       if (!finishSent) {
-         slack_send("NinjaPCR_profile_finished_" + String(sec) + "sec");
+         //slack_send("NinjaPCR_finished_" + String(sec) + "sec");
          finishSent = true;
       }
     }
