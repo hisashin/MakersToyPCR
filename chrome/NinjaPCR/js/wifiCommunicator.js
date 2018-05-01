@@ -14,10 +14,15 @@ DeviceResponse.connect = function (obj) {
 		// Connected
 		$("#DeviceConnectionStatus").attr("class","connected");
 		$("#DeviceConnectionStatusLabel").text("Connected");
-		if (localStorage) {
-			localStorage.setItem(STORAGE_KEY_LAST_HOST_NAME, host);
-		} else {
-			localStorage.setItem(STORAGE_KEY_LAST_HOST_NAME, DEFAULT_HOST);
+		
+		try {
+			if (localStorage) {
+				localStorage.setItem(STORAGE_KEY_LAST_HOST_NAME, host);
+			} else {
+				localStorage.setItem(STORAGE_KEY_LAST_HOST_NAME, DEFAULT_HOST);
+			}
+		} catch (e) {
+			console.log(e);
 		}
 		
 		if (obj.running) {
@@ -67,8 +72,12 @@ var NetworkCommunicator = function () {
 NetworkCommunicator.prototype.scan = function (callback) {
 	// callback(port)
 	DeviceResponse.onDeviceFound = callback;
-	if (localStorage && localStorage.getItem(STORAGE_KEY_LAST_HOST_NAME)) {
-		$("#HostText").val(localStorage.getItem(STORAGE_KEY_LAST_HOST_NAME));
+	try {
+		if (window.localStorage && localStorage.getItem(STORAGE_KEY_LAST_HOST_NAME)) {
+			$("#HostText").val(localStorage.getItem(STORAGE_KEY_LAST_HOST_NAME));
+		}
+	} catch (e) {
+		console.log(e);
 	}
 	var scope = this;
 	$("#ConnectButton").click(function(e) {
@@ -80,11 +89,18 @@ NetworkCommunicator.prototype.scan = function (callback) {
 		$("#DeviceSettings").toggle();
 	});
 };
-function loadJSONP (URL) {
+function loadJSONP (URL, timeoutMsec) {
 	var scriptTag = document.createElement("script");
 	scriptTag.type = "text/javascript";
 	scriptTag.src = URL;
 	document.body.appendChild(scriptTag);
+	scriptTag.addEventListener("error", function(){
+		console.log("error");
+	});
+	scriptTag.addEventListener("load", function(){
+		console.log("loaded");
+		scriptTag.parentNode.removeChild(scriptTag);
+	});
 }
 NetworkCommunicator.prototype.sendRequestToDevice = function (path, param) {
 	var URL = getDeviceHost() + path;
@@ -95,7 +111,7 @@ NetworkCommunicator.prototype.sendRequestToDevice = function (path, param) {
 		URL += param;
 	}
 	console.log("sendRequestToDevice URL=" + URL);
-	loadJSONP(URL);
+	loadJSONP(URL, 4000);
 }
 NetworkCommunicator.prototype.setDeviceHost = function (newHost) {
 	host = newHost;
