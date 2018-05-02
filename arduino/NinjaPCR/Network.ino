@@ -40,7 +40,7 @@ String hostName = DEFAULT_HOST_NAME;
 
 String PARAM_OTA_TYPE = "ot";
 String PARAM_OTA_URL = "ou";
-#define OTA_TYPE_NORMAL 0
+#define OTA_TYPE_NO_UPDATE 0 /* No update (boot with normal PCR mode) */
 #define OTA_TYPE_LOCAL_UPLOAD 1
 #define OTA_TYPE_WEB_DOWNLOAD 2
 
@@ -156,6 +156,7 @@ void requestHandlerOTAError () {
 }
 
 /* Handle request to "/config"  (OTA conf) */
+// Possible value is only ot=
 void requestHandlerConfig() {
     String type = server.arg("ot"); // Value of dropdown
     String url = server.arg("ou"); // Value of dropdown
@@ -163,11 +164,10 @@ void requestHandlerConfig() {
     Serial.print(type);
     Serial.print(", url=");
     Serial.println(url);
-    wifi_send("{accepted:true}", "onConf");
-    
-
     saveStringToEEPROM(type, EEPROM_OTA_TYPE_ADDR, 1);
     saveStringToEEPROM(url, EEPROM_OTA_DOWNLOAD_URL_ADDR, EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH);
+    wifi_send("{accepted:true}", "onConf");
+    
     EEPROM.commit();
 }
 
@@ -185,9 +185,8 @@ void requestHandlerOTACancel () {
     s += "<h1>Device Update</h1>\n<ul>";
     s += "<p>Device update is canceled. Please restart the device.</p></body></html>\n";
     server.send(200, "text/html", s);
-    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NORMAL);
+    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NO_UPDATE);
     EEPROM.commit();
-  
 }
 
 void requestHandler404() {
@@ -198,19 +197,20 @@ void requestHandler404() {
 /* Just load and print */
 int otaType = 0;
 String otaURL;
-void loadOTAConfig () {
 
+void loadOTAConfig () {
     char typeValueCh = EEPROM.read(EEPROM_OTA_TYPE_ADDR);
     Serial.print(typeValueCh);
     int otaType = typeValueCh - '0';
     
-    Serial.print("OTA ch=");
-    Serial.println(otaType);
     if (otaType==OTA_TYPE_LOCAL_UPLOAD) {
+        Serial.println("OTA_TYPE_LOCAL_UPLOAD");
         isUpdateMode = true;
     } else if (otaType==OTA_TYPE_WEB_DOWNLOAD) {
+        // This functionality is disabled now.
         char *urlValue = (char *) malloc(sizeof(char) * (EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH + 1));
         readStringFromEEPROM(urlValue, EEPROM_OTA_DOWNLOAD_URL_ADDR, EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH);
+        Serial.println("OTA_TYPE_WEB_DOWNLOAD");
         String str(urlValue);
         otaURL = str;
         free(urlValue);
@@ -333,7 +333,7 @@ void saveStringToEEPROM(String str, int startAddress, int maxLength) {
 void saveWiFiConnectionInfo(String ssid, String password, String host) {
     // Flags
     EEPROM.write(EEPROM_WIFI_CONF_DONE_ADDR, EEPROM_WIFI_CONF_DONE_VAL);
-    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NORMAL);
+    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NO_UPDATE);
     // Values
     saveStringToEEPROM(ssid, EEPROM_WIFI_SSID_ADDR,
             EEPROM_WIFI_SSID_MAX_LENGTH);

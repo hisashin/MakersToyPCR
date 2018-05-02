@@ -33,22 +33,25 @@
 #define B_CONST_25_100 4334
 #define R_0_WELL 100.0
 
+
+/*
 // 103-JT-025
 #define B_CONST_HEATER 3435
-//#define R_0_HEATER 10.0
 #define R_0_HEATER 100.0
+*/
 
+
+/* 
 // 104-JT-025
-/*
 #define B_CONST_HEATER 4390
 #define R_0_HEATER 100.0 
 */
-// Resistor pair:
+// Counter resistors
 #define R_LOW_TEMP 30.0 // Well low mode
 #define R_HIGH_TEMP 10 // Well high mode (30x3)
-#define R_HEATER 5.0 // Heater (kOhm)
+#define R_HEATER 5.0 // Heater
 
-#define HIGH_LOW_SWITCHING_TEMP 54//TODO
+#define HIGH_LOW_SWITCHING_TEMP 54
 
 // #define PRINT_DEBUG_CHART
 
@@ -74,8 +77,8 @@ CLidThermistor::CLidThermistor() :
         iTemp(0.0) {
     Serial.println("CLidThermistor");
     
-    SWITCHING_VOLTAGE_50_LID = tempToVoltageRatio(50, R_HEATER, B_CONST_25_50, R_0_HEATER);
-    SWITCHING_VOLTAGE_85_LID = tempToVoltageRatio(85, R_HEATER, B_CONST_25_85, R_0_HEATER);
+    SWITCHING_VOLTAGE_50_LID = tempToVoltageRatio(50, R_HEATER, B_CONST_25_50, R_0_WELL);
+    SWITCHING_VOLTAGE_85_LID = tempToVoltageRatio(85, R_HEATER, B_CONST_25_85, R_0_WELL);
 
 #ifdef PRINT_DEBUG_CHART
 
@@ -98,7 +101,7 @@ void CLidThermistor::ReadTemp() {
     else
         b_constant = B_CONST_25_100;
     
-    float temp = voltageToTemp (voltageRatio, R_HEATER, b_constant, R_0_HEATER);
+    float temp = voltageToTemp (voltageRatio, R_HEATER, b_constant, R_0_WELL);
     if (iTemp==0 || abs(temp-iTemp)<15) {
       iTemp = temp;
     }
@@ -209,16 +212,6 @@ void CPlateThermistor::ReadTemp() {
 
     // Switch high/low mode (isHighTempMode)
     isHighTempMode = (iTemp > HIGH_LOW_SWITCHING_TEMP);
-    /*
-    if (isHighTempMode) {
-      Serial.print("HighMode R=");
-      Serial.println(resistance);
-      
-    } else {
-      Serial.print("LowMode R=");
-      Serial.println(resistance);
-    }
-    */
     digitalWrite(PIN_WELL_HIGH_TEMP, isHighTempMode);
 }
 //------------------------------------------------------------------------------
