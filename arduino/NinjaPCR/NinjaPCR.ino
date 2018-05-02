@@ -24,7 +24,7 @@
 #include "thermocycler.h"
 #include "thermistors.h"
 
-// #define OFFLINE_DEMO // No WiFi
+#define OFFLINE_DEMO // No WiFi
 #ifdef USE_WIFI
 
 #include <ESP8266WiFi.h>
@@ -58,7 +58,7 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 bool isApMode = false;
 
 // #define FORCE_AP_MODE // For debug
-#define FORCE_NORMAL_MODE // FOR DEBUG
+// #define FORCE_NORMAL_MODE // FOR DEBUG
 
 void setup() {
     Serial.begin(BAUD_RATE);
@@ -75,6 +75,11 @@ void setup() {
     95℃ 2min
     (95℃ 30sec / 55℃ 30sec / 72℃ 30sec ) x 35
      */
+     //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
+    //gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
+
+
+     // Dummy profile (for keeping lid temp)
      //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
     gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
     
@@ -160,12 +165,13 @@ short INTERVAL_MSEC = 500;
 int sec = 0;
 bool finishSent = false;
 void loop() {
-  
+    long startMillis;
+    long elapsed;
 #ifdef OFFLINE_DEMO
-    long startMillis = millis();
+    startMillis = millis();
     gpThermocycler->Loop();
     gpThermocycler->ipSerialControl->ProcessDummyMessage(STATUS_REQ, "");
-    long elapsed =  millis() - startMillis;
+    elapsed =  millis() - startMillis;
     sec++;
     //Serial.print();Serial.print(sec++);
     //Serial.print("Elapsed=");Serial.println(elapsed);
@@ -176,7 +182,7 @@ void loop() {
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
       Serial.println("COMPLETE");
       if (!finishSent) {
-         slack_send("NinjaPCR_profile_finished_" + String(sec) + "sec");
+         //slack_send("NinjaPCR_profile_finished_" + String(sec) + "sec");
          finishSent = true;
       }
     }
@@ -187,7 +193,7 @@ void loop() {
         loopWiFiAP();
         return;
     }
-    long startMillis = millis();
+    startMillis = millis();
     gpThermocycler->Loop();
     // TODO accurate timing
     if (isWiFiConnected()) {
@@ -195,7 +201,7 @@ void loop() {
     } else {
         Serial.println("Disconnected");
     }
-    long elapsed =  millis() - startMillis;
+    elapsed =  millis() - startMillis;
     if (elapsed<0 || elapsed > 1000) {
       elapsed = 0;
     }
