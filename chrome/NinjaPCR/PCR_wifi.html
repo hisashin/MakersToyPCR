@@ -314,25 +314,13 @@
 		</div>	
 			
 	</div>
-	<!-- Config Panel-->
+	<!-- Device update (visible when firmware update is available.) -->
 	<div id="config" style="display:none">
 		<h2>Firmware Update</h2>
-		<!--
-		<div>
-			<input type="radio" name="otaType" id="otaTypeLocalUpload" value="1" checked/>
-			<label for="otaTypeLocalUpload">Local Upload</label>: Upload .bin file from your local PC
-		</div>
-		<div>
-			<input type="radio" name="otaType" id="otaTypeWebDownload" value="2"/>
-			<label for="otaTypeWebDownload">Web Download</label>: Specify url of .bin file on web.
-		</div>
-		<div>
-			URL of Binary<input type="text" size="80" id="otaURL" value="https://www.tori.st"/>
-		</div>
-		-->
 		<input type="button" value="Start Firmware Update" id="buttonStartOTA"/>
 		<div id="otaAcceptedMessage" style="display:none">
-			Please restart the device and open <a href="http://ninjapcrwifi.local/">http://ninjapcrwifi.local/</a>.
+			<!-- Link to OTA top page -->
+			Please restart the device and open <a href="#" id="otaLink">http://ninjapcrwifi.local/</a>.
 		</div>
 	</div>
 </body>
