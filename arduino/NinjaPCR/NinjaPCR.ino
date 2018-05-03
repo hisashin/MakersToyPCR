@@ -75,13 +75,13 @@ void setup() {
     95℃ 2min
     (95℃ 30sec / 55℃ 30sec / 72℃ 30sec ) x 35
      */
-     //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
-    //gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
+     Serial.println("s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
+     gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
 
 
      // Dummy profile (for keeping lid temp)
      //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
-    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
+     //gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
     
 
     /*
@@ -160,7 +160,7 @@ void setup_normal() {
 
 bool isSerialConnected = false;
 bool initDone = false;
-short INTERVAL_MSEC = 500;
+short INTERVAL_MSEC = 1000;
 
 int sec = 0;
 bool finishSent = false;
@@ -175,10 +175,10 @@ void loop() {
     sec++;
     //Serial.print();Serial.print(sec++);
     //Serial.print("Elapsed=");Serial.println(elapsed);
-    if (elapsed<0 || elapsed > 1000) {
+    if (elapsed<0 || elapsed > INTERVAL_MSEC) {
       elapsed = 0;
     }
-    delay(1000-elapsed);
+    delay(INTERVAL_MSEC-elapsed);
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
       Serial.println("COMPLETE");
       if (!finishSent) {
@@ -202,7 +202,7 @@ void loop() {
         Serial.println("Disconnected");
     }
     elapsed =  millis() - startMillis;
-    if (elapsed<0 || elapsed > 1000) {
+    if (elapsed<0 || elapsed > INTERVAL_MSEC) {
       elapsed = 0;
     }
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
@@ -212,7 +212,7 @@ void loop() {
          finishSent = true;
       }
     }
-    delay(1000-elapsed);
+    delay(INTERVAL_MSEC-elapsed);
 #else
     if (isSerialConnected) {
         gpThermocycler->Loop();
