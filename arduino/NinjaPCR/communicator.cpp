@@ -84,14 +84,10 @@ void Communicator::SendStatus() {
 
   statusPtr = AddParam(statusPtr, 'd', (unsigned long) iCommandId, true);
   statusPtr = AddParam_P(statusPtr, 's', szStatus);
-  statusPtr = AddParam(statusPtr, 'l', (int) tc.GetLidTemp());
+  //statusPtr = AddParam(statusPtr, 'l', (int) tc.GetLidTemp());
+  statusPtr = AddParam(statusPtr, 'l', tc.GetLidTemp(), 1, false); // float value
   statusPtr = AddParam(statusPtr, 'b', tc.GetPlateTemp(), 1, false);
   statusPtr = AddParam_P(statusPtr, 't', szThermState);
-  /*
-   // TODO
-  statusPtr = AddParam(statusPtr, 'o',
-      GetThermocycler().GetDisplay()->GetContrast());
-      */
 
   if (state == Thermocycler::ERunning || state == Thermocycler::EComplete) {
     statusPtr = AddParam(statusPtr, 'e', tc.GetElapsedTimeS());

@@ -76,9 +76,13 @@ static double SWITCHING_VOLTAGE_85_LID = 0;
 CLidThermistor::CLidThermistor() :
         iTemp(0.0) {
     Serial.println("CLidThermistor");
-    
+
     SWITCHING_VOLTAGE_50_LID = tempToVoltageRatio(50, R_HEATER, B_CONST_25_50, R_0_WELL);
     SWITCHING_VOLTAGE_85_LID = tempToVoltageRatio(85, R_HEATER, B_CONST_25_85, R_0_WELL);
+    Serial.print("Lid 50=");
+    Serial.println(SWITCHING_VOLTAGE_50_LID);
+    Serial.print("Lid 85=");
+    Serial.println(SWITCHING_VOLTAGE_85_LID);
 
 #ifdef PRINT_DEBUG_CHART
 
@@ -94,6 +98,12 @@ void CLidThermistor::ReadTemp() {
     double voltageRatio;
     voltageRatio = 1.0-(double)getLidADCValue();
     float b_constant;
+    
+    /*
+     * Lid 50=0.87
+      Lid 85=0.64
+
+*/
     if (voltageRatio > SWITCHING_VOLTAGE_50_LID)
         b_constant = B_CONST_25_50;
     else if (voltageRatio > SWITCHING_VOLTAGE_85_LID)
@@ -102,12 +112,9 @@ void CLidThermistor::ReadTemp() {
         b_constant = B_CONST_25_100;
     
     float temp = voltageToTemp (voltageRatio, R_HEATER, b_constant, R_0_WELL);
-    if (iTemp==0 || abs(temp-iTemp)<15) {
+    if (iTemp>0) {
       iTemp = temp;
     }
-    /*
-    iTemp = voltageToTemp (voltageRatio, R_HEATER, B_CONST_HEATER, R_0_HEATER);
-    */
     
 }
 
