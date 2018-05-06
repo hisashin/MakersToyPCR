@@ -37,13 +37,14 @@
 #define MCP342X_18_BIT     0X0C // 18-bit 3.75 SPS
 #define MCP342X_BUSY       0X80 // read: output not ready
 
-#define CYCLE_START_TOLERANCE 0.5
+#define CYCLE_START_TOLERANCE 1.0
 #define LID_START_TOLERANCE 1.0
 //#define CYCLE_START_TOLERANCE 8.0
 //#define LID_START_TOLERANCE 12.0
 
 // #define PID_CONF_ORIGINAL_OPENPCR
-#define PID_CONF_NINJAPCR_WIFI
+// #define PID_CONF_NINJAPCR_WIFI
+#define PID_CONF_SIMULATED_TUBE_TEMP
 
 #ifdef PID_CONF_ORIGINAL_OPENPCR
 #define PLATE_PID_INC_NORM_P 1000
@@ -102,6 +103,36 @@
 
 #endif /* PID_CONF_NINJAPCR_WIFI */
 
+
+#ifdef PID_CONF_SIMULATED_TUBE_TEMP
+
+#define PID_RATIO 0.3
+#define PLATE_PID_INC_NORM_P (1000*PID_RATIO)
+#define PLATE_PID_INC_NORM_I (250*PID_RATIO)
+#define PLATE_PID_INC_NORM_D (250*PID_RATIO)
+
+#define PLATE_PID_INC_LOW_THRESHOLD 80
+#define PLATE_PID_INC_LOW_P (600*PID_RATIO)
+#define PLATE_PID_INC_LOW_I (200*PID_RATIO)
+#define PLATE_PID_INC_LOW_D (400*PID_RATIO)
+
+#define PLATE_PID_DEC_HIGH_THRESHOLD 70
+#define PLATE_PID_DEC_HIGH_P (800*0.8)
+#define PLATE_PID_DEC_HIGH_I (700*0.8)
+#define PLATE_PID_DEC_HIGH_D (300*0.8)
+
+#define PLATE_PID_DEC_NORM_P (500*0.8*10.0)
+#define PLATE_PID_DEC_NORM_I (400*0.8*10.0)
+#define PLATE_PID_DEC_NORM_D (200*0.8*3.0)
+
+#define PLATE_PID_DEC_LOW_THRESHOLD 35
+#define PLATE_PID_DEC_LOW_P (2000*0.8*1.5)
+#define PLATE_PID_DEC_LOW_I (100*0.8*1.5)
+#define PLATE_PID_DEC_LOW_D (200*0.8*1.5)
+
+#define PLATE_BANGBANG_THRESHOLD 5.0
+
+#endif /* PID_CONF_SIMULATED_TUBE_TEMP */
 #define MIN_PELTIER_PWM -1023
 #define MAX_PELTIER_PWM 1023
 
@@ -109,6 +140,12 @@
 #define MIN_LID_PWM 0
 
 #define STARTUP_DELAY 4000
+
+ /* Thermal resistance*/
+#define THETA_WELL 3.0
+#define THETA_LID 15.0
+/* Capacity */
+#define CAPACITY_TUBE 3.0
 
 //pid parameters
 /*
@@ -143,9 +180,11 @@ iThermalDirection(OFF),
 iPeltierPwm(0),
 iCycleStartTime(0),
 iRamping(true),
-iPlatePid(&iPlateThermistor.GetTemp(),
+//iPlatePid(&iPlateThermistor.GetTemp(), // Use measured well temp
+iPlatePid(&iEstimatedSampleTemp, // Use estimated sample temp (test)
 &iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
 iLidPid(LID_PID_GAIN_SCHEDULE, MIN_LID_PWM, MAX_LID_PWM),
+iEstimatedSampleTemp(25),
 iTargetLidTemp(0) {
 #ifndef USE_WIFI
 #ifdef USE_LCD
@@ -266,10 +305,8 @@ void Thermocycler::Stop() {
 PcrStatus Thermocycler::Start() {
 	//Serial.print("st");
   if (ipProgram == NULL) {
-	//Serial.print("nu");
     return ENoProgram;
   }
-	//Serial.print("ok");
 
   //advance to lid wait state
   iProgramState = ELidWait;
@@ -283,9 +320,10 @@ static boolean lamp = false;
 void Thermocycler::Loop() {
 #ifdef USE_STATUS_PINS
 	digitalWrite(PIN_STATUS_A, (!lamp)?HIGH:LOW);
-    digitalWrite(PIN_STATUS_B, (lamp)?HIGH:LOW);
+  digitalWrite(PIN_STATUS_B, (lamp)?HIGH:LOW);
 #endif /* USE_STATUS_PINS */
 	lamp = !lamp;
+  ipSerialControl->Process();
   switch (iProgramState) {
   case EStartup:
     if (millis() > STARTUP_DELAY) {
@@ -318,16 +356,16 @@ void Thermocycler::Loop() {
   case ERunning:
     //update program
     if (iProgramState == ERunning) {
-      if (iRamping && abs(ipCurrentStep->GetTemp() - GetPlateTemp()) <= CYCLE_START_TOLERANCE && GetRampElapsedTimeMs() > ipCurrentStep->GetRampDurationS() * 1000) {
+      if (iRamping && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE && GetRampElapsedTimeMs() > ipCurrentStep->GetRampDurationS() * 1000) {
         //begin step hold
         //eta updates
         if (ipCurrentStep->GetRampDurationS() == 0) {
           //fast ramp
-          iElapsedFastRampDegrees += absf(GetPlateTemp() - iRampStartTemp);
+          iElapsedFastRampDegrees += absf(GetTemp() - iRampStartTemp);
           iTotalElapsedFastRampDurationMs += millis() - iRampStartTime;
         }
 
-        if (iRampStartTemp > GetPlateTemp()) {
+        if (iRampStartTemp > GetTemp()) {
           iHasCooled = true;
         }
         iRamping = false;
@@ -347,7 +385,7 @@ void Thermocycler::Loop() {
     break;
 
   case EComplete:
-    if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetPlateTemp()) <= CYCLE_START_TOLERANCE) {
+    if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE) {
       iRamping = false;
     }
     // TODO NinjaPCR keep lid temp to avoid condensation
@@ -360,19 +398,19 @@ void Thermocycler::Loop() {
   ControlLid();
   //plate  
   iPlateThermistor.ReadTemp();
+  
+  double estimatedAirTemp = GetPlateTemp() * 0.4 + GetLidTemp() * 0.6; // TODO use actual air temperature
+  iEstimatedSampleTemp += ((GetPlateTemp()-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
+  
   CalcPlateTarget();
   ControlPeltier();
 
   //program
   UpdateEta();
-  Serial.print("H");
  #ifdef USE_LCD
   ipDisplay->Update();
   #endif
-  Serial.print("I");
-  
   ipSerialControl->Process();
-  Serial.print("J");
 }
 
 void Thermocycler::SetCommunicator(Communicator *comm) {
@@ -454,27 +492,25 @@ void Thermocycler::ControlPeltier() {
   Thermocycler::ThermalDirection newDirection = Thermocycler::ThermalDirection::OFF;
   if (iProgramState == ERunning || (iProgramState == EComplete && ipCurrentStep != NULL)) {
     // Check whether we are nearing target and should switch to PID control
-    float plateTemp = GetPlateTemp();
-    /*
-    Serial.print(plateTemp);
-    Serial.print("<=>");
-    Serial.println(iTargetPlateTemp);
-    */
+    // float plateTemp = GetPlateTemp();
+    /* Test: Use estimated sample temp instead or measured well temp */
+    float plateTemp = GetTemp();
+    // Serial.print(iTargetPlateTemp);Serial.print("<=>");Serial.println(plateTemp);
     if (iPlateControlMode == EBangBang && absf(iTargetPlateTemp - plateTemp) < PLATE_BANGBANG_THRESHOLD) {
       iPlateControlMode = EPIDPlate;
-      iPlatePid.SetMode(AUTOMATIC); //ここでおちた
+      iPlatePid.SetMode(AUTOMATIC);
       iPlatePid.ResetI();
     }
 
     // Apply control mode
     if (iPlateControlMode == EBangBang) {
       // Full drive
-      iPeltierPwm = iTargetPlateTemp > GetPlateTemp() ? MAX_PELTIER_PWM : MIN_PELTIER_PWM;
+      iPeltierPwm = iTargetPlateTemp > plateTemp ? MAX_PELTIER_PWM : MIN_PELTIER_PWM;
     }
     iPlatePid.Compute();
 
     if (iDecreasing && iTargetPlateTemp > PLATE_PID_DEC_LOW_THRESHOLD) {
-      if (iTargetPlateTemp < GetPlateTemp()) {
+      if (iTargetPlateTemp < plateTemp) {
         iPlatePid.ResetI();
       }
       else {
@@ -500,13 +536,6 @@ void Thermocycler::ControlLid() {
   if (iProgramState == ERunning || iProgramState == ELidWait) {
     float temp = GetLidTemp();
     drive = iLidPid.Compute(iTargetLidTemp, temp);
-    /*
-    Serial.print(temp);
-    Serial.print("<=>");
-    Serial.println(iTargetLidTemp);
-    */
-    Serial.print(" Drive=");
-    Serial.print(drive);
   }
 #ifdef USE_ESP8266
 // Use on-off control instead of PWM because ESP8266 does not have enough pins
@@ -514,24 +543,18 @@ void Thermocycler::ControlLid() {
   //analogWrite(PIN_LID_PWM, 1023-drive);
   int v = (int)(!(drive>(MAX_PELTIER_PWM/2)));
   digitalWrite(PIN_LID_PWM, v);
-  Serial.print(" AL ");
-  Serial.println(v);
 #else
   int v = (int)(drive>(MAX_PELTIER_PWM/2));
   digitalWrite(PIN_LID_PWM, v);
-  Serial.println(" AH ");
-  Serial.println(v);
   //analogWrite(PIN_LID_PWM, drive);
 #endif /* PIN_LID_PWM_ACTIVE_LOW */
 
 #else
 
 #ifdef PIN_LID_PWM_ACTIVE_LOW
-  Serial.println(" L");
   analogWrite(PIN_LID_PWM, 1023-drive);
 #else
   // Active high
-  Serial.println(" H");
   analogWrite(PIN_LID_PWM, drive);
 #endif /* PIN_LID_PWM_ACTIVE_LOW */
 
@@ -608,7 +631,6 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of peltier */) {
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
-    //Serial.print("Dir=");Serial.print(dir);Serial.print(" prev=");Serial.println(prevActualDirection);
   if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
       // Direction will be changed.
       if (prevPWMDuty==0 && pwm > PWM_SWITCHING_THRESHOLD) {
@@ -652,8 +674,6 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
   digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
 #endif
   }
-   Serial.print(" v=");
-   Serial.println(pwmActual);
      
 #ifdef PIN_WELL_PWM_ACTIVE_LOW
   analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-pwmActual);

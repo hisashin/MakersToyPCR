@@ -24,7 +24,7 @@
 #include "thermocycler.h"
 #include "thermistors.h"
 
-#define OFFLINE_DEMO // No WiFi
+// #define OFFLINE_DEMO // No WiFi
 #ifdef USE_WIFI
 
 #include <ESP8266WiFi.h>
@@ -75,8 +75,8 @@ void setup() {
     95℃ 2min
     (95℃ 30sec / 55℃ 30sec / 72℃ 30sec ) x 35
      */
-     Serial.println("s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
-     gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
+     Serial.println("s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[30|95|Initial|0])(35[60|95|High|0][60|55|Low|0][60|72|Med|0])(1[0|20|Final Hold|0])");
+     gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[60|95|Initial|0])(35[60|95|High|0][60|55|Low|0][60|72|Med|0])(1[0|20|Final Hold|0]) ");
 
 
      // Dummy profile (for keeping lid temp)
@@ -212,6 +212,7 @@ void loop() {
          finishSent = true;
       }
     }
+    Serial.print(elapsed); Serial.println("sec");
     delay(INTERVAL_MSEC-elapsed);
 #else
     if (isSerialConnected) {
