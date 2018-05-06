@@ -104,6 +104,7 @@ void Communicator::SendStatus() {
   }
   statusPtr = AddParam(statusPtr, 'x', tc.getAnalogValueLid());
   statusPtr = AddParam(statusPtr, 'y', tc.getAnalogValuePeltier());
+  statusPtr = AddParam(statusPtr, 'z', tc.GetTemp(), 1, false);
   statusPtr++; //to include null terminator
 
   int statusBufLen = statusPtr - statusBuf;

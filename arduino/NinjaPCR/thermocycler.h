@@ -82,6 +82,7 @@ public:
   int GetPeltierPwm() { return iPeltierPwm; }
   double GetLidTemp() { return iLidThermistor.GetTemp(); }
   double GetPlateTemp() { return iPlateThermistor.GetTemp(); }
+  double GetTemp () { return iEstimatedSampleTemp; }
   double GetPlateResistance() { return iPlateThermistor.GetResistance(); }
   unsigned long GetTimeRemainingS() { return iEstimatedTimeRemainingS; }
   unsigned long GetElapsedTimeS() { return (millis() - iProgramStartTimeMs) / 1000; }
@@ -128,6 +129,7 @@ private:
   ProgramState iProgramState;
   double iTargetPlateTemp;
   double iTargetLidTemp;
+  double iEstimatedSampleTemp;
   Cycle* ipProgram;
   Cycle* ipDisplayCycle;
   char iszProgName[21];
