@@ -59,7 +59,6 @@ static float INVERSE_BASE_TEMP = 1.0 / (THERMISTOR_BASE_TEMP + KELVIN);
 
 double voltageToTemp (double voltageRatio, float resistance, float b_constant, float r0) {
     double thermistorR = resistance * voltageRatio / (1.0 - voltageRatio);
-    // Serial.print("R="); Serial.println(thermistorR);
     return (1 / ((log(thermistorR / r0) / b_constant) + INVERSE_BASE_TEMP))  - KELVIN;
 }
 double tempToVoltageRatio (double tempCelsius, double resistance, double bConst, double r0) {
@@ -112,7 +111,7 @@ void CLidThermistor::ReadTemp() {
         b_constant = B_CONST_25_100;
     
     float temp = voltageToTemp (voltageRatio, R_HEATER, b_constant, R_0_WELL);
-    if (iTemp>0) {
+    if (iTemp==0 || abs(temp-iTemp)<15) {
       iTemp = temp;
     }
     
@@ -191,8 +190,6 @@ bool isHighTempMode = false;
 
 void CPlateThermistor::ReadTemp() {
     float voltageRatio = getWellADCValue(); //Crash
-    //Serial.print("V=");
-    //Serial.println(voltageRatio);
     float resistance, b_constant;
     if (isHighTempMode) {
         resistance = R_HIGH_TEMP;

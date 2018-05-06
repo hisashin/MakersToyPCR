@@ -52,7 +52,7 @@ static uint8_t wellADCReadRegValues(char reg_address, char *out, uint8_t dataSiz
   int index = 0;
   while (Wire.available() && index < dataSize) {
     char c = Wire.read(); // receive a byte as character
-    out[index++] = c; //Serial.print(c);
+    out[index++] = c;
   }
 }
 
@@ -158,11 +158,13 @@ float getADCValueAt (uint8_t channel) {
   delay(40);
   i2c_err = wellADCReadRegValues(NAU7802_REG_ADDR_ADCO_B2,
                                  &read_out[0], 3);
+                                 /*
   Serial.print("V=");
   Serial.print(read_out[0], (0xFF & HEX)); Serial.print(",");
   Serial.print(read_out[1], (0xFF & HEX)); Serial.print(",");
   Serial.print(read_out[2], (0xFF & HEX));
   Serial.print(" / ");
+  */
   read_out[0] -= 0x80; // signed->unsigned
   if (switchChannelTo == 0) {
     switchChannelTo(1);
