@@ -2,6 +2,7 @@
  * OTA
  */
 #include <ESP8266HTTPUpdateServer.h>
+#include "pcr_includes.h"
 
 
 // OTA mode
@@ -9,8 +10,8 @@ ESP8266HTTPUpdateServer httpUpdater;
 
 // OTA boot type (0:normal mode, 1:local upload, 2:web download)
 #define EEPROM_OTA_TYPE_ADDR  (EEPROM_WIFI_MDNS_HOST_ADDR+EEPROM_WIFI_MDNS_HOST_MAX_LENGTH+1)
-#define EEPROM_OTA_DOWNLOAD_URL_ADDR (EEPROM_OTA_TYPE_ADDR+1)
-#define EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH 128
+#define EEPROM_OTA_CURRENT_VERSION_ADDR (EEPROM_OTA_TYPE_ADDR+1)
+#define EEPROM_OTA_CURRENT_VERSION_MAXLENGTH 128
 
 String PARAM_OTA_TYPE = "ot";
 String PARAM_OTA_URL = "ou";
@@ -21,7 +22,7 @@ String PARAM_OTA_URL = "ou";
 const char* OTA_HOST = "ninjapcrwifi";
 const char* OTA_UPDATE_PATH = "/update";
 
-
+//OPENPCR_FIRMWARE_VERSION_STRING
 int otaType = 0;
 String otaURL;
 
@@ -36,18 +37,22 @@ void loadOTAConfig () {
     
     if (otaType==OTA_TYPE_LOCAL_UPLOAD) {
         Serial.println("OTA_TYPE_LOCAL_UPLOAD");
-        isUpdateMode = true;
-    } else if (otaType==OTA_TYPE_WEB_DOWNLOAD) {
-        // This functionality is disabled now.
-        char *urlValue = (char *) malloc(sizeof(char) * (EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH + 1));
-        readStringFromEEPROM(urlValue, EEPROM_OTA_DOWNLOAD_URL_ADDR, EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH);
-        Serial.println("OTA_TYPE_WEB_DOWNLOAD");
-        String str(urlValue);
-        otaURL = str;
-        free(urlValue);
-        Serial.print("OTA URL=");
-        Serial.println(otaURL);
-        isUpdateMode = true;
+        char *cOriginalVersion = (char *) malloc(sizeof(char) * (EEPROM_OTA_CURRENT_VERSION_MAXLENGTH + 1));
+        readStringFromEEPROM(cOriginalVersion, EEPROM_OTA_CURRENT_VERSION_ADDR, EEPROM_OTA_CURRENT_VERSION_MAXLENGTH);
+        String originalVersion(cOriginalVersion);
+        String currentVersion(OPENPCR_FIRMWARE_VERSION_STRING);
+        free(cOriginalVersion);
+        Serial.println("OriginalVersion=" + originalVersion);
+        
+        if (currentVersion.equals(originalVersion)) {
+            Serial.println("Same version.");
+            isUpdateMode = true;
+        } else {
+            Serial.println("Version Changed.");
+            clearOTAFlag();
+            EEPROM.commit();
+            isUpdateMode = false;
+        }
     } else {
         otaType = 0;
         isUpdateMode = false;
@@ -60,24 +65,37 @@ void loadOTAConfig () {
 void requestHandlerOTATop () {
     String s = getHTMLHeader();
     s += "<h1>Device Update</h1>\n<ul>";
-    s += "<li><a href=\"/update\">Update by local upload</a></li>";
+    s += "<li><a href=\"/update\">Upload new firmware</a></li>";
     s += "<li><a href=\"/cancel\">Cancel (Back to normal mode)</a></li>";
     s += "</ul></body></html>\n";
     server.send(200, "text/html", s);
   
 }
+
 void requestHandlerOTACancel () {
-    String s = getHTMLHeader();
-    s += "<h1>Device Update</h1>\n<ul>";
-    s += "<p>Device update is canceled. Please restart the device.</p></body></html>\n";
-    server.send(200, "text/html", s);
-    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NO_UPDATE);
+    clearOTAFlag();
     EEPROM.commit();
+    String s = getHTMLHeader();
+    s += "<h1>Device Update</h1>\n";
+    s += "<p>Device update is canceled.</p>";
+    s += getRestartLink();
+    s += "</body></html>\n";
+    server.send(200, "text/html", s);
+    ESP.restart();
+}
+
+String getRestartLink () {
+  return "<a href=\"/restart\">Restart</a>";
+}
+void requestHandlerRestart () {
+  String s = getHTMLHeader();
+  s += "<h1>Device is restarting</h1>\n";
+  server.send(200, "text/html", s);
+  ESP.restart();
 }
 
 void requestHandlerOTAError () {
     wifi_send("{error:true}", "onErrorOTAMode");
-
 }
 
 void startUpdaterServer() {
@@ -90,6 +108,7 @@ void startUpdaterServer() {
     server.on("/status", requestHandlerOTAError);
     server.on("/connect", requestHandlerOTAError);
     server.on("/config", requestHandlerOTAError);
+    server.on("/restart", requestHandlerRestart);
     server.begin();
     Serial.printf("HTTPUpdateServer ready!");
 }
@@ -97,15 +116,13 @@ void startUpdaterServer() {
 /* Handle request to "/config"  (OTA conf) */
 // Possible value is only ot=
 void requestHandlerConfig() {
-    String type = server.arg("ot"); // Value of dropdown
-    String url = server.arg("ou"); // Value of dropdown
+    String type = server.arg("ot");
     Serial.print("type=");
     Serial.print(type);
-    Serial.print(", url=");
-    Serial.println(url);
     saveStringToEEPROM(type, EEPROM_OTA_TYPE_ADDR, 1);
-    saveStringToEEPROM(url, EEPROM_OTA_DOWNLOAD_URL_ADDR, EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH);
+    saveStringToEEPROM(OPENPCR_FIRMWARE_VERSION_STRING, EEPROM_OTA_CURRENT_VERSION_ADDR, EEPROM_OTA_CURRENT_VERSION_MAXLENGTH);
     wifi_send("{accepted:true}", "onConf");
     
     EEPROM.commit();
+    ESP.restart();
 }

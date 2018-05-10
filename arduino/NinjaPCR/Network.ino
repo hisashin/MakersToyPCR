@@ -1,6 +1,6 @@
 /* Init wifi */
 
-#include "wifi_conf.h"
+// #include "wifi_conf.h"
 #include "wifi_communicator.h"
 #include "thermocycler.h"
 #include <EEPROM.h>
@@ -92,15 +92,6 @@ void requestHandlerStatus() {
 
 /* Handle request to "/connect" */
 void requestHandlerConnect() {
-    /*
-    EStartup = 0,
-    EStopped,
-    ELidWait,
-    ERunning,
-    EComplete,
-    EError,
-    EClear //for Display clearing only
-    */
     boolean isRunning = false;
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EStartup ||
       gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ELidWait ||
@@ -108,11 +99,17 @@ void requestHandlerConnect() {
       gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
       isRunning = true;
     }
+    String response = "{connected:true,version:\"";
+    response += String(OPENPCR_FIRMWARE_VERSION_STRING);
     if (isRunning) {
-      wifi_send("{connected:true,version:\"1.0.5\",running:true}", "connect");
+      response += "\",running:true}";
     } else {
-      wifi_send("{connected:true,version:\"1.0.5\",running:false}", "connect");
+      response += "\",running:false}";
     }
+    char *chResponse = (char *) malloc(sizeof(char) * (response.length()+1));
+    response.toCharArray(chResponse, response.length()+1);
+    wifi_send(chResponse, "connect");
+    free(chResponse);
 }
 
 
@@ -345,12 +342,6 @@ void readStringFromEEPROM(char *s, int startAddress, int maxLength) {
     s[maxLength] = 0x00;
 }
 
-/*
- * Check IP address 
- * -> Compare with previous IP address 
- * -> Send new IP address via Lambda function
- *    (http://d3n332182mb98i.cloudfront.net/?i=XXX&m=XXX&p=XXX)
- */
 WiFiClientSecure httpsClient;
 String byteToHexStr(char c) {
     char s[3];

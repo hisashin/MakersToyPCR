@@ -24,7 +24,7 @@
 #include "board_conf.h"
 
 #define SERIAL_PREFIX "pcr"
-#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.5"
+#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.7"
 
 #ifndef USE_WIFI
 #include <avr/pgmspace.h>
@@ -39,7 +39,7 @@ inline Thermocycler& GetThermocycler() { return *gpThermocycler; }
 //fixes for incomplete C++ implementation, defined in util.cpp
 void* operator new(size_t size);
 void operator delete(void * ptr);
-extern "C" void __cxa_pure_virtual(void);
+extern "C" void __cxa_pure_virtual(void); 
 
 //defines
 #define STEP_NAME_LENGTH       14
