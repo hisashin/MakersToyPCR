@@ -58,7 +58,7 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 bool isApMode = false;
 
 // #define FORCE_AP_MODE // For debug
-#define FORCE_NORMAL_MODE // FOR DEBUG
+// #define FORCE_NORMAL_MODE // FOR DEBUG
 
 void setup() {
     Serial.begin(BAUD_RATE);
@@ -89,6 +89,7 @@ void setup() {
     Serial.println("NinjaPCR WiFi");
     pinMode(PIN_WIFI_MODE, INPUT);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
+    
 #ifdef FORCE_AP_MODE
   isApMode = true;
   Serial.println("FORCE_AP");
@@ -98,6 +99,7 @@ void setup() {
   Serial.println("FORCE_NORMA");
   isApMode = false;
 #endif /* FORCE_NORMAL_MODE */
+
     if (isApMode) {
         Serial.println("AP mode");
         startWiFiAPMode();
@@ -212,7 +214,7 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    Serial.print("pcr1.0.5");
+    Serial.print("pcr1.0.5"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);
