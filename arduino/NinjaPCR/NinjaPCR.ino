@@ -58,7 +58,7 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 bool isApMode = false;
 
 // #define FORCE_AP_MODE // For debug
-// #define FORCE_NORMAL_MODE // FOR DEBUG
+#define FORCE_NORMAL_MODE // FOR DEBUG
 
 void setup() {
     Serial.begin(BAUD_RATE);
@@ -82,19 +82,7 @@ void setup() {
      // Dummy profile (for keeping lid temp)
      //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
      //gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
-    
 
-    /*
-     * Fast demo
-    94˚C initial denaturation, 10 sec
-    (94˚C denaturation, 4 sec / 65˚C annealing, 4 sec / 72˚C extension, 1 sec) * 25
-    72˚C Final extension, 10 sec
-     */
-     /*
-     Serial.println("s=ACGTC&c=start&d=30261&l=105&n=MiniDemo&p=(1[10|94|Initial|0])(25[4|94|High|0][4|65|Low|0][1|72|Med|0])(1[10|72|Final Ex|0])(1[0|20|Final Hold|0])");
-    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=105&n=MiniDemo&p=(1[10|94|Initial|0])(25[4|94|High|0][4|65|Low|0][1|72|Med|0])(1[10|72|Final Ex|0])(1[0|20|Final Hold|0]) ");
-    */
-    Serial.println("Start!");
     return;
 #endif
 #ifdef USE_WIFI
@@ -119,7 +107,6 @@ void setup() {
         setup_normal();
         wifi = new WifiCommunicator(wifi_receive, wifi_send);
         gpThermocycler->SetCommunicator(wifi);
-        
         startWiFiHTTPServer();
     }
 #else
@@ -153,9 +140,7 @@ void setup_normal() {
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, HIGH);
 #endif /* USE_STATUS_PINS */
-
     gpThermocycler = new Thermocycler(restarted);
-
 }
 
 bool isSerialConnected = false;
