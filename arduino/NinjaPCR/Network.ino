@@ -9,11 +9,6 @@
 #include <ESP8266mDNS.h>
 #include <ESP8266HTTPUpdateServer.h>
 
-/* OTA */
-const char* OTA_HOST = "ninjapcrwifi";
-const char* OTA_UPDATE_PATH = "/update";
-const char* OTA_UPDATE_USER_NAME = "hoge";
-const char* OTA_UPDATE_USER_PASSWORD = "fuga";
 
 bool isUpdateMode = false;
 String DEFAULT_HOST_NAME = "NinjaPCR";
@@ -32,32 +27,6 @@ String hostName = DEFAULT_HOST_NAME;
 
 #define EEPROM_WIFI_MDNS_HOST_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
 #define EEPROM_WIFI_MDNS_HOST_MAX_LENGTH 31
-
-// OTA boot type (0:normal mode, 1:local upload, 2:web download)
-#define EEPROM_OTA_TYPE_ADDR  (EEPROM_WIFI_MDNS_HOST_ADDR+EEPROM_WIFI_MDNS_HOST_MAX_LENGTH+1)
-#define EEPROM_OTA_DOWNLOAD_URL_ADDR (EEPROM_OTA_TYPE_ADDR+1)
-#define EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH 128
-
-String PARAM_OTA_TYPE = "ot";
-String PARAM_OTA_URL = "ou";
-#define OTA_TYPE_NO_UPDATE 0 /* No update (boot with normal PCR mode) */
-#define OTA_TYPE_LOCAL_UPLOAD 1
-#define OTA_TYPE_WEB_DOWNLOAD 2
-
-/*
- #define EEPROM_WIFI_EMAIL_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
- #define EEPROM_WIFI_EMAIL_MAX_LENGTH 254 // ref. RFC5321 4.5.3.1
- #define EEPROM_WIFI_EMAIL_PASS_ADDR (EEPROM_WIFI_EMAIL_ADDR+EEPROM_WIFI_EMAIL_MAX_LENGTH+1)
- #define EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH 31
-
- #define EEPROM_WIFI_EMAIL_ERROR_FLAG_ADDR (EEPROM_WIFI_EMAIL_PASS_ADDR+EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+1)
- #define EEPROM_WIFI_EMAIL_ERROR_FLAG_VAL 0xF0
- #define EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR (EEPROM_WIFI_EMAIL_PASS_ADDR+EEPROM_WIFI_EMAIL_PASS_MAX_LENGTH+2)
- #define EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH 128
- #define EEPROM_WIFI_LAST_IP_ADDR  (EEPROM_WIFI_EMAIL_ERROR_MESSAGE_ADDR+EEPROM_WIFI_EMAIL_ERROR_MESSAGE_MAX_LENGTH+1)
- #define EEPROM_WIFI_LAST_IP_EXISTS_VAL 0xF0
-
- */
 
 // flag 1byte + 4bytes
 ESP8266WebServer server(80);
@@ -150,81 +119,11 @@ void requestHandlerConnect() {
     }
 }
 
-void requestHandlerOTAError () {
-    wifi_send("{error:true}", "onErrorOTAMode");
-
-}
-
-/* Handle request to "/config"  (OTA conf) */
-// Possible value is only ot=
-void requestHandlerConfig() {
-    String type = server.arg("ot"); // Value of dropdown
-    String url = server.arg("ou"); // Value of dropdown
-    Serial.print("type=");
-    Serial.print(type);
-    Serial.print(", url=");
-    Serial.println(url);
-    saveStringToEEPROM(type, EEPROM_OTA_TYPE_ADDR, 1);
-    saveStringToEEPROM(url, EEPROM_OTA_DOWNLOAD_URL_ADDR, EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH);
-    wifi_send("{accepted:true}", "onConf");
-    
-    EEPROM.commit();
-}
-
-void requestHandlerOTATop () {
-    String s = getHTMLHeader();
-    s += "<h1>Device Update</h1>\n<ul>";
-    s += "<li><a href=\"/update\">Update by local upload</a></li>";
-    s += "<li><a href=\"/cancel\">Cancel (Back to normal mode)</a></li>";
-    s += "</ul></body></html>\n";
-    server.send(200, "text/html", s);
-  
-}
-void requestHandlerOTACancel () {
-    String s = getHTMLHeader();
-    s += "<h1>Device Update</h1>\n<ul>";
-    s += "<p>Device update is canceled. Please restart the device.</p></body></html>\n";
-    server.send(200, "text/html", s);
-    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NO_UPDATE);
-    EEPROM.commit();
-}
 
 void requestHandler404() {
     server.send(404, "text/plain", "requestHandler404");
 }
 
-
-/* Just load and print */
-int otaType = 0;
-String otaURL;
-
-void loadOTAConfig () {
-    char typeValueCh = EEPROM.read(EEPROM_OTA_TYPE_ADDR);
-    Serial.print(typeValueCh);
-    int otaType = typeValueCh - '0';
-    
-    if (otaType==OTA_TYPE_LOCAL_UPLOAD) {
-        Serial.println("OTA_TYPE_LOCAL_UPLOAD");
-        isUpdateMode = true;
-    } else if (otaType==OTA_TYPE_WEB_DOWNLOAD) {
-        // This functionality is disabled now.
-        char *urlValue = (char *) malloc(sizeof(char) * (EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH + 1));
-        readStringFromEEPROM(urlValue, EEPROM_OTA_DOWNLOAD_URL_ADDR, EEPROM_OTA_DOWNLOAD_URL_MAXLENGTH);
-        Serial.println("OTA_TYPE_WEB_DOWNLOAD");
-        String str(urlValue);
-        otaURL = str;
-        free(urlValue);
-        Serial.print("OTA URL=");
-        Serial.println(otaURL);
-        isUpdateMode = true;
-    } else {
-        otaType = 0;
-        isUpdateMode = false;
-    }
-    
-    Serial.print("OTA Type=");
-    Serial.println(otaType);
-}
 
 /* AP scanning (to show AP list) */
 // Find nearby SSIDs
@@ -333,7 +232,7 @@ void saveStringToEEPROM(String str, int startAddress, int maxLength) {
 void saveWiFiConnectionInfo(String ssid, String password, String host) {
     // Flags
     EEPROM.write(EEPROM_WIFI_CONF_DONE_ADDR, EEPROM_WIFI_CONF_DONE_VAL);
-    EEPROM.write(EEPROM_OTA_TYPE_ADDR, OTA_TYPE_NO_UPDATE);
+    clearOTAFlag();
     // Values
     saveStringToEEPROM(ssid, EEPROM_WIFI_SSID_ADDR,
             EEPROM_WIFI_SSID_MAX_LENGTH);
@@ -422,10 +321,9 @@ void requestHandlerConfJoin() {
         s += "ERROR: " + emptyField + " is empty.";
     }
     else {
-        s += "Join.";
         s += "<div>SSID:" + ssid + BR_TAG;
-        s += "Password:" + password + BR_TAG;
-        s += "Please reset and access \"http://" + host + ".local\".";
+        s += "Password: ******" + BR_TAG;
+        s += "Please reset.";
     }
     s += "</body></html>\n";
     server.send(200, "text/html", s);
@@ -528,7 +426,6 @@ boolean startWiFiHTTPServer() {
         startNormalOperationServer();
     }
     
-    //slack_send("NinjaPCR_test 2");
     return true;
 }
 int beginMDNS (const char *hostName) {
@@ -537,30 +434,17 @@ int beginMDNS (const char *hostName) {
     Serial.println("MDNS started.");
     Serial.println(hostName);
 }
-void startUpdaterServer() {
-    // OTA mode
-    Serial.println("Starting OTA mode (isUpdateMode=true)");
-    httpUpdater.setup(&server, OTA_UPDATE_PATH, OTA_UPDATE_USER_NAME, OTA_UPDATE_USER_PASSWORD);
-    server.on("/", requestHandlerOTATop);
-    server.on("/cancel", requestHandlerOTACancel);
-    server.on("/command", requestHandlerOTAError);
-    server.on("/status", requestHandlerOTAError);
-    server.on("/connect", requestHandlerOTAError);
-    server.on("/config", requestHandlerOTAError);
-    server.begin();
-    Serial.printf(
-            "HTTPUpdateServer ready! Open http://%s.local in your browser and login with username '%s' and password '%s'\n",
-            OTA_HOST, OTA_UPDATE_USER_NAME,
-            OTA_UPDATE_USER_PASSWORD);
-}
 void startNormalOperationServer() {
     // Normal PCR operation mode
     /* Add handlers for paths */
+    
+    // Never remove it (for OTA configuration)
+    server.on("/config", requestHandlerConfig);
+    
     server.on("/", requestHandlerTop);
     server.on("/command", requestHandlerCommand);
     server.on("/status", requestHandlerStatus);
     server.on("/connect", requestHandlerConnect);
-    server.on("/config", requestHandlerConfig);
     server.onNotFound(requestHandler404);
 
     server.begin();
