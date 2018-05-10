@@ -1,6 +1,11 @@
 /**
  * OTA
  */
+#include <ESP8266HTTPUpdateServer.h>
+
+
+// OTA mode
+ESP8266HTTPUpdateServer httpUpdater;
 
 // OTA boot type (0:normal mode, 1:local upload, 2:web download)
 #define EEPROM_OTA_TYPE_ADDR  (EEPROM_WIFI_MDNS_HOST_ADDR+EEPROM_WIFI_MDNS_HOST_MAX_LENGTH+1)
