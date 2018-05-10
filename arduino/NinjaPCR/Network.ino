@@ -7,7 +7,6 @@
 #include <WiFiClientSecure.h>
 #include <WiFiClient.h>
 #include <ESP8266mDNS.h>
-#include <ESP8266HTTPUpdateServer.h>
 
 
 bool isUpdateMode = false;
@@ -16,7 +15,7 @@ String hostName = DEFAULT_HOST_NAME;
 
 /* Addresses of WiFi configuration */
 /* Wfite 0xF0 when WiFi configuration is done. */
-#define EEPROM_WIFI_CONF_DONE_ADDR 0//512
+#define EEPROM_WIFI_CONF_DONE_ADDR 0
 #define EEPROM_WIFI_CONF_DONE_VAL 0xF0
 
 #define EEPROM_WIFI_SSID_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+1)
@@ -30,9 +29,6 @@ String hostName = DEFAULT_HOST_NAME;
 
 // flag 1byte + 4bytes
 ESP8266WebServer server(80);
-
-// OTA mode
-ESP8266HTTPUpdateServer httpUpdater;
 
 /* t_network_receive_interface */
 void wifi_receive() {
