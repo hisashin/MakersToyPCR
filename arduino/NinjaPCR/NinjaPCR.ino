@@ -57,8 +57,8 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 
 bool isApMode = false;
 
-// #define FORCE_AP_MODE // For debug
-// #define FORCE_NORMAL_MODE // FOR DEBUG
+//#define FORCE_AP_MODE // For debug
+//#define FORCE_NORMAL_MODE // FOR DEBUG
 
 void setup() {
     Serial.begin(BAUD_RATE);
@@ -66,7 +66,7 @@ void setup() {
     
 #ifdef OFFLINE_DEMO
     // Skip network
-    Serial.println("OFFLINE DEMO.");
+    Serial.println("OFFLINE DEMO");
     gpThermocycler = new Thermocycler(false);
     gpThermocycler->ipSerialControl = new SerialControl(NULL);
     // Profile
@@ -96,7 +96,7 @@ void setup() {
 #endif /* FORCE_AP_MODE */
 
 #ifdef FORCE_NORMAL_MODE
-  Serial.println("FORCE_NORMA");
+  Serial.println("FORCE_NORMAL");
   isApMode = false;
 #endif /* FORCE_NORMAL_MODE */
 
@@ -114,6 +114,7 @@ void setup() {
 #else
     setup_normal();
 #endif /* USE_WIFI */
+  //slack_send();
 }
 
 void setup_normal() {
@@ -152,6 +153,7 @@ short INTERVAL_MSEC = 1000;
 int sec = 0;
 bool finishSent = false;
 void loop() {
+   
     long startMillis;
     long elapsed;
 #ifdef OFFLINE_DEMO

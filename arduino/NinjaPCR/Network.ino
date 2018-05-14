@@ -4,7 +4,6 @@
 #include "wifi_communicator.h"
 #include "thermocycler.h"
 #include <EEPROM.h>
-#include <WiFiClientSecure.h>
 #include <WiFiClient.h>
 #include <ESP8266mDNS.h>
 
@@ -342,7 +341,6 @@ void readStringFromEEPROM(char *s, int startAddress, int maxLength) {
     s[maxLength] = 0x00;
 }
 
-WiFiClientSecure httpsClient;
 String byteToHexStr(char c) {
     char s[3];
     sprintf(s, "%02X", c);
