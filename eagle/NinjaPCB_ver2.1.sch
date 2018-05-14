@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.05" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -675,6 +675,26 @@
 <technology name="">
 <attribute name="MPN" value="RC0603JR-0710KL" constant="no"/>
 <attribute name="VALUE" value="10K 1/10W" constant="no"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
+<deviceset name="SMD-RES-0R-5%-1/10W(0603)" prefix="R" uservalue="yes">
+<description>301010292</description>
+<gates>
+<gate name="G$1" symbol="RES" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="R0603">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="MPN" value="RC0603JR-070RL" constant="no"/>
+<attribute name="VALUE" value="0R"/>
 </technology>
 </technologies>
 </device>
@@ -3673,6 +3693,7 @@ grid 2.54 mm</description>
 <part name="U$9" library="adafruit" deviceset="FIDUCIAL" device=""/>
 <part name="U$10" library="adafruit" deviceset="FIDUCIAL" device=""/>
 <part name="R19" library="Seeed-Resistor" deviceset="SMD-RES-1K-5%-1/10W(0603)" device="" value="1K 1/10W"/>
+<part name="R20" library="Seeed-Resistor" deviceset="SMD-RES-0R-5%-1/10W(0603)" device="" value="0R"/>
 </parts>
 <sheets>
 <sheet>
@@ -3682,11 +3703,12 @@ grid 2.54 mm</description>
 <text x="269.24" y="240.03" size="3.81" layer="97">PELTIER_CTRL</text>
 <text x="26.67" y="238.76" size="3.81" layer="97">MCU</text>
 <text x="149.86" y="77.47" size="3.81" layer="97">POWER</text>
-<text x="1.27" y="-12.7" size="1.778" layer="97">Diff from ver2.0: 
+<text x="1.27" y="-19.05" size="1.778" layer="97">Diff from ver2.0: 
 1. ATX:POWER_ON is connected to GND so that ATX works
 2. Add R19 in case ESP can drive MOSFET directly.
 3. FAN_ON jumper removed. it should be turn off while heating
-4. Relay EP2 library was wrongly designed with EN2 specs. Corrected</text>
+4. Relay EP2 library was wrongly designed with EN2 specs. Corrected
+5. 0ohm added to Fan</text>
 <text x="22.86" y="129.54" size="3.81" layer="97">CONFIG</text>
 <text x="86.36" y="-22.86" size="1.778" layer="97">Notes for wiring: 
 1. Don't forget to use 2oz dru. 10mil spacing is required.
@@ -3850,6 +3872,7 @@ grid 2.54 mm</description>
 <instance part="U$9" gate="G$1" x="135.89" y="29.21"/>
 <instance part="U$10" gate="G$1" x="135.89" y="21.59"/>
 <instance part="R19" gate="G$1" x="293.37" y="179.07"/>
+<instance part="R20" gate="G$1" x="337.82" y="55.88" rot="R90"/>
 </instances>
 <busses>
 </busses>
@@ -4079,6 +4102,9 @@ grid 2.54 mm</description>
 <wire x1="330.2" y1="49.53" x2="330.2" y2="52.07" width="0.1524" layer="91"/>
 <wire x1="327.66" y1="49.53" x2="330.2" y2="49.53" width="0.1524" layer="91"/>
 <junction x="330.2" y="49.53"/>
+<pinref part="R20" gate="G$1" pin="1"/>
+<wire x1="330.2" y1="49.53" x2="337.82" y2="49.53" width="0.1524" layer="91"/>
+<wire x1="337.82" y1="49.53" x2="337.82" y2="52.07" width="0.1524" layer="91"/>
 </segment>
 <segment>
 <pinref part="SERIAL6" gate="A" pin="6"/>
@@ -4353,10 +4379,14 @@ grid 2.54 mm</description>
 </net>
 <net name="N$4" class="0">
 <segment>
-<wire x1="340.36" y1="63.5" x2="330.2" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="340.36" y1="63.5" x2="337.82" y2="63.5" width="0.1524" layer="91"/>
+<wire x1="337.82" y1="63.5" x2="330.2" y2="63.5" width="0.1524" layer="91"/>
 <wire x1="330.2" y1="63.5" x2="330.2" y2="62.23" width="0.1524" layer="91"/>
 <pinref part="FAN" gate="-3" pin="S"/>
 <pinref part="Q3" gate="G$1" pin="D"/>
+<pinref part="R20" gate="G$1" pin="2"/>
+<wire x1="337.82" y1="59.69" x2="337.82" y2="63.5" width="0.1524" layer="91"/>
+<junction x="337.82" y="63.5"/>
 </segment>
 </net>
 <net name="FAN" class="0">
