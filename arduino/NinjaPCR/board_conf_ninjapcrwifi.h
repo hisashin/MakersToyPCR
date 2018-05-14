@@ -36,7 +36,7 @@
 /* Lid */
 #define PIN_LID_THERMISTOR_AIN 1 // TODO Use TOUT
 #define PIN_LID_PWM 15 // PWM is available
-#define PIN_LID_PWM_ACTIVE_LOW
+// #define PIN_LID_PWM_ACTIVE_LOW
 #define USE_ESP8266
 
 /* Well */
@@ -46,16 +46,16 @@
 #ifdef USE_ADC_MCP3554
 #define PIN_WELL_INA 12
 #endif
-#define PIN_WELL_INB 0
+#define PIN_WELL_INB 13
 #define PIN_WELL_PWM 4
 #define PIN_WELL_PWM_ACTIVE_LOW
 #define PIN_WELL_HIGH_TEMP 16
 
 /* Fan */
 #define USE_FAN
-#define PIN_FAN 13
-#define PIN_FAN_VALUE_ON LOW
-#define PIN_FAN_VALUE_OFF HIGH
+#define PIN_FAN 0
+#define PIN_FAN_VALUE_ON HIGH
+#define PIN_FAN_VALUE_OFF LOW
 /* Suppress frequent switching of relay */
 #define SUPPRESS_PELTIER_SWITCHING
 /*
