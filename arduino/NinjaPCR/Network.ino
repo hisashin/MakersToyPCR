@@ -58,11 +58,8 @@ void requestHandlerTop() {
 void requestHandlerCommand() {
     Serial.print("rc.");
     Serial.println(server.uri());
-    Serial.print("1");
     wifi->ResetCommand();
-    Serial.print("2");
     wifi->SendCommand();
-    Serial.print("3");
     char buff[256];
     for (uint8_t i = 0; i < server.args(); i++) {
         String sKey = server.argName(i);
@@ -78,7 +75,6 @@ void requestHandlerCommand() {
         free(key);
         free(value);
     }
-    Serial.println("requestHandlerCommand done");
     Serial.println(buff);
 }
 /* Handle request to "/status" */
@@ -113,7 +109,7 @@ void requestHandlerConnect() {
 
 
 void requestHandler404() {
-    server.send(404, "text/plain", "requestHandler404");
+    server.send(404, "text/plain", "404");
 }
 
 
@@ -315,7 +311,7 @@ void requestHandlerConfJoin() {
     else {
         s += "<div>SSID:" + ssid + BR_TAG;
         s += "Password: ******" + BR_TAG;
-        s += "Please reset.";
+        s += "Device is reseting...";
     }
     s += "</body></html>\n";
     server.send(200, "text/html", s);
@@ -324,6 +320,7 @@ void requestHandlerConfJoin() {
         Serial.println("Valid input. Saving...");
         saveWiFiConnectionInfo(ssid, password, host);
         Serial.println("saved.");
+        ESP.restart();
     }
     else {
         Serial.println("Invalid input.");
