@@ -189,7 +189,7 @@ float getWellADCValue () {
 #endif /* ADC_DUMMY_MODE */
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   float val = getADCValue();
-  // Serial.print("W=");Serial.println(val);
+   Serial.print("W=");Serial.println(val);
   // Config for lid thermistor
   switchADCConfig(1, 1, 1, 1); //2ch, 320SPS
   delay(80);
@@ -203,7 +203,7 @@ float getLidADCValue () {
 #endif /* ADC_DUMMY_MODE */
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   float val = getADCValue();
-  // Serial.print("L=");Serial.println(val);
+   Serial.print("L=");Serial.println(val);
   // Config for well thermistor
   switchADCConfig(0, 0, 0, 0); //1ch, 10SPS
   return val;

@@ -41,11 +41,11 @@
 */
 
 
-/* 
+
 // 104-JT-025
 #define B_CONST_HEATER 4390
 #define R_0_HEATER 100.0 
-*/
+
 // Counter resistors
 #define R_LOW_TEMP 30.0 // Well low mode
 #define R_HIGH_TEMP 10 // Well high mode (30x3)
@@ -59,6 +59,7 @@ static float INVERSE_BASE_TEMP = 1.0 / (THERMISTOR_BASE_TEMP + KELVIN);
 
 double voltageToTemp (double voltageRatio, float resistance, float b_constant, float r0) {
     double thermistorR = resistance * voltageRatio / (1.0 - voltageRatio);
+    Serial.print("R=");Serial.println(thermistorR);
     return (1 / ((log(thermistorR / r0) / b_constant) + INVERSE_BASE_TEMP))  - KELVIN;
 }
 double tempToVoltageRatio (double tempCelsius, double resistance, double bConst, double r0) {
@@ -98,18 +99,14 @@ void CLidThermistor::ReadTemp() {
     voltageRatio = 1.0-(double)getLidADCValue();
     float b_constant;
     
-    /*
-     * Lid 50=0.87
-      Lid 85=0.64
-
-*/
     if (voltageRatio > SWITCHING_VOLTAGE_50_LID)
         b_constant = B_CONST_25_50;
     else if (voltageRatio > SWITCHING_VOLTAGE_85_LID)
         b_constant = B_CONST_25_85;
     else
         b_constant = B_CONST_25_100;
-    
+
+    b_constant = B_CONST_HEATER;
     float temp = voltageToTemp (voltageRatio, R_HEATER, b_constant, R_0_WELL);
     if (iTemp==0 || abs(temp-iTemp)<15) {
       iTemp = temp;
