@@ -142,7 +142,7 @@ void switchChannelTo (uint8_t channel) {
     prev_channel = channel;
   }
 }
-float getADCValueAt (uint8_t channel) {
+float getADCValue (uint8_t channel) {
   uint32_t adc_val = 0xFFFFFF;
   char read_out[3] = {0xFF, 0xFF, 0xFF};
   
@@ -158,13 +158,6 @@ float getADCValueAt (uint8_t channel) {
   delay(40);
   i2c_err = wellADCReadRegValues(NAU7802_REG_ADDR_ADCO_B2,
                                  &read_out[0], 3);
-                                 /*
-  Serial.print("V=");
-  Serial.print(read_out[0], (0xFF & HEX)); Serial.print(",");
-  Serial.print(read_out[1], (0xFF & HEX)); Serial.print(",");
-  Serial.print(read_out[2], (0xFF & HEX));
-  Serial.print(" / ");
-  */
   read_out[0] -= 0x80; // signed->unsigned
   if (switchChannelTo == 0) {
     switchChannelTo(1);
@@ -179,11 +172,13 @@ float getADCValueAt (uint8_t channel) {
 }
 // Read ADC value of channel 0
 float getWellADCValue () {
+  // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   return getADCValueAt(0);
 }
 
 // Read ADC value of channel 1
 float getLidADCValue () {
+  // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   return getADCValueAt(1);
 }
 

@@ -155,9 +155,7 @@ void CPlateThermistor::start() {
 //------------------------------------------------------------------------------
 void CPlateThermistor::ReadTemp() {
   float voltageRatio = getWellADCValue();
-  
   resistance = voltageRatio * 22000 / (1.0 - voltageRatio); // in hecto ohms
- 
   iTemp = TableLookup(PLATE_RESISTANCE_TABLE, sizeof(PLATE_RESISTANCE_TABLE) / sizeof(PLATE_RESISTANCE_TABLE[0]), -40, resistance);
 }
 //------------------------------------------------------------------------------

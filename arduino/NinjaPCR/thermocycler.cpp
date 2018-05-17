@@ -388,16 +388,12 @@ void Thermocycler::Loop() {
     if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE) {
       iRamping = false;
     }
-    // TODO NinjaPCR keep lid temp to avoid condensation
-    iLidThermistor.ReadTemp();
-    ControlLid();
     break;
   }
-  //lid 
+  //Read lid and well temp
   iLidThermistor.ReadTemp();
-  ControlLid();
-  //plate  
   iPlateThermistor.ReadTemp();
+  ControlLid();
   
   double estimatedAirTemp = GetPlateTemp() * 0.4 + GetLidTemp() * 0.6; // TODO use actual air temperature
   iEstimatedSampleTemp += ((GetPlateTemp()-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
