@@ -142,9 +142,24 @@ void switchChannelTo (uint8_t channel) {
   }
 }
 
-void switchADCConfig (int channel) {
-  // Config
-  switchChannelTo(channel);
+uint8_t changeBitValue (uint8_t value, uint8_t index, uint8_t bitValue) {
+  if (bitValue) {
+    // set
+    return value | (1 << index);
+  } else {
+    // clear
+    return value & ~(1 << index);
+  }
+}
+void switchADCConfig (uint8_t channel, uint8_t SPS0, uint8_t SPS1, uint8_t SPS2) {
+  // switchChannelTo(channel);
+  uint8_t value = wellADCReadRegValue(NAU7802_REG_ADDR_CTRL2);
+  value = changeBitValue(value, 7, (channel==1));
+  // From right to left
+  value = changeBitValue(value, 4, SPS0);
+  value = changeBitValue(value, 5, SPS1);
+  value = changeBitValue(value, 6, SPS2);
+  wellADCWriteRegValue(NAU7802_REG_ADDR_CTRL2, value);
   // Wait for calib OK flag
   waitForFlag(NAU7802_REG_ADDR_CTRL2, 2, false);
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CS);
@@ -160,16 +175,24 @@ float getADCValue () {
   return ratio;
 }
 
-// Read ADC value of channel 0
+/*
+111 = 320SPS
+011 = 80SPS
+010 = 40SPS
+001 = 20SPS
+000 = 10SPS
+*/
+
 float getWellADCValue () {
 #ifdef ADC_DUMMY_MODE
   return 0;
 #endif /* ADC_DUMMY_MODE */
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   float val = getADCValue();
-  switchADCConfig(1);
-  Serial.print("W=");Serial.println(val);
-  delay(50);
+  // Serial.print("W=");Serial.println(val);
+  // Config for lid thermistor
+  switchADCConfig(1, 1, 1, 1); //2ch, 320SPS
+  delay(80);
   return val;
 }
 
@@ -180,9 +203,9 @@ float getLidADCValue () {
 #endif /* ADC_DUMMY_MODE */
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   float val = getADCValue();
-  switchADCConfig(0);
-  Serial.print("L=");Serial.println(val);
-  delay(50);
+  // Serial.print("L=");Serial.println(val);
+  // Config for well thermistor
+  switchADCConfig(0, 0, 0, 0); //1ch, 10SPS
   return val;
 }
 

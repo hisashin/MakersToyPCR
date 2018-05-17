@@ -174,6 +174,7 @@ CPlateThermistor::CPlateThermistor() :
     SWITCHING_VOLTAGE_85_HIGHMODE = tempToVoltageRatio(85, R_HIGH_TEMP, B_CONST_25_85, R_0_WELL);
 
     pinMode(PIN_WELL_HIGH_TEMP, OUTPUT);
+    pinMode(PIN_WELL_HIGH_TEMP, LOW);
 }
 //------------------------------------------------------------------------------
 

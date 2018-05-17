@@ -126,12 +126,7 @@ void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
     pParam = strtok(NULL, "&");
   }
 }
-/*
-const char STATUS_START[] PROGMEM = "start";
-const char STATUS_STOP[] PROGMEM = "stop";
-const char STATUS_CFG[] PROGMEM = "cfg";
-const char PAREHTHESES[] PROGMEM = "()";
-*/
+
 void CommandParser::AddComponent(SCommand* pCommand, char key, char* szValue) {
   switch(key) {
   case 'n':

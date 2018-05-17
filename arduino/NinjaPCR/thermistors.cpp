@@ -137,7 +137,6 @@ CLidThermistor::CLidThermistor():
 }
 //------------------------------------------------------------------------------
 void CLidThermistor::ReadTemp() {
-
   unsigned long voltage_mv = (unsigned long)analogRead(PIN_LID_THERMISTOR_AIN) * 5000 / 1024;
   resistance = voltage_mv * 2200 / (5000 - voltage_mv);
   iTemp = TableLookup(LID_RESISTANCE_TABLE, sizeof(LID_RESISTANCE_TABLE) / sizeof(LID_RESISTANCE_TABLE[0]), 0, resistance);
