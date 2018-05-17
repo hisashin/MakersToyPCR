@@ -17,7 +17,8 @@ usb/default
 .gitignore
 chrome/build_MakersToyPCR
 chrome/build_NinjaPCR
-Thums.db
 eagle/*#*
 eagle/*ver2-170831*
+arduino/NinjaPCR/Slack.ino
+Thums.db
 arduino/NinjaPCR/Slack.ino
