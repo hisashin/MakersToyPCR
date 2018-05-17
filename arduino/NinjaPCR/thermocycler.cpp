@@ -391,8 +391,8 @@ void Thermocycler::Loop() {
     break;
   }
   //Read lid and well temp
-  iLidThermistor.ReadTemp();
   iPlateThermistor.ReadTemp();
+  iLidThermistor.ReadTemp();
   ControlLid();
   
   double estimatedAirTemp = GetPlateTemp() * 0.4 + GetLidTemp() * 0.6; // TODO use actual air temperature
@@ -643,11 +643,6 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
       dirActual = dir;
       pwmActual = pwm;
   }
-    /*
-     * Peltier
-     * (Cool) A->HIGH, B->LOW, PWM->LOW
-     * (Heat) A->LOW, B->HIGH, PWM->LOW
-     */
   if (dirActual == COOL) {
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_ON);

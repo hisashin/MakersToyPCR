@@ -6,7 +6,7 @@
 
 #ifdef USE_ADC_NAU7802
 /* Skip init sequence and return dummy values. This mode is for testing board without */
-#define ADC_DUMMY_MODE 
+// #define ADC_DUMMY_MODE 
 #define NO_ERR 0x00
 
 /* Implementation of NAU7802 A/D Converter */
@@ -120,6 +120,7 @@ uint8_t initADC () {
   return NO_ERR;
 }
 
+
 void printRevisionCode () {
   Serial.print("Reg="); // 0x0F is expected
   Serial.println(0 + wellADCReadRegValue(NAU7802_REG_ADDR_REVISION));
@@ -137,49 +138,52 @@ void switchChannelTo (uint8_t channel) {
       clearRegisterBit(NAU7802_REG_ADDR_CTRL2, 7);
     }
     setRegisterBit(NAU7802_REG_ADDR_CTRL2, 2); //Calib
-    // Calib OK
-    waitForFlag(NAU7802_REG_ADDR_CTRL2, 2, false);
     prev_channel = channel;
   }
 }
-float getADCValue (uint8_t channel) {
-  uint32_t adc_val = 0xFFFFFF;
-  char read_out[3] = {0xFF, 0xFF, 0xFF};
-  
-#ifdef ADC_DUMMY_MODE
-  return 0;
-#endif /* ADC_DUMMY_MODE */
-  switchChannelTo(channel);
-  // printRevisionCode(); // Test
 
+void switchADCConfig (int channel) {
+  // Config
+  switchChannelTo(channel);
+  // Wait for calib OK flag
+  waitForFlag(NAU7802_REG_ADDR_CTRL2, 2, false);
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CS);
   waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CR, true); // Cycle ready
-
-  delay(40);
-  i2c_err = wellADCReadRegValues(NAU7802_REG_ADDR_ADCO_B2,
-                                 &read_out[0], 3);
+}
+float getADCValue () {
+  uint32_t adc_val = 0xFFFFFF;
+  char read_out[3] = {0xFF, 0xFF, 0xFF};
+  i2c_err = wellADCReadRegValues(NAU7802_REG_ADDR_ADCO_B2, &read_out[0], 3);
   read_out[0] -= 0x80; // signed->unsigned
-  if (switchChannelTo == 0) {
-    switchChannelTo(1);
-  } else {
-    switchChannelTo(0);
-  }
-  switchChannelTo(channel);
   adc_val = (read_out[0] << 16) | (read_out[1] << 8) | read_out[2];
   float ratio =  (float) adc_val / (1.0 * 0x1000000);
   return ratio;
-
 }
+
 // Read ADC value of channel 0
 float getWellADCValue () {
+#ifdef ADC_DUMMY_MODE
+  return 0;
+#endif /* ADC_DUMMY_MODE */
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
-  return getADCValueAt(0);
+  float val = getADCValue();
+  switchADCConfig(1);
+  Serial.print("W=");Serial.println(val);
+  delay(50);
+  return val;
 }
 
 // Read ADC value of channel 1
 float getLidADCValue () {
+#ifdef ADC_DUMMY_MODE
+  return 0;
+#endif /* ADC_DUMMY_MODE */
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
-  return getADCValueAt(1);
+  float val = getADCValue();
+  switchADCConfig(0);
+  Serial.print("L=");Serial.println(val);
+  delay(50);
+  return val;
 }
 
 #endif /* USE_ADC_NAU7802 */

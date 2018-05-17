@@ -188,7 +188,6 @@ void loop() {
             finishSent = true;
         }
     }
-    Serial.print(elapsed); Serial.println("sec");
     delay(INTERVAL_MSEC-elapsed);
 #else
     if (isSerialConnected) {

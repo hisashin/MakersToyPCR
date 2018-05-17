@@ -92,8 +92,7 @@ void requestHandlerConnect() {
     boolean isRunning = false;
     Serial.print("ProgramState=");
     Serial.println(gpThermocycler->GetProgramState());
-    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EStartup ||
-      gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ELidWait ||
+    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ELidWait ||
       gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ERunning ||
       gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
       isRunning = true;
