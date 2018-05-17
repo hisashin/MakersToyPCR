@@ -24,7 +24,7 @@
 #include "board_conf.h"
 
 #define SERIAL_PREFIX "pcr"
-#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.7"
+#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.5"
 
 #ifndef USE_WIFI
 #include <avr/pgmspace.h>
