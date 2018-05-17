@@ -34,7 +34,6 @@
 #include "serialcontrol_chrome.h"
 #include "wifi_communicator.h"
 
-
 #endif /* USE_WIFI */
 
 Thermocycler* gpThermocycler = NULL;
@@ -54,7 +53,6 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
                 { 70, 40, 0.15, 60 },
                 { 200, 80, 1.1, 10 } };
 
-
 bool isApMode = false;
 
 //#define FORCE_AP_MODE // For debug
@@ -62,8 +60,8 @@ bool isApMode = false;
 
 void setup() {
     Serial.begin(BAUD_RATE);
-    EEPROM.begin(4096);
-    
+    EEPROM.begin(1024);
+
 #ifdef OFFLINE_DEMO
     // Skip network
     Serial.println("OFFLINE DEMO");
@@ -71,33 +69,27 @@ void setup() {
     gpThermocycler->ipSerialControl = new SerialControl(NULL);
     // Profile
     Serial.println("Input demo profile");
-    /*
-    95℃ 2min
-    (95℃ 30sec / 55℃ 30sec / 72℃ 30sec ) x 35
-     */
-     Serial.println("s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[30|95|Initial|0])(35[60|95|High|0][60|55|Low|0][60|72|Med|0])(1[0|20|Final Hold|0])");
-     gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[60|95|Initial|0])(35[60|95|High|0][60|55|Low|0][60|72|Med|0])(1[0|20|Final Hold|0]) ");
+    Serial.println("s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[30|95|Initial|0])(35[60|95|High|0][60|55|Low|0][60|72|Med|0])(1[0|20|Final Hold|0])");
+    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[60|95|Initial|0])(35[60|95|High|0][60|55|Low|0][60|72|Med|0])(1[0|20|Final Hold|0]) ");
 
-
-     // Dummy profile (for keeping lid temp)
-     //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
-     //gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
-
+    // Dummy profile (for keeping lid temp)
+    //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
+    //gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
     return;
 #endif
 #ifdef USE_WIFI
     Serial.println("NinjaPCR WiFi");
     pinMode(PIN_WIFI_MODE, INPUT);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
-    
+
 #ifdef FORCE_AP_MODE
-  isApMode = true;
-  Serial.println("FORCE_AP");
+    isApMode = true;
+    Serial.println("FORCE_AP");
 #endif /* FORCE_AP_MODE */
 
 #ifdef FORCE_NORMAL_MODE
-  Serial.println("FORCE_NORMAL");
-  isApMode = false;
+    Serial.println("FORCE_NORMAL");
+    isApMode = false;
 #endif /* FORCE_NORMAL_MODE */
 
     if (isApMode) {
@@ -106,15 +98,14 @@ void setup() {
     }
     else {
         Serial.println("Server mode");
+        startWiFiHTTPServer();
         setup_normal();
         wifi = new WifiCommunicator(wifi_receive, wifi_send);
         gpThermocycler->SetCommunicator(wifi);
-        startWiFiHTTPServer();
     }
 #else
     setup_normal();
 #endif /* USE_WIFI */
-  //slack_send();
 }
 
 void setup_normal() {
@@ -153,27 +144,24 @@ short INTERVAL_MSEC = 1000;
 int sec = 0;
 bool finishSent = false;
 void loop() {
-   
+
     long startMillis;
     long elapsed;
 #ifdef OFFLINE_DEMO
     startMillis = millis();
     gpThermocycler->Loop();
     gpThermocycler->ipSerialControl->ProcessDummyMessage(STATUS_REQ, "");
-    elapsed =  millis() - startMillis;
+    elapsed = millis() - startMillis;
     sec++;
-    //Serial.print();Serial.print(sec++);
-    //Serial.print("Elapsed=");Serial.println(elapsed);
     if (elapsed<0 || elapsed > INTERVAL_MSEC) {
-      elapsed = 0;
+        elapsed = 0;
     }
     delay(INTERVAL_MSEC-elapsed);
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
-      Serial.println("COMPLETE");
-      if (!finishSent) {
-         //slack_send("NinjaPCR_profile_finished_" + String(sec) + "sec");
-         finishSent = true;
-      }
+        Serial.println("COMPLETE");
+        if (!finishSent) {
+            finishSent = true;
+        }
     }
     return;
 #endif
@@ -184,22 +172,21 @@ void loop() {
     }
     startMillis = millis();
     gpThermocycler->Loop();
-    // TODO accurate timing
     if (isWiFiConnected()) {
         loopWiFiHTTPServer();
-    } else {
+    }
+    else {
         Serial.println("Disconnected");
     }
-    elapsed =  millis() - startMillis;
+    elapsed = millis() - startMillis;
     if (elapsed<0 || elapsed > INTERVAL_MSEC) {
-      elapsed = 0;
+        elapsed = 0;
     }
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
-      Serial.println("COMPLETE");
-      if (!finishSent) {
-         //slack_send("NinjaPCR_finished_" + String(sec) + "sec");
-         finishSent = true;
-      }
+        Serial.println("COMPLETE");
+        if (!finishSent) {
+            finishSent = true;
+        }
     }
     Serial.print(elapsed); Serial.println("sec");
     delay(INTERVAL_MSEC-elapsed);

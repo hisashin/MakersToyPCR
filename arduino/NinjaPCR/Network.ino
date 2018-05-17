@@ -6,8 +6,10 @@
 #include <EEPROM.h>
 #include <WiFiClient.h>
 #include <ESP8266mDNS.h>
+#include <ESP8266WiFiMulti.h>
 
 
+//ESP8266WiFiMulti WiFiMulti;
 bool isUpdateMode = false;
 String DEFAULT_HOST_NAME = "NinjaPCR";
 String hostName = DEFAULT_HOST_NAME;
@@ -58,11 +60,8 @@ void requestHandlerTop() {
 void requestHandlerCommand() {
     Serial.print("rc.");
     Serial.println(server.uri());
-    Serial.print("1");
     wifi->ResetCommand();
-    Serial.print("2");
     wifi->SendCommand();
-    Serial.print("3");
     char buff[256];
     for (uint8_t i = 0; i < server.args(); i++) {
         String sKey = server.argName(i);
@@ -78,7 +77,6 @@ void requestHandlerCommand() {
         free(key);
         free(value);
     }
-    Serial.println("requestHandlerCommand done");
     Serial.println(buff);
 }
 /* Handle request to "/status" */
@@ -92,6 +90,8 @@ void requestHandlerStatus() {
 /* Handle request to "/connect" */
 void requestHandlerConnect() {
     boolean isRunning = false;
+    Serial.print("ProgramState=");
+    Serial.println(gpThermocycler->GetProgramState());
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EStartup ||
       gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ELidWait ||
       gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ERunning ||
@@ -113,7 +113,7 @@ void requestHandlerConnect() {
 
 
 void requestHandler404() {
-    server.send(404, "text/plain", "requestHandler404");
+    server.send(404, "text/plain", "404");
 }
 
 
@@ -315,7 +315,7 @@ void requestHandlerConfJoin() {
     else {
         s += "<div>SSID:" + ssid + BR_TAG;
         s += "Password: ******" + BR_TAG;
-        s += "Please reset.";
+        s += "Device is restarting...";
     }
     s += "</body></html>\n";
     server.send(200, "text/html", s);
@@ -324,6 +324,7 @@ void requestHandlerConfJoin() {
         Serial.println("Valid input. Saving...");
         saveWiFiConnectionInfo(ssid, password, host);
         Serial.println("saved.");
+        ESP.restart();
     }
     else {
         Serial.println("Invalid input.");
@@ -349,6 +350,7 @@ String byteToHexStr(char c) {
 
 #define WIFI_TIMEOUT_SEC 10
 /* Start network as a HTTP server */
+// 
 boolean startWiFiHTTPServer() {
     // Check existence of WiFi Config
     if (!isWifiConfDone()) {
@@ -356,6 +358,8 @@ boolean startWiFiHTTPServer() {
         return false;
     }
 
+    // Load OTA mode from EEPROM
+    loadOTAConfig();
     // Load connection info from EEPROM
     int ssidIndex = 0;
     char *ssid = (char *) malloc(
@@ -365,51 +369,54 @@ boolean startWiFiHTTPServer() {
     char *host = (char *) malloc(
                 sizeof(char) * (EEPROM_WIFI_MDNS_HOST_MAX_LENGTH + 1));
     
-    readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR,
-            EEPROM_WIFI_SSID_MAX_LENGTH);
-    readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR,
-            EEPROM_WIFI_PASSWORD_MAX_LENGTH);
-    readStringFromEEPROM(host, EEPROM_WIFI_MDNS_HOST_ADDR,
-            EEPROM_WIFI_MDNS_HOST_MAX_LENGTH);
+    readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR, EEPROM_WIFI_SSID_MAX_LENGTH);
+    readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR, EEPROM_WIFI_PASSWORD_MAX_LENGTH);
+    readStringFromEEPROM(host, EEPROM_WIFI_MDNS_HOST_ADDR, EEPROM_WIFI_MDNS_HOST_MAX_LENGTH);
     // Connect with saved SSID and password
-    Serial.print("SSID:");
-    Serial.println(ssid);
-    Serial.print("Pass:");
-    Serial.println(password);
-    Serial.print("Host:");
-    Serial.println(host);
-    WiFi.begin(ssid, password);
-
-    // Wait for connection establishment
-    int wifiTime = 0;
-    while (WiFi.status() != WL_CONNECTED) {
+    Serial.print("SSID:"); Serial.println(ssid);
+    Serial.print("Pass:"); Serial.println(password);
+    Serial.print("Host:"); Serial.println(host);
+    
+    
+    if (isUpdateMode) {
+        //WiFiMulti.addAP(ssid, password);
+        WiFi.begin(ssid, password);
+        Serial.println("WiFi connecting.");
+        while (WiFi.status() != WL_CONNECTED) {
+        //while ((WiFiMulti.run()!= WL_CONNECTED)) {
+          Serial.print(".");
+          delay(500);
+        }
+        Serial.println("WiFii connected.");
+        delay(2000);
+        EEPROM.end();
+        execUpdate();
+        // startUpdaterServer();
+    }
+    else {
+      WiFi.begin(ssid, password);
+      // Wait for connection establishment
+      int wifiTime = 0;
+      while (WiFi.status() != WL_CONNECTED) {
         delay(500);
         wifiTime++;
         if (wifiTime > WIFI_TIMEOUT_SEC * 2) {
             // failure
-            return false;
+              return false;
+          }
+          Serial.print(".");
         }
-        Serial.print(".");
+        Serial.println("Connected.");
+        beginMDNS(host);
+        Serial.println("MDNS ok.");
+
+        Serial.print("\nConnected.IP=");
+        Serial.println(WiFi.localIP());
+        startNormalOperationServer();
     }
-    Serial.println("Connected.");
-    //slack_send("NinjaPCR_test 1");
-    beginMDNS(host);
-    Serial.println("MDNS ok.");
     free(ssid);
     free(password);
     free(host);
-
-    Serial.print("\nConnected.IP=");
-    Serial.println(WiFi.localIP());
-
-    Serial.println("Load OTA conf.");
-    loadOTAConfig();
-    if (isUpdateMode) {
-        startUpdaterServer();
-    }
-    else {
-        startNormalOperationServer();
-    }
     
     return true;
 }
@@ -425,6 +432,7 @@ void startNormalOperationServer() {
     
     // Never remove it (for OTA configuration)
     server.on("/config", requestHandlerConfig);
+    server.on("/update", requestHandlerFirmwareUpdate);
     
     server.on("/", requestHandlerTop);
     server.on("/command", requestHandlerCommand);

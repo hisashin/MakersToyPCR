@@ -6,7 +6,7 @@
 
 #ifdef USE_ADC_NAU7802
 /* Skip init sequence and return dummy values. This mode is for testing board without */
-//#define ADC_DUMMY_MODE 
+#define ADC_DUMMY_MODE 
 #define NO_ERR 0x00
 
 /* Implementation of NAU7802 A/D Converter */
