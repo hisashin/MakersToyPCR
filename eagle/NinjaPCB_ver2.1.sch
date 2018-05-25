@@ -2466,24 +2466,6 @@ DIN A3, landscape with location and doc. field</description>
 <text x="-15.24" y="3.81" size="2.54" layer="21">NEC</text>
 <circle x="-18.415" y="6.985" radius="1.27" width="0.127" layer="21"/>
 </package>
-<package name="NEC-ET2">
-<wire x1="-11" y1="6.4" x2="11" y2="6.4" width="0.127" layer="21"/>
-<wire x1="11" y1="6.4" x2="11" y2="-6.4" width="0.127" layer="21"/>
-<wire x1="11" y1="-6.4" x2="-11" y2="-6.4" width="0.127" layer="21"/>
-<wire x1="-11" y1="-6.4" x2="-11" y2="6.4" width="0.127" layer="21"/>
-<pad name="P$5" x="-1" y="5.25" drill="1.5"/>
-<pad name="P$4" x="0.4" y="-2.95" drill="1.5"/>
-<pad name="P$2" x="-7.3" y="-4.35" drill="1.1"/>
-<pad name="P$3" x="-3.6" y="-4.35" drill="1.1"/>
-<pad name="P$6" x="3.6" y="4.35" drill="1.1"/>
-<pad name="P$7" x="7.3" y="4.35" drill="1.1"/>
-<pad name="P$8" x="9.87" y="0" drill="1.6"/>
-<pad name="P$1" x="-9.87" y="0" drill="1.6"/>
-<text x="-11.43" y="7.62" size="1.27" layer="25">&gt;NAME</text>
-<text x="-11.43" y="-8.89" size="1.27" layer="51">ET2-N8</text>
-<text x="-10.16" y="2.54" size="2.54" layer="21">NEC</text>
-<circle x="-12.065" y="5.715" radius="0.635" width="0.127" layer="21"/>
-</package>
 <package name="NEC-EP2">
 <wire x1="-11.9" y1="8.1" x2="11.9" y2="8.1" width="0.127" layer="21"/>
 <wire x1="11.9" y1="8.1" x2="11.9" y2="-8.1" width="0.127" layer="21"/>
@@ -2498,9 +2480,25 @@ DIN A3, landscape with location and doc. field</description>
 <pad name="P$8" x="10.1" y="2.2" drill="1.9"/>
 <pad name="P$1" x="-10.1" y="-2.2" drill="1.9"/>
 <text x="-7.62" y="8.89" size="1.27" layer="25">&gt;NAME</text>
-<text x="-11.43" y="-10.16" size="1.27" layer="51">EP2-3N1S/EP2-3L3SAb</text>
 <text x="-11.43" y="3.81" size="2.54" layer="21">NEC</text>
 <circle x="-11.8872" y="9.0678" radius="0.508" width="0.127" layer="21"/>
+</package>
+<package name="NEC-ET2">
+<wire x1="-11" y1="6.4" x2="11" y2="6.4" width="0.127" layer="21"/>
+<wire x1="11" y1="6.4" x2="11" y2="-6.4" width="0.127" layer="21"/>
+<wire x1="11" y1="-6.4" x2="-11" y2="-6.4" width="0.127" layer="21"/>
+<wire x1="-11" y1="-6.4" x2="-11" y2="6.4" width="0.127" layer="21"/>
+<pad name="P$5" x="-1" y="5.25" drill="1.5"/>
+<pad name="P$4" x="0.4" y="-2.95" drill="1.5"/>
+<pad name="P$2" x="-7.3" y="-4.35" drill="1.1"/>
+<pad name="P$3" x="-3.6" y="-4.35" drill="1.1"/>
+<pad name="P$6" x="3.6" y="4.35" drill="1.1"/>
+<pad name="P$7" x="7.3" y="4.35" drill="1.1"/>
+<pad name="P$8" x="9.87" y="0" drill="1.6"/>
+<pad name="P$1" x="-9.87" y="0" drill="1.6"/>
+<text x="-11.43" y="7.62" size="1.27" layer="25">&gt;NAME</text>
+<text x="-10.16" y="2.54" size="2.54" layer="21">NEC</text>
+<circle x="-12.065" y="5.715" radius="0.635" width="0.127" layer="21"/>
 </package>
 </packages>
 <symbols>
