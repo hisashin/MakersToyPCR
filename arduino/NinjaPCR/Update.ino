@@ -23,15 +23,15 @@ String PARAM_OTA_URL = "ou";
 const char* OTA_HOST = "ninjapcrwifi";
 const char* OTA_UPDATE_PATH = "/update";
 
-char *host = "ninjapcr.tori.st";
+char *firmwareHost = "ninjapcr.tori.st";
 int port = 443;
 
 /* Fetch MD5 hash of latest firmware in secure way */
 String getMD5(String path) {
     WiFiClientSecure *httpsClient = new WiFiClientSecure();
     Serial.println("getMD5");
-    Serial.println(host);
-    if (!httpsClient->connect(host, port)) {
+    Serial.println(firmwareHost);
+    if (!httpsClient->connect(firmwareHost, port)) {
         Serial.println("Failed to connect.");
         return "";
     }
@@ -40,7 +40,7 @@ String getMD5(String path) {
     String url = path;
 
     httpsClient->print(
-            String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + host + "\r\n"
+            String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + firmwareHost + "\r\n"
                     + "User-Agent: NinjaPCR\r\n" + "Connection: close\r\n\r\n");
 
     Serial.println("request sent");

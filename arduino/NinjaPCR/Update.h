@@ -6,8 +6,8 @@
 #include <ESP8266WiFiMulti.h>
 
 #include <WiFiClientSecure.h>
-#include <ESP8266httpUpdate.h>
-class NinjaUpdate: public ESP8266HTTPUpdate {
+#include "ESP8266httpUpdateCustom.h"
+class NinjaUpdate: public ESP8266HTTPUpdateCustom {
 public:
     NinjaUpdate(void);
     t_httpUpdate_return update(const String& url, const String& md5,

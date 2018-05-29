@@ -52,14 +52,12 @@
 #define R_HEATER 5.0 // Heater
 
 #define HIGH_LOW_SWITCHING_TEMP 54
-
-// #define PRINT_DEBUG_CHART
+//#define PRINT_DEBUG_CHART
 
 static float INVERSE_BASE_TEMP = 1.0 / (THERMISTOR_BASE_TEMP + KELVIN);
 
 double voltageToTemp (double voltageRatio, float resistance, float b_constant, float r0) {
     double thermistorR = resistance * voltageRatio / (1.0 - voltageRatio);
-    Serial.print("R=");Serial.println(thermistorR);
     return (1 / ((log(thermistorR / r0) / b_constant) + INVERSE_BASE_TEMP))  - KELVIN;
 }
 double tempToVoltageRatio (double tempCelsius, double resistance, double bConst, double r0) {
@@ -94,9 +92,12 @@ CLidThermistor::CLidThermistor() :
 #endif /* PRINT_DEBUG_CHART */
 }
 //------------------------------------------------------------------------------
-void CLidThermistor::ReadTemp() {
+adc_result CLidThermistor::ReadTemp() {
     double voltageRatio;
-    voltageRatio = 1.0-(double)getLidADCValue();
+    float lidADCValue;
+    adc_result result = getLidADCValue(&lidADCValue);
+    if (result!=ADC_NO_ERROR) { return result; }
+    voltageRatio = 1.0-lidADCValue;
     float b_constant;
     
     if (voltageRatio > SWITCHING_VOLTAGE_50_LID)
@@ -107,11 +108,9 @@ void CLidThermistor::ReadTemp() {
         b_constant = B_CONST_25_100;
 
     b_constant = B_CONST_HEATER;
-    float temp = voltageToTemp (voltageRatio, R_HEATER, b_constant, R_0_WELL);
-    if (iTemp==0 || abs(temp-iTemp)<15) {
-      iTemp = temp;
-    }
-    
+    float temp = voltageToTemp (voltageRatio, R_HEATER, b_constant, R_0_HEATER);
+    iTemp = temp;
+    return ADC_NO_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -186,8 +185,10 @@ void CPlateThermistor::start() {
 }
 bool isHighTempMode = false;
 
-void CPlateThermistor::ReadTemp() {
-    float voltageRatio = getWellADCValue(); //Crash
+adc_result CPlateThermistor::ReadTemp() {
+    float voltageRatio;
+    adc_result result = getWellADCValue(&voltageRatio);
+    if (result!=ADC_NO_ERROR) { return result; }
     float resistance, b_constant;
     if (isHighTempMode) {
         resistance = R_HIGH_TEMP;
@@ -208,13 +209,12 @@ void CPlateThermistor::ReadTemp() {
             b_constant = B_CONST_25_100;
     }
     float temp = voltageToTemp (voltageRatio, resistance, b_constant, R_0_WELL);
-    if (iTemp==0 || abs(temp-iTemp)<15) {
-      iTemp = temp;
-    }
+    iTemp = temp;
 
     // Switch high/low mode (isHighTempMode)
     isHighTempMode = (iTemp > HIGH_LOW_SWITCHING_TEMP);
     digitalWrite(PIN_WELL_HIGH_TEMP, isHighTempMode);
+    return ADC_NO_ERROR;
 }
 //------------------------------------------------------------------------------
 

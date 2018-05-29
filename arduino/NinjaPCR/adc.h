@@ -5,7 +5,11 @@
 
 uint8_t initADC ();
 // Return (ADC value)/(ADC resolution)
-float getWellADCValue ();
-float getLidADCValue ();
+typedef uint8_t adc_result;
+adc_result getWellADCValue (float *val);
+adc_result getLidADCValue (float *val);
+
+#define ADC_NO_ERROR 0
+#define ADC_TIMEOUT 1
 
 #endif /* ___ADC_H___ */

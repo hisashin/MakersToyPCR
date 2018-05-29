@@ -245,9 +245,7 @@ uint8_t ProgramStore::RetrieveContrast() {
   return EEPROM.read(0);
 }
 
-//#define PROG_START_STR "&c=start"
 const char PROG_START_STR[] PROGMEM = "&c=start";
-//const char PROG_START_STR[] PROGMEM = "&c=start";
 //const char PROG_START_STR_P[] PROGMEM = PROG_START_STR;
 boolean ProgramStore::RetrieveProgram(SCommand& command, char* pBuffer) {
   for (int i = 0; i < MAX_COMMAND_SIZE; i++)

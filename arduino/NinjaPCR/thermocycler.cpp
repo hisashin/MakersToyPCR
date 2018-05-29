@@ -332,8 +332,11 @@ void Thermocycler::Loop() {
       if (!iRestarted && !ipSerialControl->CommandReceived()) {
         //check for stored program
         SCommand command;
-        if (ProgramStore::RetrieveProgram(command, (char*)ipSerialControl->GetBuffer()))
+        /*
+        if (ProgramStore::RetrieveProgram(command, (char*)ipSerialControl->GetBuffer())) {
           ProcessCommand(command);
+        }
+        */
       }
     }
     break;
@@ -391,14 +394,21 @@ void Thermocycler::Loop() {
     break;
   }
   //Read lid and well temp
-  iPlateThermistor.ReadTemp();
-  iLidThermistor.ReadTemp();
-  ControlLid();
+  adc_result result = iPlateThermistor.ReadTemp();
+  if (result!=ADC_NO_ERROR) {
+      // TODO error handling
+  }
+  result = iLidThermistor.ReadTemp();
+  if (result!=ADC_NO_ERROR) {
+      // TODO error handling
+  }
   
   double estimatedAirTemp = GetPlateTemp() * 0.4 + GetLidTemp() * 0.6; // TODO use actual air temperature
   iEstimatedSampleTemp += ((GetPlateTemp()-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
   
   CalcPlateTarget();
+
+  ControlLid();
   ControlPeltier();
 
   //program

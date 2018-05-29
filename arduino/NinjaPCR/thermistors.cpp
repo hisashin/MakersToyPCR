@@ -136,10 +136,11 @@ CLidThermistor::CLidThermistor():
   iTemp(0.0) {
 }
 //------------------------------------------------------------------------------
-void CLidThermistor::ReadTemp() {
+adc_result CLidThermistor::ReadTemp() {
   unsigned long voltage_mv = (unsigned long)analogRead(PIN_LID_THERMISTOR_AIN) * 5000 / 1024;
   resistance = voltage_mv * 2200 / (5000 - voltage_mv);
   iTemp = TableLookup(LID_RESISTANCE_TABLE, sizeof(LID_RESISTANCE_TABLE) / sizeof(LID_RESISTANCE_TABLE[0]), 0, resistance);
+  return ADC_NO_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -152,10 +153,12 @@ void CPlateThermistor::start() {
     initADC();
 }
 //------------------------------------------------------------------------------
-void CPlateThermistor::ReadTemp() {
-  float voltageRatio = getWellADCValue();
+adc_result CPlateThermistor::ReadTemp() {
+  float voltageRatio;
+  adc_result result = getWellADCValue(*voltageRatio);
   resistance = voltageRatio * 22000 / (1.0 - voltageRatio); // in hecto ohms
   iTemp = TableLookup(PLATE_RESISTANCE_TABLE, sizeof(PLATE_RESISTANCE_TABLE) / sizeof(PLATE_RESISTANCE_TABLE[0]), -40, resistance);
+  return ADC_NO_ERROR;
 }
 //------------------------------------------------------------------------------
 

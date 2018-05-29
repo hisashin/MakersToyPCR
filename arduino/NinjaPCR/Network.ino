@@ -11,12 +11,11 @@
 
 //ESP8266WiFiMulti WiFiMulti;
 bool isUpdateMode = false;
-String DEFAULT_HOST_NAME = "NinjaPCR";
-String hostName = DEFAULT_HOST_NAME;
+String DEFAULT_HOST_NAME = "ninjapcr";
 
 /* Addresses of WiFi configuration */
 /* Wfite 0xF0 when WiFi configuration is done. */
-#define EEPROM_WIFI_CONF_DONE_ADDR 0
+#define EEPROM_WIFI_CONF_DONE_ADDR 512
 #define EEPROM_WIFI_CONF_DONE_VAL 0xF0
 
 #define EEPROM_WIFI_SSID_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+1)
@@ -28,6 +27,9 @@ String hostName = DEFAULT_HOST_NAME;
 #define EEPROM_WIFI_MDNS_HOST_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
 #define EEPROM_WIFI_MDNS_HOST_MAX_LENGTH 31
 
+char ssid[EEPROM_WIFI_SSID_MAX_LENGTH + 1];
+char password[EEPROM_WIFI_PASSWORD_MAX_LENGTH + 1];
+char host[EEPROM_WIFI_MDNS_HOST_MAX_LENGTH + 1];
 // flag 1byte + 4bytes
 ESP8266WebServer server(80);
 
@@ -41,7 +43,9 @@ void wifi_send(char *response, char *funcName) {
     str += String(funcName);
     str += "(";
     str += String(response);
-    str += ");";
+    str += ",\"";
+    str += String(server.arg("x"));
+    str += "\");";
     char *buff = (char*)malloc(sizeof(char) * (str.length()+1));
     str.toCharArray(buff, str.length()+1);
     Serial.print("WiFi Sendss");
@@ -99,10 +103,11 @@ void requestHandlerConnect() {
     }
     String response = "{connected:true,version:\"";
     response += String(OPENPCR_FIRMWARE_VERSION_STRING);
+    response += ("\",prof:\"" + String(gpThermocycler->GetProgName()) + "\",running:");
     if (isRunning) {
-      response += "\",running:true}";
+      response += "true}";
     } else {
-      response += "\",running:false}";
+      response += "false}";
     }
     char *chResponse = (char *) malloc(sizeof(char) * (response.length()+1));
     response.toCharArray(chResponse, response.length()+1);
@@ -110,11 +115,10 @@ void requestHandlerConnect() {
     free(chResponse);
 }
 
-
+/* Handle 404 not found error */
 void requestHandler404() {
     server.send(404, "text/plain", "404");
 }
-
 
 /* AP scanning (to show AP list) */
 // Find nearby SSIDs
@@ -126,8 +130,7 @@ void scanNearbyAP() {
     int n = WiFi.scanNetworks();
     if (n == 0) {
         Serial.println("no networks found");
-    }
-    else {
+    } else {
         Serial.print(n);
         Serial.println(" found");
         if (n > AP_MAX_NUMBER) {
@@ -159,7 +162,7 @@ void scanNearbyAP() {
     }
     Serial.println("Scan done.");
 }
-void startScanMode() {
+void startScanning() {
     WiFi.mode(WIFI_STA);
     WiFi.disconnect();
     delay(10);
@@ -171,7 +174,7 @@ void stopScanMode() {
 // NinjaPCR works as an AP with this SSID
 const char* apSSID = "NinjaPCR";
 
-void startAPMode() {
+void startAP() {
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
     WiFi.softAP(apSSID);
@@ -182,13 +185,20 @@ bool hasPrevWifiError = false;
 String prevWifiError;
 
 void startWiFiAPMode() {
-    startScanMode();
-    while (apCount == 0) {
+    // Load user's WiFi config to fill config form.
+    if (isWifiConfDone()) {
+        loadWifiConfig();
+    }
+    startScanning();
+    int scanCount = 0;
+    while (apCount == 0 || scanCount < 5) {
         scanNearbyAP();
-        delay(3000);
+        delay(1000);
+        scanCount++;
     }
     stopScanMode();
-    startAPMode();
+    startAP();
+    
     server.begin();
     server.on("/", requestHandlerConfInit);
     server.on("/join", requestHandlerConfJoin);
@@ -205,6 +215,14 @@ boolean isWiFiConnected() {
 bool isWifiConfDone() {
     return EEPROM.read(EEPROM_WIFI_CONF_DONE_ADDR) == EEPROM_WIFI_CONF_DONE_VAL;
 }
+
+/*  Load user's WiFi settings from EEPROM  */
+void loadWifiConfig () {
+    readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR, EEPROM_WIFI_SSID_MAX_LENGTH);
+    readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR, EEPROM_WIFI_PASSWORD_MAX_LENGTH);
+    readStringFromEEPROM(host, EEPROM_WIFI_MDNS_HOST_ADDR, EEPROM_WIFI_MDNS_HOST_MAX_LENGTH);
+}
+
 int min(int a, int b) {
     return (a < b) ? a : b;
 }
@@ -241,22 +259,50 @@ void saveWiFiConnectionInfo(String ssid, String password, String host) {
 String getHTMLHeader() {
     return "<!DOCTYPE HTML>\r\n<html><head><title>NinjaPCR</title></head><body>\r\n";
 }
+/*
+String hostName = ;
+*/
 void requestHandlerConfInit() {
     // Send form
+    boolean isConfDone = isWifiConfDone();
     String s = getHTMLHeader();
     if (hasPrevWifiError) {
         s += "<div style=\"color:red\">" + prevWifiError + "</div>";
     }
     s += "<form method=\"post\" action=\"join\">";
-    s += "<div>SSID:<select name=\"s\"><option>----</option>";
+    s += "<div>SSID<select name=\"s\"><option>----</option>";
+    boolean ssidFoundInList = false;
     for (int i = 0; i < apCount; i++) {
-        String ssid = SSIDs[i];
-        s += "<option value=\"" + ssid + "\">" + ssid + "</option>";
+        String optionSSID = SSIDs[i];
+        optionSSID.replace("\"","\\\"");
+        Serial.println(optionSSID);
+        s += ("<option value=\"" + optionSSID + "\"");
+        if (isConfDone && optionSSID.equals(String(ssid))) {
+          s += " selected";
+          ssidFoundInList = true;
+        }
+        s += ">" + optionSSID + "</option>";
     }
+    
     s += "</select></div>";
-    s += "<div>SSID (text): <input type=\"password\" name=\"st\"/></div>";
-    s += "<div>Password: <input type=\"password\" name=\"wp\"/></div>";
-    s += "<div>Host name: <input name=\"h\" value=\"" + hostName + "\"/></div>";
+    s += "(If not in the list above)<input name=\"st\"";
+    if (isConfDone && !ssidFoundInList) {
+      s += (" value=\"" + String(ssid) + "\"");
+    }
+    s += "/></div>";
+    s += "<div>Password<input type=\"password\" name=\"wp\"";
+    if (isConfDone) {
+      s += (" value=\"" + String(password) + "\"");
+    }
+    s+="/></div>";
+    s += "<div>Device name<input name=\"h\" required minlength=\"4\" maxlength=\"16\" pattern=\"[a-zA-Z0-9]+\" value=\"";
+    if (isConfDone) {
+      s += String(host);
+    } else {
+      s += DEFAULT_HOST_NAME;
+    }
+    // TODO default
+    s += "\"/>(Alphabetic letters and numbers)</div>";
     s += "<div><input type=\"submit\" value=\"Join\"/></div>";
     s += "</form>";
     s += "</body></html>\n";
@@ -271,7 +317,7 @@ bool isValidHostName (String host) {
     }
     for (int i=0; i<host.length(); i++) {
         char c = host.charAt(i);
-        if (!( ('A'<=c&&c<='Z') || ('a'<=c&&c<='z') || ('0'<=c&&c<='9') || c=='-')) {
+        if (!( ('A'<=c&&c<='Z') || ('a'<=c&&c<='z') || ('0'<=c&&c<='9'))) {
             Serial.print("Invalid char:");
             Serial.println(c);
             return false;
@@ -300,9 +346,8 @@ void requestHandlerConfJoin() {
         isValid = false;
     }
     if (!isValidHostName(host)) {
-        emptyField = "Host name";
+        emptyField = "Device name";
         isValid = false;
-        
     }
 
     String s = getHTMLHeader();
@@ -314,7 +359,8 @@ void requestHandlerConfJoin() {
     else {
         s += "<div>SSID:" + ssid + BR_TAG;
         s += "Password: ******" + BR_TAG;
-        s += "Device is restarting...";
+        s += "Device name: " + host + BR_TAG;
+        s += "Restarting.";
     }
     s += "</body></html>\n";
     server.send(200, "text/html", s);
@@ -348,8 +394,8 @@ String byteToHexStr(char c) {
 }
 
 #define WIFI_TIMEOUT_SEC 10
+
 /* Start network as a HTTP server */
-// 
 boolean startWiFiHTTPServer() {
     // Check existence of WiFi Config
     if (!isWifiConfDone()) {
@@ -361,16 +407,8 @@ boolean startWiFiHTTPServer() {
     loadOTAConfig();
     // Load connection info from EEPROM
     int ssidIndex = 0;
-    char *ssid = (char *) malloc(
-            sizeof(char) * (EEPROM_WIFI_SSID_MAX_LENGTH + 1));
-    char *password = (char *) malloc(
-            sizeof(char) * (EEPROM_WIFI_PASSWORD_MAX_LENGTH + 1));
-    char *host = (char *) malloc(
-                sizeof(char) * (EEPROM_WIFI_MDNS_HOST_MAX_LENGTH + 1));
-    
-    readStringFromEEPROM(ssid, EEPROM_WIFI_SSID_ADDR, EEPROM_WIFI_SSID_MAX_LENGTH);
-    readStringFromEEPROM(password, EEPROM_WIFI_PASSWORD_ADDR, EEPROM_WIFI_PASSWORD_MAX_LENGTH);
-    readStringFromEEPROM(host, EEPROM_WIFI_MDNS_HOST_ADDR, EEPROM_WIFI_MDNS_HOST_MAX_LENGTH);
+    loadWifiConfig();
+
     // Connect with saved SSID and password
     Serial.print("SSID:"); Serial.println(ssid);
     Serial.print("Pass:"); Serial.println(password);
@@ -413,9 +451,6 @@ boolean startWiFiHTTPServer() {
         Serial.println(WiFi.localIP());
         startNormalOperationServer();
     }
-    free(ssid);
-    free(password);
-    free(host);
     
     return true;
 }
@@ -434,9 +469,9 @@ void startNormalOperationServer() {
     server.on("/update", requestHandlerFirmwareUpdate);
     
     server.on("/", requestHandlerTop);
+    server.on("/connect", requestHandlerConnect);
     server.on("/command", requestHandlerCommand);
     server.on("/status", requestHandlerStatus);
-    server.on("/connect", requestHandlerConnect);
     server.onNotFound(requestHandler404);
 
     server.begin();

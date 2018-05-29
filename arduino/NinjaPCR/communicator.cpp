@@ -33,7 +33,7 @@ void Communicator::FinishReading() {
 
 void Communicator::ProcessMessage() {
   char* pCommandBuf;
-
+  Serial.print("p");
   switch (currentCommand) {
   case SEND_CMD:
     Serial.println("ProcessMessage SEND_CMD");
@@ -84,7 +84,6 @@ void Communicator::SendStatus() {
 
   statusPtr = AddParam(statusPtr, 'd', (unsigned long) iCommandId, true);
   statusPtr = AddParam_P(statusPtr, 's', szStatus);
-  //statusPtr = AddParam(statusPtr, 'l', (int) tc.GetLidTemp());
   statusPtr = AddParam(statusPtr, 'l', tc.GetLidTemp(), 1, false); // float value
   statusPtr = AddParam(statusPtr, 'b', tc.GetPlateTemp(), 1, false);
   statusPtr = AddParam_P(statusPtr, 't', szThermState);

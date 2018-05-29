@@ -60,6 +60,9 @@ bool isApMode = false;
 
 void setup() {
     Serial.begin(BAUD_RATE);
+    delay(250);
+    Serial.print("NinjaPCR ver. "); 
+    Serial.println(OPENPCR_FIRMWARE_VERSION_STRING);
     EEPROM.begin(1024);
 
 #ifdef OFFLINE_DEMO
@@ -78,7 +81,6 @@ void setup() {
     return;
 #endif
 #ifdef USE_WIFI
-    Serial.println("NinjaPCR WiFi");
     pinMode(PIN_WIFI_MODE, INPUT);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
 
@@ -144,7 +146,6 @@ short INTERVAL_MSEC = 1000;
 int sec = 0;
 bool finishSent = false;
 void loop() {
-
     long startMillis;
     long elapsed;
 #ifdef OFFLINE_DEMO
@@ -185,6 +186,7 @@ void loop() {
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
         Serial.println("COMPLETE");
         if (!finishSent) {
+            // TODO call IFTTT API if needed
             finishSent = true;
         }
     }
@@ -208,7 +210,7 @@ void checkSerialConnection() {
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);
 #endif /* USE_STATUS_PINS */
     startLamp = !startLamp;
-    int timeStart = millis();
+    unsigned long timeStart = millis();
     while (millis() < timeStart + INTERVAL_MSEC) {
         while (Serial.available()) {
             char ch = Serial.read();

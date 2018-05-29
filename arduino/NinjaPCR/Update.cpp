@@ -1,21 +1,21 @@
-#include <ESP8266HTTPUpdate.h>
+#include "ESP8266HTTPUpdateCustom.h"
 #include "Update.h"
 
 NinjaUpdate::NinjaUpdate() :
-        ESP8266HTTPUpdate() {
+        ESP8266HTTPUpdateCustom() {
 }
 
 HTTPUpdateResult NinjaUpdate::update(const String& url, const String& md5,
         const String& currentVersion) {
     DEBUG_HTTP_UPDATE("[NinjaPCR] NinjaUpdate::update\n");
     expectedMD5 = md5;
-    return ESP8266HTTPUpdate::update(url, currentVersion);
+    return ESP8266HTTPUpdateCustom::update(url, currentVersion);
 }
 /* Override */
 HTTPUpdateResult NinjaUpdate::handleUpdate(HTTPClient& http,
         const String& currentVersion, bool spiffs) {
     DEBUG_HTTP_UPDATE("[NinjaPCR] handleUpdate start\n");
-    ESP8266HTTPUpdate::handleUpdate(http, currentVersion, spiffs);
+    ESP8266HTTPUpdateCustom::handleUpdate(http, currentVersion, spiffs);
     DEBUG_HTTP_UPDATE("[NinjaPCR] handleUpdate end\n");
 }
 
@@ -24,9 +24,9 @@ bool NinjaUpdate::runUpdate(Stream& in, uint32_t size, String md5,
         int command) {
 
     // If you get compilation error, "virtual" is removed from ESP8266HTTPUpdate::runUpdate() and ESP8266HTTPUpdate::handleUpdate()
-    ESP8266HTTPUpdate::CheckNinjaPCR();
+    ESP8266HTTPUpdateCustom::CheckNinjaPCR();
     DEBUG_HTTP_UPDATE("[NinjaPCR] runUpdate start\n");
-    bool result = ESP8266HTTPUpdate::runUpdate(in, size, expectedMD5, command);
+    bool result = ESP8266HTTPUpdateCustom::runUpdate(in, size, expectedMD5, command);
     DEBUG_HTTP_UPDATE("[NinjaPCR] runUpdate end\n");
     return result;
 
