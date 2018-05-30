@@ -185,7 +185,10 @@ iPlatePid(&iEstimatedSampleTemp, // Use estimated sample temp (test)
 &iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
 iLidPid(LID_PID_GAIN_SCHEDULE, MIN_LID_PWM, MAX_LID_PWM),
 iEstimatedSampleTemp(25),
-iTargetLidTemp(0) {
+iTargetLidTemp(0),
+statusIndex(0),
+statusCount(0),
+iHardwareStatus(ENoProblem) {
 #ifndef USE_WIFI
 #ifdef USE_LCD
   ipDisplay = new Display();
@@ -303,7 +306,6 @@ void Thermocycler::Stop() {
 }
 
 PcrStatus Thermocycler::Start() {
-	//Serial.print("st");
   if (ipProgram == NULL) {
     return ENoProgram;
   }
@@ -317,12 +319,8 @@ PcrStatus Thermocycler::Start() {
 static boolean lamp = false;
 
 // internal
-void Thermocycler::Loop() {
-#ifdef USE_STATUS_PINS
-	digitalWrite(PIN_STATUS_A, (!lamp)?HIGH:LOW);
-  digitalWrite(PIN_STATUS_B, (lamp)?HIGH:LOW);
-#endif /* USE_STATUS_PINS */
-	lamp = !lamp;
+boolean Thermocycler::Loop() {
+
   ipSerialControl->Process();
   switch (iProgramState) {
   case EStartup:
@@ -394,15 +392,19 @@ void Thermocycler::Loop() {
     break;
   }
   //Read lid and well temp
+  statusBuff[statusIndex].adcStatus = ADC_NO_ERROR;
   adc_result result = iPlateThermistor.ReadTemp();
   if (result!=ADC_NO_ERROR) {
-      // TODO error handling
+      statusBuff[statusIndex].adcStatus = result;
   }
   result = iLidThermistor.ReadTemp();
   if (result!=ADC_NO_ERROR) {
-      // TODO error handling
+      statusBuff[statusIndex].adcStatus = result;
   }
   
+  statusBuff[statusIndex].lidTemp = GetLidTemp();
+  statusBuff[statusIndex].wellTemp = GetPlateTemp
+
   double estimatedAirTemp = GetPlateTemp() * 0.4 + GetLidTemp() * 0.6; // TODO use actual air temperature
   iEstimatedSampleTemp += ((GetPlateTemp()-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
   
@@ -411,12 +413,23 @@ void Thermocycler::Loop() {
   ControlLid();
   ControlPeltier();
 
+  // Check error
+  CheckHardware();
+  if (iHardwareStatus!=ENoProblem) {
+      iProgramState = EError;
+      // TODO stop device (set all off)
+      // TODO return error code
+  }
+
   //program
   UpdateEta();
  #ifdef USE_LCD
   ipDisplay->Update();
   #endif
   ipSerialControl->Process();
+  statusIndex = (statusIndex+1) % CyclerStatusBuffSize;
+  statusCount++;
+  return true;
 }
 
 void Thermocycler::SetCommunicator(Communicator *comm) {
@@ -538,11 +551,12 @@ void Thermocycler::ControlPeltier() {
   SetPeltier(newDirection, abs(iPeltierPwm));
 }
 void Thermocycler::ControlLid() {
-  int drive = 0;  
+  int drive = 0;
   if (iProgramState == ERunning || iProgramState == ELidWait) {
     float temp = GetLidTemp();
     drive = iLidPid.Compute(iTargetLidTemp, temp);
   }
+  statusBuff[statusIndex].lidOutput = drive;
 #ifdef USE_ESP8266
 // Use on-off control instead of PWM because ESP8266 does not have enough pins
 #ifdef PIN_LID_PWM_ACTIVE_LOW
@@ -622,6 +636,68 @@ void Thermocycler::UpdateEta() {
     iEstimatedTimeRemainingS = estimatedDurationS > elapsedTimeS ? estimatedDurationS - elapsedTimeS : 0;
   }
 }
+const float POSSIBLE_LID_TEMP_MIN = -10;
+const float POSSIBLE_LID_TEMP_MAX = 110;
+const float POSSIBLE_WELL_TEMP_MIN = -10;
+const float POSSIBLE_WELL_TEMP_MAX = 120;
+void Thermocycler::CheckHardware() {
+    iHardwareStatus = ENoProblem;
+    // Check hardware errors:
+    // (A) ADC problem (Timeout error)
+    if (statusBuff[statusIndex].adcStatus != ADC_NO_ERROR {
+        Serial.println("ADC error.");
+        iHardwareStatus = EADCProblem;
+    }
+
+    // (B) Irregular temperature values
+    bool irregularWellTemp = true;
+    bool irregularLidTemp = true;
+    for (int i=0; i<5; i++) {
+        int index = (statusIndex + CyclerStatusBuffSize - i) / CyclerStatusBuffSize;
+        CyclerStatus *stat = &statusBuff[statusIndex];
+        if (stat->lidTemp>=POSSIBLE_LID_TEMP_MIN && stat->lidTemp<=POSSIBLE_LID_TEMP_MAX) {
+            irregularLidTemp = false;
+        }
+        if (stat->wellTemp>=POSSIBLE_WELL_TEMP_MIN && stat->wellTemp<=POSSIBLE_WELL_TEMP_MAX) {
+            irregularWellTemp = false;
+        }
+    }
+    if (irregularWellTemp) {
+        Serial.println("Irregular well temp");
+        iHardwareStatus = EWellIrregular;
+    }
+    if (irregularLidTemp) {
+        Serial.println("Irregular lid temp");
+        iHardwareStatus = ELidIrregular;
+    }
+    // (C) Heater/peltier output is not reflected to temperature
+    bool isWellHeating = true;
+    bool isWellCooling = true;
+    bool isLidHeating = true;
+    for (int i=0; i<8; i++) {
+        int index = (statusIndex + CyclerStatusBuffSize - i) / CyclerStatusBuffSize;
+        CyclerStatus *stat = &statusBuff[statusIndex];
+        if (stat->lidOutput!=MAX_LID_PWM) { isLidHeating = false; }
+        if (stat->wellOutput!=MIN_PELTIER_PWM) { isWellCooling = false; }
+        if (stat->wellOutput!=MAX_PELTIER_PWM) { isLidHeating = false; }
+    }
+    float wellDiff = statusBuff[statusIndex].wellTemp
+            - statusBuff[(statusIndex + CyclerStatusBuffSize - 7) / CyclerStatusBuffSize].wellTemp;
+    float lidDiff = statusBuff[statusIndex].lidTemp
+            - statusBuff[(statusIndex + CyclerStatusBuffSize - 7) / CyclerStatusBuffSize].lidTemp;
+    if (isWellHeating && wellDiff<3) {
+        Serial.println("Well is not getting hot.");
+        iHardwareStatus = EWellNotReflected;
+    }
+    if (isWellCooling && wellDiff > -3) {
+        Serial.println("Well is not getting cool.");
+        iHardwareStatus = EWellNotReflected;
+    }
+    if (isLidHeating && lidDiff<3) {
+        Serial.println("Lid is not heated.");
+        iHardwareStatus = ELidNotReflected;
+    }
+}
 #ifdef SUPPRESS_PELTIER_SWITCHING
 /*
  * Suppress frequent peltier's direction switching to
@@ -682,6 +758,7 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
   analogWrite(PIN_WELL_PWM, pwmActual);
 #endif /* PIN_WELL_PWM_ACTIVE_LOW */
   analogValuePeltier = (dir==COOL)?-pwmActual:pwmActual;
+  statusBuff[statusIndex].lidOutput = analogValuePeltier;
 
   prevDirection = dir;
   prevPWMDuty = pwm;

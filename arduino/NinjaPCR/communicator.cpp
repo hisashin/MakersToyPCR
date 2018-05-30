@@ -199,6 +199,7 @@ const char* Communicator::GetProgramStateString_P(
   case Thermocycler::EStartup:
     return STARTUP_STR;
   case Thermocycler::EError:
+    return ERROR_STR;
   default:
     return ERROR_STR;
   }

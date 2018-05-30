@@ -24,12 +24,14 @@
 #include "pid.h"
 #include "program.h"
 #include "thermistors.h"
+#include "adc.h"
 
 class Display;
 class SerialControl;
 class WifiCommunicator;
 class Communicator;
 
+const int CyclerStatusBuffSize = 10;
 class Thermocycler {
 public:
   enum ProgramState {
@@ -61,6 +63,15 @@ public:
     EPIDPlate
   };
   
+  enum HardwareStatus {
+      ENoProblem = 0,
+      EADCProblem,
+      ELidIrregular,
+      EWellIrregular,
+      ELidNotReflected,
+      EWellNotReflected
+  };
+
   Thermocycler();
   Thermocycler(boolean restarted);
   ~Thermocycler();
@@ -99,10 +110,16 @@ public:
   void ProcessCommand(SCommand& command);
   
   // internal
-  void Loop();
-  
+  boolean Loop();
 private:
-  void CheckPower();
+  struct CyclerStatus {
+      float lidTemp;
+      float wellTemp;
+      int lidOutput;
+      int wellOutput;
+      adc_result adcStatus;
+  };
+private:
   void ReadLidTemp();
   void ReadPlateTemp();
   void CalcPlateTarget();
@@ -110,6 +127,7 @@ private:
   void ControlLid();
   void PreprocessProgram();
   void UpdateEta();
+  void CheckHardware();
  
   //util functions
   void AdvanceToNextStep();
@@ -141,7 +159,13 @@ private:
   boolean iRestarted;
   
   ControlMode iPlateControlMode;
+  HardwareStatus iHardwareStatus
   
+  // Log buffer
+  CyclerStatus statusBuff[CyclerStatusBuffSize];
+  int statusIndex; // Index of satus ring buffer
+  int statusCount; // Total count of status log
+
   // peltier control
   PID iPlatePid;
   CPIDController iLidPid;

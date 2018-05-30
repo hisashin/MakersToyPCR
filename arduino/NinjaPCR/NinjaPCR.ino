@@ -146,8 +146,8 @@ short INTERVAL_MSEC = 1000;
 int sec = 0;
 bool finishSent = false;
 void loop() {
-    long startMillis;
-    long elapsed;
+    unsigned long startMillis;
+    unsigned long elapsed;
 #ifdef OFFLINE_DEMO
     startMillis = millis();
     gpThermocycler->Loop();

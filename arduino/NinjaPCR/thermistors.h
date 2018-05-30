@@ -19,6 +19,8 @@
 #ifndef _LID_THERMISTOR_H_
 #define _LID_THERMISTOR_H_
 
+#include "adc.h"
+
 class CLidThermistor {
 public:
     CLidThermistor();
