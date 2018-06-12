@@ -27,6 +27,9 @@ public:
     double& GetTemp() {
         return iTemp;
     }
+    void setTemp(double newValue) {
+      iTemp = newValue;
+    }
     unsigned long& GetResistance() {
         return resistance;
     }
@@ -42,6 +45,9 @@ public:
     CPlateThermistor();
     double& GetTemp() {
         return iTemp;
+    }
+    void setTemp(double newValue) {
+      iTemp = newValue;
     }
     unsigned long& GetResistance() {
         return resistance;

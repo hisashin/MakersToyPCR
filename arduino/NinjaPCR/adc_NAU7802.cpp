@@ -79,16 +79,26 @@ static uint8_t adc_default_conf = 0b0111100; //320sps (111)(OK)
  */
 bool waitForFlag (uint8_t regAddress, int flagIndex, bool flagValue, long timeoutMsec) {
   bool flagResult;
-  unsigned long startMillis = millis();
+  long startMillis = millis();
   char read_out[1] = {0xFF};
+  long elapsed = 0;
   do {
     wellADCReadRegValues(regAddress, &read_out[0], 1);
     flagResult = read_out[0] & (0x01 << flagIndex);
+    elapsed = (millis()-startMillis);
+    if (elapsed < 0) {
+      Serial.println("ELAPSED TIME IS NEGATIVE!");
+      startMillis = millis(); // Reset
+    }
     if (flagResult == flagValue) {
         return true;
     }
-  } while ((millis()-startMillis) < timeoutMsec);
+  } while (elapsed < timeoutMsec);
   // Timeout
+  Serial.print("TIMEOUT! resetting.");
+  initADC();
+  Serial.println(elapsed);
+  delay(200);
   return false;
 }
 
@@ -109,7 +119,7 @@ uint8_t initADC () {
   // Power up digital
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUD);
   // Wait for power up ready flag
-  waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUR, true, 200);
+  waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUR, true, 500);
   // Power up analog
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUA);
   // Cycle start
@@ -166,16 +176,16 @@ adc_result switchADCConfig (uint8_t channel, uint8_t SPS0, uint8_t SPS1, uint8_t
   uint8_t value = wellADCReadRegValue(NAU7802_REG_ADDR_CTRL2);
   value = changeBitValue(value, 7, (channel==1));
   // From right to left
-  value = changeBitValue(value, 4, SPS0);
-  value = changeBitValue(value, 5, SPS1);
   value = changeBitValue(value, 6, SPS2);
+  value = changeBitValue(value, 5, SPS1);
+  value = changeBitValue(value, 4, SPS0);
   wellADCWriteRegValue(NAU7802_REG_ADDR_CTRL2, value);
   adc_result result;
   // Wait for "Calib OK" flag
-  if (waitForFlag(NAU7802_REG_ADDR_CTRL2, 2, false, 100)==false) { return ADC_TIMEOUT; }
+  if (waitForFlag(NAU7802_REG_ADDR_CTRL2, 2, false, 500)==false) { return ADC_TIMEOUT; }
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CS);
   // Wait for "Cycle ready" flag
-  if (waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CR, true, 100)==false) { return ADC_TIMEOUT; }
+  if (waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CR, true, 500)==false) { return ADC_TIMEOUT; }
   return ADC_NO_ERROR;
 }
 float getADCValue () {
@@ -195,17 +205,26 @@ float getADCValue () {
 001 = 20SPS
 000 = 10SPS
 */
-
+int lidSkipCount = 0;
+int wellSkipCount = 0;
 adc_result getWellADCValue (float *val) {
 #ifdef ADC_DUMMY_MODE
   return 0;
 #endif /* ADC_DUMMY_MODE */
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   *val = getADCValue();
-  Serial.print("W=");Serial.println(*val);
-  // Config for lid thermistor
-  adc_result result = switchADCConfig(1, 1, 1, 1); //2ch, 320SPS
-  delay(80);
+  if (*val > 0.001 && *val < 0.999) {
+    wellSkipCount = 0;
+  } else {
+    // Irregular value?
+    Serial.println("Irregular Value.");
+    wellSkipCount ++;
+  }
+  adc_result result = switchADCConfig(1, 0, 1, 1); //2ch, 80SPS
+  delay(125);
+  if (wellSkipCount > 5) {
+    result =ADC_IRREGULAR_VALUES;
+  }
   return result;
 }
 
@@ -216,9 +235,20 @@ adc_result getLidADCValue (float *val) {
 #endif /* ADC_DUMMY_MODE */
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   *val = getADCValue();
-   Serial.print("L=");Serial.println(*val);
+  if (*val > 0.001 && *val < 0.999 ) {
+    lidSkipCount = 0;
+  } else {
+    // Irregular value?
+    Serial.println("Irregular Value.");
+    lidSkipCount ++;
+  }
+  // Serial.print("L=");Serial.println(*val);
   // Config for well thermistor
-   adc_result result = switchADCConfig(0, 0, 0, 0); //1ch, 10SPS
+  adc_result result = switchADCConfig(0, 0, 1, 1); //1ch, 80SPS
+  //adc_result result = switchADCConfig(0, 0, 0, 0); //1ch, 10SPS
+  if (lidSkipCount > 5) {
+    result = ADC_IRREGULAR_VALUES;
+  }
   return result;
 }
 

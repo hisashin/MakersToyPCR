@@ -23,18 +23,12 @@
 #include "adc.h"
 #include "thermocycler.h"
 #include "thermistors.h"
-
-// #define OFFLINE_DEMO // No WiFi
-#ifdef USE_WIFI
-
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266WiFiMulti.h>
 #include <ESP8266HTTPClient.h>
 #include "serialcontrol_chrome.h"
 #include "wifi_communicator.h"
-
-#endif /* USE_WIFI */
 
 Thermocycler* gpThermocycler = NULL;
 WifiCommunicator *wifi = NULL;
@@ -55,45 +49,16 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE2[] =
 
 bool isApMode = false;
 
-//#define FORCE_AP_MODE // For debug
-//#define FORCE_NORMAL_MODE // FOR DEBUG
-
 void setup() {
     Serial.begin(BAUD_RATE);
     delay(250);
     Serial.print("NinjaPCR ver. "); 
     Serial.println(OPENPCR_FIRMWARE_VERSION_STRING);
+    initHardware();
     EEPROM.begin(1024);
 
-#ifdef OFFLINE_DEMO
-    // Skip network
-    Serial.println("OFFLINE DEMO");
-    gpThermocycler = new Thermocycler(false);
-    gpThermocycler->ipSerialControl = new SerialControl(NULL);
-    // Profile
-    Serial.println("Input demo profile");
-    Serial.println("s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[30|95|Initial|0])(35[60|95|High|0][60|55|Low|0][60|72|Med|0])(1[0|20|Final Hold|0])");
-    gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=20&n=Simple test&p=(1[60|95|Initial|0])(35[60|95|High|0][60|55|Low|0][60|72|Med|0])(1[0|20|Final Hold|0]) ");
-
-    // Dummy profile (for keeping lid temp)
-    //Serial.println("s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0])");
-    //gpThermocycler->ipSerialControl->ProcessDummyMessage(SEND_CMD, "s=ACGTC&c=start&d=30261&l=110&n=Simple test&p=(1[120|95|Initial|0])(35[30|95|High|0][30|55|Low|0][30|72|Med|0])(1[0|20|Final Hold|0]) ");
-    return;
-#endif
-#ifdef USE_WIFI
     pinMode(PIN_WIFI_MODE, INPUT);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
-
-#ifdef FORCE_AP_MODE
-    isApMode = true;
-    Serial.println("FORCE_AP");
-#endif /* FORCE_AP_MODE */
-
-#ifdef FORCE_NORMAL_MODE
-    Serial.println("FORCE_NORMAL");
-    isApMode = false;
-#endif /* FORCE_NORMAL_MODE */
-
     if (isApMode) {
         Serial.println("AP mode");
         startWiFiAPMode();
@@ -105,9 +70,6 @@ void setup() {
         wifi = new WifiCommunicator(wifi_receive, wifi_send);
         gpThermocycler->SetCommunicator(wifi);
     }
-#else
-    setup_normal();
-#endif /* USE_WIFI */
 }
 
 void setup_normal() {
@@ -148,37 +110,20 @@ bool finishSent = false;
 void loop() {
     unsigned long startMillis;
     unsigned long elapsed;
-#ifdef OFFLINE_DEMO
-    startMillis = millis();
-    gpThermocycler->Loop();
-    gpThermocycler->ipSerialControl->ProcessDummyMessage(STATUS_REQ, "");
-    elapsed = millis() - startMillis;
-    sec++;
-    if (elapsed<0 || elapsed > INTERVAL_MSEC) {
-        elapsed = 0;
-    }
-    delay(INTERVAL_MSEC-elapsed);
-    if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
-        Serial.println("COMPLETE");
-        if (!finishSent) {
-            finishSent = true;
-        }
-    }
-    return;
-#endif
 #ifdef USE_WIFI
     if (isApMode) {
+        
+        delay(100);
         loopWiFiAP();
         return;
     }
     startMillis = millis();
     gpThermocycler->Loop();
+    
     if (isWiFiConnected()) {
         loopWiFiHTTPServer();
     }
-    else {
-        Serial.println("Disconnected");
-    }
+    
     elapsed = millis() - startMillis;
     if (elapsed<0 || elapsed > INTERVAL_MSEC) {
         elapsed = 0;

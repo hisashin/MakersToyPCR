@@ -61,8 +61,8 @@ double voltageToTemp (double voltageRatio, float resistance, float b_constant, f
     return (1 / ((log(thermistorR / r0) / b_constant) + INVERSE_BASE_TEMP))  - KELVIN;
 }
 double tempToVoltageRatio (double tempCelsius, double resistance, double bConst, double r0) {
-    double thermistorResistance = r0 * exp(bConst * (1/(tempCelsius+KELVIN) - 1/(THERMISTOR_BASE_TEMP+KELVIN)));
-    return thermistorResistance/(thermistorResistance+ resistance);
+    double thermistorR = r0 * exp(bConst * (1/(tempCelsius+KELVIN) - 1/(THERMISTOR_BASE_TEMP+KELVIN)));
+    return thermistorR/(thermistorR+ resistance);
 
 }
 
@@ -160,9 +160,8 @@ void printVoltageTempTable () {
 
 CPlateThermistor::CPlateThermistor() :
         iTemp(0.0) {
-    Serial.println("CPlateThermistor");
     // ADC setup
-    //  TODO uncomment initADC();
+    initADC();
 
     SWITCHING_VOLTAGE_50_LOWMODE = tempToVoltageRatio(50, R_LOW_TEMP, B_CONST_25_50, R_0_WELL);
     SWITCHING_VOLTAGE_85_LOWMODE = tempToVoltageRatio(85, R_LOW_TEMP, B_CONST_25_85, R_0_WELL);
@@ -176,7 +175,6 @@ CPlateThermistor::CPlateThermistor() :
 
 void CPlateThermistor::start() {
     // ADC setup
-    Serial.println("CPlateThermistor::start (Ninja)");
     initADC();
     
 #ifdef PRINT_DEBUG_CHART
@@ -213,6 +211,7 @@ adc_result CPlateThermistor::ReadTemp() {
 
     // Switch high/low mode (isHighTempMode)
     isHighTempMode = (iTemp > HIGH_LOW_SWITCHING_TEMP);
+    pinMode(PIN_WELL_HIGH_TEMP, OUTPUT); //TODO init in starting func
     digitalWrite(PIN_WELL_HIGH_TEMP, isHighTempMode);
     return ADC_NO_ERROR;
 }

@@ -191,7 +191,7 @@ void startWiFiAPMode() {
     }
     startScanning();
     int scanCount = 0;
-    while (apCount == 0 || scanCount < 5) {
+    while (apCount == 0 || scanCount < 2) {
         scanNearbyAP();
         delay(1000);
         scanCount++;
@@ -270,7 +270,7 @@ void requestHandlerConfInit() {
         s += "<div style=\"color:red\">" + prevWifiError + "</div>";
     }
     s += "<form method=\"post\" action=\"join\">";
-    s += "<div>SSID<select name=\"s\"><option>----</option>";
+    s += "<div>SSID<select name=\"s\"><option value=\"\">----</option>";
     boolean ssidFoundInList = false;
     for (int i = 0; i < apCount; i++) {
         String optionSSID = SSIDs[i];
@@ -393,8 +393,30 @@ String byteToHexStr(char c) {
     return String(s);
 }
 
-#define WIFI_TIMEOUT_SEC 10
+#define WIFI_TIMEOUT_SEC 100
 
+/* Return true if connected successfully */
+#define CONNECTION_CHECK_INTERVAL 100 /* msec */
+
+boolean connectToAP (int timeoutInMillis) {
+    WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect (true);
+    WiFi.begin(ssid, password);
+    Serial.println("WiFi connecting.");
+    bool noTimeout = (timeoutInMillis==0);
+
+    do {
+      if (WiFi.status() == WL_CONNECTED) {
+        return true;
+      }
+      Serial.print(".");
+      delay(WIFI_TIMEOUT_SEC);
+      timeoutInMillis -= WIFI_TIMEOUT_SEC;
+    } while (timeoutInMillis > 0 || noTimeout);
+    Serial.println("Connection timeout.");
+    return false;
+  
+}
 /* Start network as a HTTP server */
 boolean startWiFiHTTPServer() {
     // Check existence of WiFi Config
@@ -413,14 +435,11 @@ boolean startWiFiHTTPServer() {
     Serial.print("SSID:"); Serial.println(ssid);
     Serial.print("Pass:"); Serial.println(password);
     Serial.print("Host:"); Serial.println(host);
-    
+
     
     if (isUpdateMode) {
-        //WiFiMulti.addAP(ssid, password);
-        WiFi.begin(ssid, password);
-        Serial.println("WiFi connecting.");
+        connectToAP(0); // No timeout
         while (WiFi.status() != WL_CONNECTED) {
-        //while ((WiFiMulti.run()!= WL_CONNECTED)) {
           Serial.print(".");
           delay(500);
         }
@@ -431,28 +450,20 @@ boolean startWiFiHTTPServer() {
         // startUpdaterServer();
     }
     else {
-      WiFi.begin(ssid, password);
-      // Wait for connection establishment
-      int wifiTime = 0;
-      while (WiFi.status() != WL_CONNECTED) {
-        delay(500);
-        wifiTime++;
-        if (wifiTime > WIFI_TIMEOUT_SEC * 2) {
-            // failure
-              return false;
-          }
-          Serial.print(".");
-        }
+      // Timeout=10sec
+      if (connectToAP(10 * 1000)) {
         Serial.println("Connected.");
         beginMDNS(host);
         Serial.println("MDNS ok.");
-
         Serial.print("\nConnected.IP=");
         Serial.println(WiFi.localIP());
         startNormalOperationServer();
+        return true;
+      } else {
+        return false;
+      }
     }
     
-    return true;
 }
 int beginMDNS (const char *hostName) {
     MDNS.begin(hostName);

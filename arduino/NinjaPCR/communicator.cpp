@@ -33,7 +33,6 @@ void Communicator::FinishReading() {
 
 void Communicator::ProcessMessage() {
   char* pCommandBuf;
-  Serial.print("p");
   switch (currentCommand) {
   case SEND_CMD:
     Serial.println("ProcessMessage SEND_CMD");

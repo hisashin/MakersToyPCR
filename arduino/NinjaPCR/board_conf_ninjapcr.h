@@ -48,4 +48,10 @@
 
 #define TEHRMISTORS_OPENPCR_ORIGINAL
 
+#define MIN_PELTIER_PWM -1023
+#define MAX_PELTIER_PWM 1023
+
+#define MAX_LID_PWM 1023
+#define MIN_LID_PWM 0
+
 #endif /* ___BOARD_CONF_NINJAPCR___ */

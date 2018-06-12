@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include "PID_v1.h"
+#include "board_conf.h"
 
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up 
@@ -144,16 +145,12 @@ void PID::SetOutputLimits(double Min, double Max)
  ******************************************************************************/ 
 void PID::SetMode(int Mode)
 {
-  Serial.println("SM0");
     bool newAuto = (Mode == AUTOMATIC);
     if(newAuto == !inAuto)
     {  /*we just went from manual to auto*/
-  Serial.println("SM1");
-        PID::Initialize(); //ここでおちてる
-  Serial.println("SM2");
+        PID::Initialize();
     }
     inAuto = newAuto;
-  Serial.println("SM3");
 }
  
 /* Initialize()****************************************************************
@@ -162,11 +159,8 @@ void PID::SetMode(int Mode)
  ******************************************************************************/ 
 void PID::Initialize()
 {
-    Serial.println("in0");
    ITerm = *myOutput; //OK
-    Serial.println("in1");
-   lastInput = *myInput; //ここで落ちてる
-    Serial.println("in2");
+   lastInput = *myInput;
    lastTime = millis() -SampleTime;
    if(ITerm > outMax) {
     ITerm = outMax;

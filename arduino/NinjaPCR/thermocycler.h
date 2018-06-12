@@ -30,7 +30,7 @@ class Display;
 class SerialControl;
 class WifiCommunicator;
 class Communicator;
-
+void initHardware();
 const int CyclerStatusBuffSize = 10;
 class Thermocycler {
 public:
@@ -113,6 +113,7 @@ public:
   boolean Loop();
 private:
   struct CyclerStatus {
+      long timestamp;
       float lidTemp;
       float wellTemp;
       int lidOutput;
@@ -127,7 +128,7 @@ private:
   void ControlLid();
   void PreprocessProgram();
   void UpdateEta();
-  void CheckHardware();
+  void CheckHardware(float *lidTemp, float *wellTemp);
  
   //util functions
   void AdvanceToNextStep();
@@ -159,7 +160,7 @@ private:
   boolean iRestarted;
   
   ControlMode iPlateControlMode;
-  HardwareStatus iHardwareStatus
+  HardwareStatus iHardwareStatus;
   
   // Log buffer
   CyclerStatus statusBuff[CyclerStatusBuffSize];
