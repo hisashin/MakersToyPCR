@@ -62,15 +62,6 @@ public:
     EPIDLid,
     EPIDPlate
   };
-  
-  enum HardwareStatus {
-      ENoProblem = 0,
-      EADCProblem,
-      ELidIrregular,
-      EWellIrregular,
-      ELidNotReflected,
-      EWellNotReflected
-  };
 
   Thermocycler();
   Thermocycler(boolean restarted);
@@ -83,6 +74,7 @@ public:
   Cycle* GetDisplayCycle() { return ipDisplayCycle; }
   int GetNumCycles();
   int GetCurrentCycleNum();
+  int GetErrorCode() { return iHardwareStatus; }
   const char* GetProgName() { return iszProgName; }
   Display* GetDisplay() { return ipDisplay; }
   ProgramComponentPool<Cycle, 6>& GetCyclePool() { return iCyclePool; }
@@ -134,6 +126,8 @@ private:
   void AdvanceToNextStep();
   void SetPlateControlStrategy();
   void SetPeltier(ThermalDirection dir, int pwm);
+  void SetLidOutput(int drive);
+  void StopAll();
 public:
   Communicator* ipSerialControl;
 private:
@@ -160,7 +154,7 @@ private:
   boolean iRestarted;
   
   ControlMode iPlateControlMode;
-  HardwareStatus iHardwareStatus;
+  adc_result iHardwareStatus;
   
   // Log buffer
   CyclerStatus statusBuff[CyclerStatusBuffSize];

@@ -211,7 +211,7 @@ iEstimatedSampleTemp(25),
 iTargetLidTemp(0),
 statusIndex(0),
 statusCount(0),
-iHardwareStatus(ENoProblem) {
+iHardwareStatus(ADC_NO_ERROR) {
     initHardware();
 #ifndef USE_WIFI
 #ifdef USE_LCD
@@ -433,14 +433,15 @@ boolean Thermocycler::Loop() {
   
   CalcPlateTarget();
 
-  ControlLid();
-  ControlPeltier();
-
   // Check error
-  if (iHardwareStatus!=ENoProblem) {
-      // iProgramState = EError;
-      // TODO stop device (set all off)
-      // TODO return error code
+  if (iHardwareStatus==ADC_NO_ERROR) {
+      ControlLid();
+      ControlPeltier();
+  } else {
+      Serial.println("ALL OFF");
+      iProgramState = EError;
+      SetPeltier(OFF, 0);
+      SetLidOutput(0);
   }
 
   //program
@@ -453,7 +454,11 @@ boolean Thermocycler::Loop() {
   statusCount++;
   return true;
 }
-
+void Thermocycler::StopAll () {
+    // Stop all devices when error is found.
+    // stop heater
+    // stop peltier
+}
 void Thermocycler::SetCommunicator(Communicator *comm) {
   ipSerialControl = comm;
 }
@@ -570,15 +575,8 @@ void Thermocycler::ControlPeltier() {
     iPeltierPwm = 0;
   }
   iThermalDirection = newDirection;
-  SetPeltier(newDirection, abs(iPeltierPwm));
 }
-void Thermocycler::ControlLid() {
-  int drive = 0;
-  if (iProgramState == ERunning || iProgramState == ELidWait) {
-    float temp = GetLidTemp();
-    drive = iLidPid.Compute(iTargetLidTemp, temp);
-  }
-  statusBuff[statusIndex].lidOutput = drive;
+void Thermocycler::SetLidOutput (int drive) {
 #ifdef USE_ESP8266
 // Use on-off control instead of PWM because ESP8266 does not have enough pins
 #ifdef PIN_LID_PWM_ACTIVE_LOW
@@ -601,6 +599,16 @@ void Thermocycler::ControlLid() {
 #endif /* PIN_LID_PWM_ACTIVE_LOW */
 
 #endif
+
+}
+void Thermocycler::ControlLid() {
+  int drive = 0;
+  if (iProgramState == ERunning || iProgramState == ELidWait) {
+    float temp = GetLidTemp();
+    drive = iLidPid.Compute(iTargetLidTemp, temp);
+  }
+  statusBuff[statusIndex].lidOutput = drive;
+  SetLidOutput(drive);
 
   analogValueLid = drive;
 }
@@ -679,9 +687,6 @@ float pickValidValue (float val0, float val1, float val2) {
     return val0;
 }
 void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
-    iHardwareStatus = ENoProblem;
-    // Check hardware errors:
-
     // Temperature value to use
     CyclerStatus *recentStats[CyclerStatusBuffSize]; // 3 measurement values without error
     int validStatusCount = 0;
@@ -702,7 +707,7 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
 
     if (errorsCount > 3) {
         Serial.println("Continuous errors found!");
-        // TODO status
+        iHardwareStatus = statusBuff[statusIndex].adcStatus;
     }
     if (validStatusCount==0) {
         *wellTemp = 25.0;

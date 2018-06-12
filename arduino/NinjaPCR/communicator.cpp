@@ -99,6 +99,8 @@ void Communicator::SendStatus() {
   }
   else if (state == Thermocycler::EIdle) {
     statusPtr = AddParam(statusPtr, 'v', OPENPCR_FIRMWARE_VERSION_STRING);
+  } else if (state == Thermocycler::EError) {
+      statusPtr = AddParam(statusPtr, 'w', tc.GetErrorCode());
   }
   statusPtr = AddParam(statusPtr, 'x', tc.getAnalogValueLid());
   statusPtr = AddParam(statusPtr, 'y', tc.getAnalogValuePeltier());
