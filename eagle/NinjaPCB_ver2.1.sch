@@ -3002,7 +3002,7 @@ grid 2.54 mm</description>
 <text x="269.24" y="240.03" size="3.81" layer="97">PELTIER_CTRL</text>
 <text x="26.67" y="238.76" size="3.81" layer="97">MCU</text>
 <text x="148.59" y="92.71" size="3.81" layer="97">POWER</text>
-<text x="1.27" y="-26.67" size="1.778" layer="97">Diff from ver2.0: 
+<text x="1.27" y="-34.29" size="1.778" layer="97">Diff from ver2.0: 
 1. ATX:POWER_ON is connected to GND so that ATX works
 2. Add R19 in case ESP can drive MOSFET directly.
 3. FAN_ON jumper removed. it should be turn off while heating
@@ -3013,7 +3013,7 @@ grid 2.54 mm</description>
 8. IO0 tact is replaced with simple jumper
 9. Remove Serial4</text>
 <text x="19.05" y="92.71" size="3.81" layer="97">CONFIG</text>
-<text x="86.36" y="-22.86" size="1.778" layer="97">Notes for wiring: 
+<text x="86.36" y="-30.48" size="1.778" layer="97">Notes for wiring: 
 1. Don't forget to use 2oz dru. 10mil spacing is required.
 2. Put OSH logo clearly
 3. Put heater&amp;its temp sensor top of board. they aren't enough long. Placing heater between relay and temp sensor may work.
