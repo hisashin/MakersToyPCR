@@ -2,3 +2,5 @@
 /cad/2d/manufacture*
 /cad/2d/バックアップ*
 /eagle/*#*
+/eagle/*panel*
+/eagle/*seedbom*
