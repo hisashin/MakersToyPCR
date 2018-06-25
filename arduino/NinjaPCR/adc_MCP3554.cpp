@@ -21,7 +21,7 @@ uint8_t initADC () {
     return 0;
 }
 // Return (ADC value)/(ADC resolution)
-adc_result getWellADCValue (float *val) {
+HardwareStatus getWellADCValue (float *val) {
     /* ADC Start */
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, LOW);
 
@@ -43,12 +43,12 @@ adc_result getWellADCValue (float *val) {
     digitalWrite(PIN_WELL_MCP3554_SLAVESELECT, HIGH);
     /* ADC End */
     *val = voltage;
-    return ADC_NO_ERROR;
+    return HARD_NO_ERROR;
 
 }
-adc_result getLidADCValue (float *val) {
+HardwareStatus getLidADCValue (float *val) {
     *val = analogRead(PIN_LID_THERMISTOR_AIN) / 1024.0;
-    return ADC_NO_ERROR;
+    return HARD_NO_ERROR;
 
 }
 #endif /* USE_ADC_MCP3554 */

@@ -94,8 +94,6 @@ void requestHandlerStatus() {
 /* Handle request to "/connect" */
 void requestHandlerConnect() {
     boolean isRunning = false;
-    Serial.print("ProgramState=");
-    Serial.println(gpThermocycler->GetProgramState());
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ELidWait ||
       gpThermocycler->GetProgramState() == Thermocycler::ProgramState::ERunning ||
       gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
@@ -173,11 +171,12 @@ void stopScanMode() {
 
 // NinjaPCR works as an AP with this SSID
 const char* apSSID = "NinjaPCR";
+const char* apPassword = "ninjapcr";
 
 void startAP() {
     WiFi.mode(WIFI_AP);
     WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
-    WiFi.softAP(apSSID);
+    WiFi.softAP(apSSID,apPassword);
 }
 
 /* Scan for nearby APs -> save APs -> start AP */

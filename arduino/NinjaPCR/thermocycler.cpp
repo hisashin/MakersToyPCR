@@ -211,7 +211,7 @@ iEstimatedSampleTemp(25),
 iTargetLidTemp(0),
 statusIndex(0),
 statusCount(0),
-iHardwareStatus(ADC_NO_ERROR) {
+iHardwareStatus(HARD_NO_ERROR) {
     initHardware();
 #ifndef USE_WIFI
 #ifdef USE_LCD
@@ -399,14 +399,14 @@ boolean Thermocycler::Loop() {
   }
   statusBuff[statusIndex].timestamp = millis();
   //Read lid and well temp
-  statusBuff[statusIndex].adcStatus = ADC_NO_ERROR;
-  adc_result result = iPlateThermistor.ReadTemp();
-  if (result!=ADC_NO_ERROR) {
-      statusBuff[statusIndex].adcStatus = result;
+  statusBuff[statusIndex].hardwareStatus = HARD_NO_ERROR;
+  HardwareStatus result = iPlateThermistor.ReadTemp();
+  if (result!=HARD_NO_ERROR) {
+      statusBuff[statusIndex].hardwareStatus = result;
   }
   result = iLidThermistor.ReadTemp();
-  if (result!=ADC_NO_ERROR) {
-      statusBuff[statusIndex].adcStatus = result;
+  if (result!=HARD_NO_ERROR) {
+      statusBuff[statusIndex].hardwareStatus = result;
   }
   
   statusBuff[statusIndex].lidTemp = GetLidTemp();
@@ -424,17 +424,12 @@ boolean Thermocycler::Loop() {
   double diff = ((wellTemp-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
   if (iEstimatedSampleTemp!=25 || ( 5>diff && diff > -5)) {
     iEstimatedSampleTemp += diff;
-  } else {
-    Serial.print("!!!EST ERR. diff="); Serial.print(diff);
-    Serial.print(",W="); Serial.print(GetPlateTemp() );
-    Serial.print(",L="); Serial.print(GetLidTemp() );
-    Serial.print(",E="); Serial.println(iEstimatedSampleTemp);
   }
   
   CalcPlateTarget();
 
   // Check error
-  if (iHardwareStatus==ADC_NO_ERROR) {
+  if (iHardwareStatus==HARD_NO_ERROR) {
       ControlLid();
       ControlPeltier();
   } else {
@@ -541,7 +536,6 @@ void Thermocycler::ControlPeltier() {
     // float plateTemp = GetPlateTemp();
     /* Test: Use estimated sample temp instead or measured well temp */
     float plateTemp = GetTemp();
-    // Serial.print(iTargetPlateTemp);Serial.print("<=>");Serial.println(plateTemp);
     if (iPlateControlMode == EBangBang && absf(iTargetPlateTemp - plateTemp) < PLATE_BANGBANG_THRESHOLD) {
       iPlateControlMode = EPIDPlate;
       iPlatePid.SetMode(AUTOMATIC);
@@ -575,6 +569,7 @@ void Thermocycler::ControlPeltier() {
     iPeltierPwm = 0;
   }
   iThermalDirection = newDirection;
+  SetPeltier(newDirection, iPeltierPwm);
 }
 void Thermocycler::SetLidOutput (int drive) {
 #ifdef USE_ESP8266
@@ -691,23 +686,25 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
     CyclerStatus *recentStats[CyclerStatusBuffSize]; // 3 measurement values without error
     int validStatusCount = 0;
     int errorsCount = 0;
+    HardwareStatus errNo = HARD_NO_ERROR;
     for (int i=0; i<min(statusCount, CyclerStatusBuffSize); i++) {
         int index = (statusIndex + CyclerStatusBuffSize - i) % CyclerStatusBuffSize;
         CyclerStatus *stat = &statusBuff[index];
         long elapsed = millis() - stat->timestamp;
-        if (stat->adcStatus == ADC_NO_ERROR) {
+        if (stat->hardwareStatus == HARD_NO_ERROR) {
             if (elapsed < 20*1000) {
                 recentStats[validStatusCount++] = stat;
-                //Serial.print(stat->lidTemp);Serial.print("*");Serial.print(index);Serial.print("+");
             }
         } else {
+            errNo = stat->hardwareStatus;
             errorsCount++;
         }
     }
 
     if (errorsCount > 3) {
         Serial.println("Continuous errors found!");
-        iHardwareStatus = statusBuff[statusIndex].adcStatus;
+        Serial.println(errNo);
+        iHardwareStatus = errNo;
     }
     if (validStatusCount==0) {
         *wellTemp = 25.0;
@@ -721,37 +718,66 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
         *lidTemp = pickValidValue (recentStats[0]->lidTemp, recentStats[1]->lidTemp, recentStats[2]->lidTemp);
         *wellTemp = pickValidValue (recentStats[0]->wellTemp, recentStats[1]->wellTemp, recentStats[2]->wellTemp);
     }
-    if (*lidTemp < POSSIBLE_LID_TEMP_MIN || *lidTemp > POSSIBLE_LID_TEMP_MAX) {
-        statusBuff[statusIndex].adcStatus = ADC_ERROR_LID_DANGEROUS_TEMP;
-    }
-    if (*wellTemp < POSSIBLE_WELL_TEMP_MIN || *wellTemp > POSSIBLE_WELL_TEMP_MAX) {
-        statusBuff[statusIndex].adcStatus = ADC_ERROR_WELL_DANGEROUS_TEMP;
+    if (statusBuff[statusIndex].hardwareStatus!=HARD_NO_ERROR) {
+      if (*lidTemp < POSSIBLE_LID_TEMP_MIN || *lidTemp > POSSIBLE_LID_TEMP_MAX) {
+          statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_DANGEROUS_TEMP;
+      }
+      if (*wellTemp < POSSIBLE_WELL_TEMP_MIN || *wellTemp > POSSIBLE_WELL_TEMP_MAX) {
+          statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_DANGEROUS_TEMP;
+      }
     }
 
     // (C) Heater/peltier output is not reflected to temperature
     bool isLidHeating = true;
     bool isWellHeating = true;
     bool isWellCooling = true;
-    if (validStatusCount >= 8) {
-        for (int i=0; i<min(validStatusCount, 8); i++) {
+    if (validStatusCount >= 6) {
+        
+        for (int i=0; i<min(validStatusCount, 6); i++) {
             CyclerStatus *stat = recentStats[i];
             if (stat->lidOutput!=MAX_LID_PWM) { isLidHeating = false; }
             if (stat->wellOutput!=MIN_PELTIER_PWM) { isWellCooling = false; }
             if (stat->wellOutput!=MAX_PELTIER_PWM) { isWellHeating = false; }
         }
-        float wellDiff = recentStats[0]->wellTemp - recentStats[7]->wellTemp;
-        float lidDiff = recentStats[0]->lidTemp - recentStats[7]->lidTemp;
-        if (isWellHeating && wellDiff<3) {
-            Serial.println("Well is not getting hot.");
-            statusBuff[statusIndex].adcStatus = ADC_ERROR_WELL_NOT_REFLECTED;
+        Serial.print("wo=");
+        Serial.println(recentStats[0]->wellOutput);
+        float wellDiff = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
+        float lidDiff = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
+        if (isLidHeating) {
+          Serial.print("LH");
+          Serial.println(lidDiff);
         }
-        if (isWellCooling && wellDiff > -3) {
-            Serial.println("Well is not getting cool.");
-            statusBuff[statusIndex].adcStatus = ADC_ERROR_WELL_NOT_REFLECTED;
+        if (isWellHeating) {
+          Serial.print("WH");
+          Serial.println(wellDiff);
         }
-        if (isLidHeating && lidDiff<3) {
-            Serial.println("Lid is not heated.");
-            statusBuff[statusIndex].adcStatus = ADC_ERROR_LID_NOT_REFLECTED;
+        if (isWellCooling) {
+          Serial.print("WC");
+          Serial.println(wellDiff);
+        }
+        if (isWellHeating) {
+             if (wellDiff<-1.5) {
+              Serial.println("Well Reverse?");
+              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
+             } else if (wellDiff<1.5) {
+              Serial.println("Well is not getting hot.");
+              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
+            }
+        }
+        if (isWellCooling) {
+            if (wellDiff>2) {
+              Serial.println("Well is not getting cool.");
+              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
+            } else if (wellDiff>-1) {
+              Serial.println("Well is not getting cool.");
+              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
+            }
+        }
+        if (isLidHeating) {
+            if (lidDiff < 2) {
+              Serial.println("Lid is not heated.");
+              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_NOT_REFLECTED;
+            }
         }
     }
 
@@ -768,8 +794,10 @@ static Thermocycler::ThermalDirection prevActualDirection = Thermocycler::Therma
 static int prevActualPWMDuty = 0; // Actual status of hardware
 
 #define PWM_SWITCHING_THRESHOLD 10
-void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of peltier */) {
+void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
     Thermocycler::ThermalDirection dirActual;
+    Serial.print("pwm=");
+    Serial.println(pwm);
     int pwmActual;
   if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
       // Direction will be changed.
@@ -787,27 +815,21 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
       dirActual = dir;
       pwmActual = pwm;
   }
-  if (dirActual == COOL) {
-    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
-    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_ON);
 #ifdef USE_FAN
   digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
 #endif
+  if (dirActual == COOL) {
+    digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
+    digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_ON);
   }
   else if (dirActual == HEAT) {
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_ON);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
-#ifdef USE_FAN
-  digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
-#endif
   }
   else {
       // Off
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
-#ifdef USE_FAN
-  digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
-#endif
   }
      
 #ifdef PIN_WELL_PWM_ACTIVE_LOW
@@ -816,7 +838,7 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
   analogWrite(PIN_WELL_PWM, pwmActual);
 #endif /* PIN_WELL_PWM_ACTIVE_LOW */
   analogValuePeltier = (dir==COOL)?-pwmActual:pwmActual;
-  statusBuff[statusIndex].wellOutput = analogValuePeltier;
+  statusBuff[statusIndex].wellOutput = pwm;
 
   prevDirection = dir;
   prevPWMDuty = pwm;
@@ -825,6 +847,8 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Absolute value of
 }
 #else
 void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm) {
+    Serial.print("pwm2=");
+    Serial.println(pwm);
   if (dir == COOL) {
     digitalWrite(PIN_WELL_INA, HIGH);
     digitalWrite(PIN_WELL_INB, LOW);
@@ -844,6 +868,7 @@ void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm) {
   analogWrite(PIN_WELL_PWM, pwm);
 #endif /* PIN_WELL_PWM_ACTIVE_LOW */
   analogValuePeltier = (dir==COOL)?-pwm:pwm;
+  statusBuff[statusIndex].wellOutput = pwm;
 }
 #endif /* SUPPRESS_PELTIER_SWITCHING */
 

@@ -33,7 +33,7 @@ public:
     unsigned long& GetResistance() {
         return resistance;
     }
-    adc_result ReadTemp();
+    HardwareStatus ReadTemp();
 
 private:
     double iTemp;
@@ -52,7 +52,7 @@ public:
     unsigned long& GetResistance() {
         return resistance;
     }
-    adc_result ReadTemp();
+    HardwareStatus ReadTemp();
     void start();
 private:
     char SPITransfer(volatile char data);

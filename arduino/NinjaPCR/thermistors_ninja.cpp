@@ -92,12 +92,21 @@ CLidThermistor::CLidThermistor() :
 #endif /* PRINT_DEBUG_CHART */
 }
 //------------------------------------------------------------------------------
-adc_result CLidThermistor::ReadTemp() {
+HardwareStatus CLidThermistor::ReadTemp() {
     double voltageRatio;
     float lidADCValue;
-    adc_result result = getLidADCValue(&lidADCValue);
-    if (result!=ADC_NO_ERROR) { return result; }
+    HardwareStatus result = getLidADCValue(&lidADCValue);
+    if (result!=HARD_NO_ERROR) { return result; }
     voltageRatio = 1.0-lidADCValue;
+    
+    if (voltageRatio < 0.1) {
+        // ThermistorR=0 (Short)
+        return HARD_ERROR_LID_THERMISTOR_SHORT;
+    }
+    if (voltageRatio > 0.97) {
+        // ThermistorR=INF (Thermistor is disconnected)
+        return HARD_ERROR_LID_THERMISTOR_DISCONNECTED;
+    }
     float b_constant;
     
     if (voltageRatio > SWITCHING_VOLTAGE_50_LID)
@@ -109,8 +118,9 @@ adc_result CLidThermistor::ReadTemp() {
 
     b_constant = B_CONST_HEATER;
     float temp = voltageToTemp (voltageRatio, R_HEATER, b_constant, R_0_HEATER);
+    //double thermistorR = resistance * voltageRatio / (1.0 - voltageRatio);
     iTemp = temp;
-    return ADC_NO_ERROR;
+    return HARD_NO_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -183,10 +193,20 @@ void CPlateThermistor::start() {
 }
 bool isHighTempMode = false;
 
-adc_result CPlateThermistor::ReadTemp() {
+HardwareStatus CPlateThermistor::ReadTemp() {
     float voltageRatio;
-    adc_result result = getWellADCValue(&voltageRatio);
-    if (result!=ADC_NO_ERROR) { return result; }
+    HardwareStatus result = getWellADCValue(&voltageRatio);
+    if (result!=HARD_NO_ERROR) { return result; }
+    Serial.print("WR=");
+    Serial.println(voltageRatio);
+    if (voltageRatio < 0.1) {
+        // ThermistorR=0 (Short)
+        return HARD_ERROR_WELL_THERMISTOR_SHORT;
+    }
+    if (voltageRatio > 0.9 ) {
+        // ThermistorR=INF (Thermistor is disconnected)
+        return HARD_ERROR_WELL_THERMISTOR_DISCONNECTED;
+    }
     float resistance, b_constant;
     if (isHighTempMode) {
         resistance = R_HIGH_TEMP;
@@ -213,7 +233,7 @@ adc_result CPlateThermistor::ReadTemp() {
     isHighTempMode = (iTemp > HIGH_LOW_SWITCHING_TEMP);
     pinMode(PIN_WELL_HIGH_TEMP, OUTPUT); //TODO init in starting func
     digitalWrite(PIN_WELL_HIGH_TEMP, isHighTempMode);
-    return ADC_NO_ERROR;
+    return HARD_NO_ERROR;
 }
 //------------------------------------------------------------------------------
 

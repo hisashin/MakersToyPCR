@@ -78,19 +78,42 @@ static uint8_t adc_default_conf = 0b0111100; //320sps (111)(OK)
  * false: Timeout
  */
 bool waitForFlag (uint8_t regAddress, int flagIndex, bool flagValue, long timeoutMsec) {
-  bool flagResult;
   long startMillis = millis();
   char read_out[1] = {0xFF};
   long elapsed = 0;
+  int count = 0;
   do {
+    count++;
     wellADCReadRegValues(regAddress, &read_out[0], 1);
-    flagResult = read_out[0] & (0x01 << flagIndex);
+    bool flagResult = (read_out[0] & (0x01 << flagIndex))!=0;
+    /*
+    if (true) {
+      Serial.print(" F");
+      Serial.print(flagResult);
+      Serial.print(".");
+      Serial.print(flagValue);
+      Serial.print(".");
+      Serial.print(result);
+      if (flagResult==flagValue) {
+        Serial.print("=");
+        
+      } else {
+        Serial.print("!");
+      }
+    }
+    */
     elapsed = (millis()-startMillis);
     if (elapsed < 0) {
       Serial.println("ELAPSED TIME IS NEGATIVE!");
       startMillis = millis(); // Reset
     }
     if (flagResult == flagValue) {
+      /*
+        Serial.print("e=");
+        Serial.print(count);
+        Serial.print(".");
+        Serial.println(elapsed);
+        */
         return true;
     }
   } while (elapsed < timeoutMsec);
@@ -171,7 +194,7 @@ uint8_t changeBitValue (uint8_t value, uint8_t index, uint8_t bitValue) {
     return value & ~(1 << index);
   }
 }
-adc_result switchADCConfig (uint8_t channel, uint8_t SPS0, uint8_t SPS1, uint8_t SPS2) {
+HardwareStatus switchADCConfig (uint8_t channel, uint8_t SPS0, uint8_t SPS1, uint8_t SPS2) {
   // switchChannelTo(channel);
   uint8_t value = wellADCReadRegValue(NAU7802_REG_ADDR_CTRL2);
   value = changeBitValue(value, 7, (channel==1));
@@ -180,13 +203,13 @@ adc_result switchADCConfig (uint8_t channel, uint8_t SPS0, uint8_t SPS1, uint8_t
   value = changeBitValue(value, 5, SPS1);
   value = changeBitValue(value, 4, SPS0);
   wellADCWriteRegValue(NAU7802_REG_ADDR_CTRL2, value);
-  adc_result result;
+  HardwareStatus result;
   // Wait for "Calib OK" flag
-  if (waitForFlag(NAU7802_REG_ADDR_CTRL2, 2, false, 500)==false) { return ADC_TIMEOUT; }
+  if (waitForFlag(NAU7802_REG_ADDR_CTRL2, 2, false, 500)==false) { return HARD_ERROR_ADC; }
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CS);
-  // Wait for "Cycle ready" flag
-  if (waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CR, true, 500)==false) { return ADC_TIMEOUT; }
-  return ADC_NO_ERROR;
+  return HARD_NO_ERROR;
+  /*
+  */
 }
 float getADCValue () {
   uint32_t adc_val = 0xFFFFFF;
@@ -205,50 +228,30 @@ float getADCValue () {
 001 = 20SPS
 000 = 10SPS
 */
-int lidSkipCount = 0;
-int wellSkipCount = 0;
-adc_result getWellADCValue (float *val) {
+HardwareStatus getWellADCValue (float *val) {
 #ifdef ADC_DUMMY_MODE
   return 0;
 #endif /* ADC_DUMMY_MODE */
+  // Wait for "Cycle ready" flag
+  if (waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CR, true, 500)==false) { return HARD_ERROR_ADC; }
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   *val = getADCValue();
-  if (*val > 0.001 && *val < 0.999) {
-    wellSkipCount = 0;
-  } else {
-    // Irregular value?
-    Serial.println("Irregular Value.");
-    wellSkipCount ++;
-  }
-  adc_result result = switchADCConfig(1, 0, 1, 1); //2ch, 80SPS
-  delay(125);
-  if (wellSkipCount > 5) {
-    result =ADC_IRREGULAR_VALUES;
-  }
+  HardwareStatus result = switchADCConfig(1, 0, 1, 1); //2ch, 80SPS
+  delay(100);
   return result;
 }
 
 // Read ADC value of channel 1
-adc_result getLidADCValue (float *val) {
+HardwareStatus getLidADCValue (float *val) {
 #ifdef ADC_DUMMY_MODE
   return 0;
 #endif /* ADC_DUMMY_MODE */
+  // Wait for "Cycle ready" flag
+  if (waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_CR, true, 500)==false) { return HARD_ERROR_ADC; }
   // Wait (if needed) Read -> save timestamp -> Switch Channel & Set SPS
   *val = getADCValue();
-  if (*val > 0.001 && *val < 0.999 ) {
-    lidSkipCount = 0;
-  } else {
-    // Irregular value?
-    Serial.println("Irregular Value.");
-    lidSkipCount ++;
-  }
-  // Serial.print("L=");Serial.println(*val);
-  // Config for well thermistor
-  adc_result result = switchADCConfig(0, 0, 1, 1); //1ch, 80SPS
-  //adc_result result = switchADCConfig(0, 0, 0, 0); //1ch, 10SPS
-  if (lidSkipCount > 5) {
-    result = ADC_IRREGULAR_VALUES;
-  }
+  HardwareStatus result = switchADCConfig(0, 0, 1, 1); //1ch, 80SPS
+  //HardwareStatus result = switchADCConfig(0, 0, 0, 0); //1ch, 10SPS
   return result;
 }
 

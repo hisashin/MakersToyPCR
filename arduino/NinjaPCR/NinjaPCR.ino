@@ -110,7 +110,6 @@ bool finishSent = false;
 void loop() {
     unsigned long startMillis;
     unsigned long elapsed;
-#ifdef USE_WIFI
     if (isApMode) {
         
         delay(100);
@@ -136,15 +135,6 @@ void loop() {
         }
     }
     delay(INTERVAL_MSEC-elapsed);
-#else
-    if (isSerialConnected) {
-        gpThermocycler->Loop();
-        delay(1000);
-    }
-    else {
-        checkSerialConnection();
-    }
-#endif
 }
 
 bool startLamp = false;

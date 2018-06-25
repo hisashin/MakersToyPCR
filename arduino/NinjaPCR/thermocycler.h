@@ -110,7 +110,7 @@ private:
       float wellTemp;
       int lidOutput;
       int wellOutput;
-      adc_result adcStatus;
+      HardwareStatus hardwareStatus;
   };
 private:
   void ReadLidTemp();
@@ -154,7 +154,7 @@ private:
   boolean iRestarted;
   
   ControlMode iPlateControlMode;
-  adc_result iHardwareStatus;
+  HardwareStatus iHardwareStatus;
   
   // Log buffer
   CyclerStatus statusBuff[CyclerStatusBuffSize];
