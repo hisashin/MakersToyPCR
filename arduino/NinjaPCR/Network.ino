@@ -58,7 +58,7 @@ void wifi_send(char *response, char *funcName) {
 /* HTTP request handlers */
 /* Handle request to "/" */
 void requestHandlerTop() {
-    //server.send(200, "text/plain", "requestHandlerTop");
+    server.send(200, "text/plain", "NinjaPCR is alive!");
 }
 /* Handle request to "/command" */
 void requestHandlerCommand() {
