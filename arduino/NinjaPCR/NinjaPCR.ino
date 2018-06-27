@@ -58,6 +58,8 @@ void setup() {
     EEPROM.begin(1024);
 
     pinMode(PIN_WIFI_MODE, INPUT);
+    Serial.print("PIN_WIFI_MODE=");
+    Serial.println(digitalRead(PIN_WIFI_MODE));
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
     if (isApMode) {
         Serial.println("AP mode");

@@ -74,10 +74,9 @@
 #endif
 
 #ifdef PID_CONF_NINJAPCR_WIFI
-
-#define PLATE_PID_INC_NORM_P 2000
-#define PLATE_PID_INC_NORM_I 250
-#define PLATE_PID_INC_NORM_D 250
+#define PLATE_PID_INC_NORM_P (300)
+#define PLATE_PID_INC_NORM_I (75)
+#define PLATE_PID_INC_NORM_D (75)
 
 #define PLATE_PID_INC_LOW_THRESHOLD 40
 #define PLATE_PID_INC_LOW_P 1200
@@ -87,12 +86,12 @@
 #define PLATE_PID_DEC_HIGH_THRESHOLD 70
 #define PLATE_PID_DEC_LOW_THRESHOLD 35
 
-#define PLATE_PID_DEC_HIGH_P 1600
-#define PLATE_PID_DEC_HIGH_I 700
-#define PLATE_PID_DEC_HIGH_D 300
+#define PLATE_PID_DEC_HIGH_P (640)
+#define PLATE_PID_DEC_HIGH_I (560)
+#define PLATE_PID_DEC_HIGH_D (240)
 
 #define PLATE_PID_DEC_NORM_P 2000
-#define PLATE_PID_DEC_NORM_I 500
+#define PLATE_PID_DEC_NORM_I 800
 #define PLATE_PID_DEC_NORM_D 200
 
 #define PLATE_PID_DEC_LOW_P 4000
@@ -106,29 +105,32 @@
 
 #ifdef PID_CONF_SIMULATED_TUBE_TEMP
 
-#define PID_RATIO 0.3
-#define PLATE_PID_INC_NORM_P (1000*PID_RATIO)
-#define PLATE_PID_INC_NORM_I (250*PID_RATIO)
-#define PLATE_PID_INC_NORM_D (250*PID_RATIO)
+// Inc
+#define PLATE_PID_INC_NORM_P (600)
+#define PLATE_PID_INC_NORM_I (250)
+#define PLATE_PID_INC_NORM_D (100)
 
 #define PLATE_PID_INC_LOW_THRESHOLD 80
-#define PLATE_PID_INC_LOW_P (600*PID_RATIO)
-#define PLATE_PID_INC_LOW_I (200*PID_RATIO)
-#define PLATE_PID_INC_LOW_D (400*PID_RATIO)
+
+#define PLATE_PID_INC_LOW_P (240)
+#define PLATE_PID_INC_LOW_I (100)
+#define PLATE_PID_INC_LOW_D (120)
+
+// Dec
+#define PLATE_PID_DEC_HIGH_P (1000)
+#define PLATE_PID_DEC_HIGH_I (560)
+#define PLATE_PID_DEC_HIGH_D (240)
 
 #define PLATE_PID_DEC_HIGH_THRESHOLD 70
-#define PLATE_PID_DEC_HIGH_P (800*0.8)
-#define PLATE_PID_DEC_HIGH_I (700*0.8)
-#define PLATE_PID_DEC_HIGH_D (300*0.8)
 
-#define PLATE_PID_DEC_NORM_P (500*0.8*10.0)
-#define PLATE_PID_DEC_NORM_I (400*0.8*10.0)
-#define PLATE_PID_DEC_NORM_D (200*0.8*3.0)
+#define PLATE_PID_DEC_NORM_P (2000)
+#define PLATE_PID_DEC_NORM_I (400)
+#define PLATE_PID_DEC_NORM_D (800)
 
 #define PLATE_PID_DEC_LOW_THRESHOLD 35
-#define PLATE_PID_DEC_LOW_P (2000*0.8*1.5)
-#define PLATE_PID_DEC_LOW_I (100*0.8*1.5)
-#define PLATE_PID_DEC_LOW_D (200*0.8*1.5)
+#define PLATE_PID_DEC_LOW_P (2400)
+#define PLATE_PID_DEC_LOW_I (120)
+#define PLATE_PID_DEC_LOW_D (240)
 
 #define PLATE_BANGBANG_THRESHOLD 5.0
 #endif /* PID_CONF_SIMULATED_TUBE_TEMP */
@@ -143,16 +145,6 @@
 #define CAPACITY_TUBE 3.0
 
 //pid parameters
-/*
-const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
-  //maxTemp, kP, kI, kD
-  { 
-    70, 40, 0.15, 60   }
-  ,
-  { 
-    200, 80, 1.1, 10   }
-};
-*/
 const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
   //maxTemp, kP, kI, kD
   { 
@@ -420,7 +412,8 @@ boolean Thermocycler::Loop() {
   iLidThermistor.setTemp(lidTemp);
   iPlateThermistor.setTemp(wellTemp);
 
-  double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;
+  double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;//TODO WELL_TEST
+  //double estimatedAirTemp = wellTemp * 0.4 + 110.0 * 0.6;//TODO WELL_TEST
   double diff = ((wellTemp-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
   if (iEstimatedSampleTemp!=25 || ( 5>diff && diff > -5)) {
     iEstimatedSampleTemp += diff;
@@ -429,7 +422,8 @@ boolean Thermocycler::Loop() {
   CalcPlateTarget();
 
   // Check error
-  if (iHardwareStatus==HARD_NO_ERROR) {
+  //if (iHardwareStatus==HARD_NO_ERROR || true) { //TODO WELL_TEST
+  if (iHardwareStatus==HARD_NO_ERROR) { //TODO WELL_TEST
       ControlLid();
       ControlPeltier();
   } else {
@@ -739,22 +733,9 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
             if (stat->wellOutput!=MIN_PELTIER_PWM) { isWellCooling = false; }
             if (stat->wellOutput!=MAX_PELTIER_PWM) { isWellHeating = false; }
         }
-        Serial.print("wo=");
-        Serial.println(recentStats[0]->wellOutput);
         float wellDiff = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
         float lidDiff = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
-        if (isLidHeating) {
-          Serial.print("LH");
-          Serial.println(lidDiff);
-        }
-        if (isWellHeating) {
-          Serial.print("WH");
-          Serial.println(wellDiff);
-        }
-        if (isWellCooling) {
-          Serial.print("WC");
-          Serial.println(wellDiff);
-        }
+        
         if (isWellHeating) {
              if (wellDiff<-1.5) {
               Serial.println("Well Reverse?");
@@ -796,8 +777,6 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
     Thermocycler::ThermalDirection dirActual;
-    Serial.print("pwm=");
-    Serial.println(pwm);
     int pwmActual;
   if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
       // Direction will be changed.
