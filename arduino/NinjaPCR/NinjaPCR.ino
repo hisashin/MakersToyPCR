@@ -54,20 +54,20 @@ void setup() {
     pinMode(PIN_WIFI_MODE, INPUT);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
     delay(250);
-    Serial.print("NinjaPCR ver. "); 
-    Serial.println(OPENPCR_FIRMWARE_VERSION_STRING);
+    PCR_DEBUG("NinjaPCR ver. "); 
+    PCR_DEBUG_LINE(OPENPCR_FIRMWARE_VERSION_STRING);
     delay(3000);
     initHardware();
     EEPROM.begin(1024);
 
-    Serial.print("PIN_WIFI_MODE=");
-    Serial.println(isApMode);
+    PCR_DEBUG("PIN_WIFI_MODE=");
+    PCR_DEBUG_LINE(isApMode);
     if (isApMode) {
-        Serial.println("AP mode");
+        PCR_DEBUG_LINE("AP mode");
         startWiFiAPMode();
     }
     else {
-        Serial.println("Server mode");
+        PCR_DEBUG_LINE("Server mode");
         startWiFiHTTPServer();
         setup_normal();
         wifi = new WifiCommunicator(wifi_receive, wifi_send);
@@ -131,7 +131,7 @@ void loop() {
         elapsed = 0;
     }
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
-        Serial.println("COMPLETE");
+        PCR_DEBUG_LINE("COMPLETE");
         if (!finishSent) {
             // TODO call IFTTT API if needed
             finishSent = true;
@@ -142,7 +142,7 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    Serial.print("pcr1.0.5"); //TODO
+    PCR_DEBUG("pcr1.0.8"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);

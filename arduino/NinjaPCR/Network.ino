@@ -106,10 +106,10 @@ void scanNearbyAP() {
     // WiFi.scanNetworks will return the number of networks found
     int n = WiFi.scanNetworks();
     if (n == 0) {
-        Serial.println("no networks found");
+        PCR_NETWORK_DEBUG_LINE("no networks found");
     } else {
-        Serial.print(n);
-        Serial.println(" found");
+        PCR_NETWORK_DEBUG(n);
+        PCR_NETWORK_DEBUG_LINE(" found");
         if (n > AP_MAX_NUMBER) {
             n = AP_MAX_NUMBER;
         }
@@ -119,16 +119,16 @@ void scanNearbyAP() {
             String ssid = WiFi.SSID(i);
             for (int j = 0; j < apCount; j++) {
                 if (ssid == SSIDs[apCount]) {
-                    Serial.println("Duplicate");
+                    PCR_NETWORK_DEBUG_LINE("Duplicate");
                     break;
                 }
             }
-            Serial.print(apCount + 1);
-            Serial.print(": ");
-            Serial.print(ssid);
-            Serial.print(" (");
-            Serial.print(WiFi.RSSI(i));
-            Serial.print(")\n");
+            PCR_NETWORK_DEBUG(apCount + 1);
+            PCR_NETWORK_DEBUG(": ");
+            PCR_NETWORK_DEBUG(ssid);
+            PCR_NETWORK_DEBUG(" (");
+            PCR_NETWORK_DEBUG(WiFi.RSSI(i));
+            PCR_NETWORK_DEBUG(")\n");
             SSIDs[apCount] = ssid;
             delay(1);
             apCount++;
@@ -137,7 +137,7 @@ void scanNearbyAP() {
             }
         }
     }
-    Serial.println("Scan done.");
+    PCR_NETWORK_DEBUG_LINE("Scan done.");
 }
 void startScanning() {
     WiFi.mode(WIFI_STA);
@@ -181,9 +181,9 @@ void startWiFiAPMode() {
     server.on("/", requestHandlerConfInit);
     server.on("/join", requestHandlerConfJoin);
     server.onNotFound(requestHandler404);
-    Serial.println("OK");
-    Serial.println("1. Connect AP \"NinjaPCR\"");
-    Serial.println("2. Access http://192.168.1.1");
+    PCR_NETWORK_DEBUG_LINE("OK");
+    PCR_NETWORK_DEBUG_LINE("1. Connect AP \"NinjaPCR\"");
+    PCR_NETWORK_DEBUG_LINE("2. Access http://192.168.1.1");
 }
 boolean isWiFiConnected() {
     return (WiFi.status() == WL_CONNECTED);
@@ -206,10 +206,10 @@ int min(int a, int b) {
 }
 void saveStringToEEPROM(String str, int startAddress, int maxLength) {
     int len = min(str.length(), maxLength);
-    Serial.print("to EEPROM ");
-    Serial.print(len);
-    Serial.print("bytes @");
-    Serial.println(startAddress);
+    PCR_NETWORK_DEBUG("to EEPROM ");
+    PCR_NETWORK_DEBUG(len);
+    PCR_NETWORK_DEBUG("bytes @");
+    PCR_NETWORK_DEBUG_LINE(startAddress);
     for (int i = 0; i < len; i++) {
         EEPROM.write(startAddress + i, str.charAt(i));
     }
@@ -253,7 +253,7 @@ void requestHandlerConfInit() {
     for (int i = 0; i < apCount; i++) {
         String optionSSID = SSIDs[i];
         optionSSID.replace("\"","\\\"");
-        Serial.println(optionSSID);
+        PCR_NETWORK_DEBUG_LINE(optionSSID);
         s += ("<option value=\"" + optionSSID + "\"");
         if (isConfDone && optionSSID.equals(String(ssid))) {
           s += " selected";
@@ -290,14 +290,14 @@ String BR_TAG = "<br/>";
 bool isValidHostName (String host) {
     // Length (1 to EEPROM_WIFI_MDNS_HOST_MAX_LENGTH) a-zA-Z0-9, "-"
     if (host.length() < 4 || host.length() > EEPROM_WIFI_MDNS_HOST_MAX_LENGTH) {
-        Serial.println("Invalid Length");
+        PCR_NETWORK_DEBUG_LINE("Invalid Length");
         return false;
     }
     for (int i=0; i<host.length(); i++) {
         char c = host.charAt(i);
         if (!( ('A'<=c&&c<='Z') || ('a'<=c&&c<='z') || ('0'<=c&&c<='9'))) {
-            Serial.print("Invalid char:");
-            Serial.println(c);
+            PCR_NETWORK_DEBUG("Invalid char:");
+            PCR_NETWORK_DEBUG_LINE(c);
             return false;
         }
     }
@@ -305,7 +305,7 @@ bool isValidHostName (String host) {
     return true;
 }
 void requestHandlerConfJoin() {
-    Serial.println("requestHandlerConfJoin");
+    PCR_NETWORK_DEBUG_LINE("requestHandlerConfJoin");
     String ssid = server.arg("s"); // Value of dropdown
     String password = server.arg("wp");
     String host = server.arg("h");
@@ -344,13 +344,13 @@ void requestHandlerConfJoin() {
     server.send(200, "text/html", s);
 
     if (isValid) {
-        Serial.println("Valid input. Saving...");
+        PCR_NETWORK_DEBUG_LINE("Valid input. Saving...");
         saveWiFiConnectionInfo(ssid, password, host);
-        Serial.println("saved.");
+        PCR_NETWORK_DEBUG_LINE("saved.");
         ESP.restart();
     }
     else {
-        Serial.println("Invalid input.");
+        PCR_NETWORK_DEBUG_LINE("Invalid input.");
     }
 }
 
@@ -380,18 +380,18 @@ boolean connectToAP (int timeoutInMillis) {
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect (true);
     wifiMulti.addAP(ssid, password);
-    Serial.println("WiFi connecting.");
+    PCR_NETWORK_DEBUG_LINE("WiFi connecting.");
     bool noTimeout = (timeoutInMillis==0);
 
     do {
       if (wifiMulti.run()==WL_CONNECTED) {
         return true;
       }
-      Serial.print(".");
+      PCR_NETWORK_DEBUG(".");
       delay(WIFI_TIMEOUT_SEC);
       timeoutInMillis -= WIFI_TIMEOUT_SEC;
     } while (timeoutInMillis > 0 || noTimeout);
-    Serial.println("Connection timeout.");
+    PCR_NETWORK_DEBUG_LINE("Connection timeout.");
     return false;
   
 }
@@ -402,7 +402,7 @@ boolean startWiFiHTTPServer() {
      //connectToAP(10*1000);
         
     if (!isWifiConfDone()) {
-        Serial.println("WiFi config not found.");
+        PCR_NETWORK_DEBUG_LINE("WiFi config not found.");
         return false;
     }
 
@@ -414,19 +414,19 @@ boolean startWiFiHTTPServer() {
 
     // Connect with saved SSID and password
 
-    Serial.print("SSID:"); Serial.println(ssid);
-    Serial.println(strlen(ssid));
-    Serial.print("Pass:"); Serial.println(password);
-    Serial.println(strlen(password));
-    Serial.print("Host:"); Serial.println(host);
+    PCR_NETWORK_DEBUG("SSID:"); PCR_NETWORK_DEBUG_LINE(ssid);
+    PCR_NETWORK_DEBUG_LINE(strlen(ssid));
+    PCR_NETWORK_DEBUG("Pass:"); PCR_NETWORK_DEBUG_LINE(password);
+    PCR_NETWORK_DEBUG_LINE(strlen(password));
+    PCR_NETWORK_DEBUG("Host:"); PCR_NETWORK_DEBUG_LINE(host);
     
     if (isUpdateMode) {
         connectToAP(0); // No timeout
         while (WiFi.status() != WL_CONNECTED) {
-          Serial.print(".");
+          PCR_NETWORK_DEBUG(".");
           delay(500);
         }
-        Serial.println("WiFii connected.");
+        PCR_NETWORK_DEBUG_LINE("WiFii connected.");
         delay(2000);
         EEPROM.end();
         execUpdate();
@@ -435,11 +435,11 @@ boolean startWiFiHTTPServer() {
     else {
       // Timeout=10sec
       if (connectToAP(10 * 1000)) {
-        Serial.println("Connected.");
+        PCR_NETWORK_DEBUG_LINE("Connected.");
         beginMDNS(host);
-        Serial.println("MDNS ok.");
-        Serial.print("\nConnected.IP=");
-        Serial.println(WiFi.localIP());
+        PCR_NETWORK_DEBUG_LINE("MDNS ok.");
+        PCR_NETWORK_DEBUG("\nConnected.IP=");
+        PCR_NETWORK_DEBUG_LINE(WiFi.localIP());
         startNormalOperationServer();
         return true;
       } else {
@@ -451,8 +451,8 @@ boolean startWiFiHTTPServer() {
 int beginMDNS (const char *hostName) {
     MDNS.begin(hostName);
     MDNS.addService("http", "tcp", 80);
-    Serial.println("MDNS started.");
-    Serial.println(hostName);
+    PCR_NETWORK_DEBUG_LINE("MDNS started.");
+    PCR_NETWORK_DEBUG_LINE(hostName);
 }
 void startNormalOperationServer() {
     // Normal PCR operation mode
@@ -469,7 +469,7 @@ void startNormalOperationServer() {
     server.onNotFound(requestHandler404);
 
     server.begin();
-    Serial.println("Server started");
+    PCR_NETWORK_DEBUG_LINE("Server started");
 }
 
 /* Handle HTTP request as a server */

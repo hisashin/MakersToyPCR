@@ -2,6 +2,7 @@
 #include "board_conf.h"
 #include <Arduino.h>
 #include <Wire.h>
+#include "pcr_includes.h"
 #include "adc_NAU7802.h"
 
 #ifdef USE_ADC_NAU7802
@@ -11,7 +12,6 @@
 
 /* Implementation of NAU7802 A/D Converter */
 char i2c_err;
-void printRevisionCode ();
 // Basic communication
 
 static char wellADCWriteRegValue(uint8_t reg_address, uint8_t b) {
@@ -86,25 +86,9 @@ bool waitForFlag (uint8_t regAddress, int flagIndex, bool flagValue, long timeou
     count++;
     wellADCReadRegValues(regAddress, &read_out[0], 1);
     bool flagResult = (read_out[0] & (0x01 << flagIndex))!=0;
-    /*
-    if (true) {
-      Serial.print(" F");
-      Serial.print(flagResult);
-      Serial.print(".");
-      Serial.print(flagValue);
-      Serial.print(".");
-      Serial.print(result);
-      if (flagResult==flagValue) {
-        Serial.print("=");
-        
-      } else {
-        Serial.print("!");
-      }
-    }
-    */
     elapsed = (millis()-startMillis);
     if (elapsed < 0) {
-      Serial.println("ELAPSED TIME IS NEGATIVE!");
+      PCR_ADC_DEBUG_LINE("ELAPSED TIME IS NEGATIVE!");
       startMillis = millis(); // Reset
     }
     if (flagResult == flagValue) {
@@ -112,7 +96,7 @@ bool waitForFlag (uint8_t regAddress, int flagIndex, bool flagValue, long timeou
         Serial.print("e=");
         Serial.print(count);
         Serial.print(".");
-        Serial.println(elapsed);
+        PCR_ADC_DEBUG_LINE(elapsed);
         */
         return true;
     }
@@ -120,13 +104,13 @@ bool waitForFlag (uint8_t regAddress, int flagIndex, bool flagValue, long timeou
   // Timeout
   Serial.print("TIMEOUT! resetting.");
   initADC();
-  Serial.println(elapsed);
+  PCR_ADC_DEBUG_LINE(elapsed);
   delay(200);
   return false;
 }
 
 uint8_t initADC () {
-  Serial.println("initADC");
+  PCR_ADC_DEBUG_LINE("initADC");
   if (isAdcInitialized) {
     return 0;
   }
@@ -143,10 +127,10 @@ uint8_t initADC () {
   // Power up digital
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUD);
   // Wait for power up ready flag
-  if (waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUR, true, 500)) {
-    Serial.println("initADC SUCCESS");
+  if (waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUR, true, 1000)) {
+    PCR_ADC_DEBUG_LINE("initADC SUCCESS");
   } else {
-    Serial.println("initADC FAIL");
+    PCR_ADC_DEBUG_LINE("initADC FAIL");
     
   }
   // Power up analog
@@ -165,15 +149,13 @@ uint8_t initADC () {
   setRegisterBit(NAU7802_REG_ADDR_CTRL2, NAU7802_BIT_CS);
   
   Serial.print("CTRL2=");
-  Serial.println(wellADCReadRegValue(NAU7802_REG_ADDR_CTRL2));
-  printRevisionCode();
+  PCR_ADC_DEBUG_LINE(wellADCReadRegValue(NAU7802_REG_ADDR_CTRL2));
+  if (wellADCReadRegValue(NAU7802_REG_ADDR_REVISION)==0x0F) {
+    PCR_ADC_DEBUG_LINE("Rev code OK");
+  } else {
+    PCR_ADC_DEBUG_LINE("Rev code WRONG");
+  }
   return NO_ERR;
-}
-
-
-void printRevisionCode () {
-  Serial.print("Reg="); // 0x0F is expected
-  Serial.println(0 + wellADCReadRegValue(NAU7802_REG_ADDR_REVISION));
 }
 
 uint8_t prev_channel = 0;
@@ -224,6 +206,8 @@ float getADCValue () {
   i2c_err = wellADCReadRegValues(NAU7802_REG_ADDR_ADCO_B2, &read_out[0], 3);
   read_out[0] -= 0x80; // signed->unsigned
   adc_val = (read_out[0] << 16) | (read_out[1] << 8) | read_out[2];
+  PCR_ADC_DEBUG("ADC=");
+  PCR_ADC_DEBUG_LINE(String(adc_val,HEX));
   float ratio =  (float) adc_val / (1.0 * 0x1000000);
   return ratio;
 }

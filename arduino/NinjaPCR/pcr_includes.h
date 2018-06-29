@@ -20,11 +20,42 @@
 #define _PCR_INCLUDES_H_
 
 #include "Arduino.h"
-
 #include "board_conf.h"
 
+/* Debug on/off */
+#define DEBUG
+/* Debug ADC */
+// #define DEBUG_ADC
+#define DEBUG_NETWORK
+
+#ifdef DEBUG
+ #define PCR_DEBUG(x)  Serial.print (x)
+ #define PCR_DEBUG_LINE(x)  Serial.println (x)
+#else
+ #define PCR_DEBUG(x)
+ #define PCR_DEBUG_LINE(x)
+#endif
+
+#ifdef DEBUG_ADC
+  #define PCR_ADC_DEBUG(x) PCR_DEBUG(x)
+  #define PCR_ADC_DEBUG_LINE(x) PCR_DEBUG_LINE(x)
+#else
+  #define PCR_ADC_DEBUG(x)
+  #define PCR_ADC_DEBUG_LINE(x)
+#endif
+
+
+#ifdef DEBUG_NETWORK
+  #define PCR_NETWORK_DEBUG(x) PCR_DEBUG(x)
+  #define PCR_NETWORK_DEBUG_LINE(x) PCR_DEBUG_LINE(x)
+#else
+  #define PCR_NETWORK_DEBUG(x)
+  #define PCR_NETWORK_DEBUG_LINE(x)
+#endif
+
+
 #define SERIAL_PREFIX "pcr"
-#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.5"
+#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.8"
 
 #ifndef USE_WIFI
 #include <avr/pgmspace.h>

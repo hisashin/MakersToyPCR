@@ -26,13 +26,13 @@ int port = 443;
 /* Fetch MD5 hash of latest firmware in secure way */
 String getMD5(String path) {
     WiFiClientSecure *httpsClient = new WiFiClientSecure();
-    Serial.println("getMD5");
-    Serial.println(firmwareHost);
+    PCR_DEBUG_LINE("getMD5");
+    PCR_DEBUG_LINE(firmwareHost);
     if (!httpsClient->connect(firmwareHost, port)) {
-        Serial.println("Failed to connect.");
+        PCR_DEBUG_LINE("Failed to connect.");
         return "";
     }
-    Serial.println("Connected.");
+    PCR_DEBUG_LINE("Connected.");
 
     String url = path;
 
@@ -40,16 +40,16 @@ String getMD5(String path) {
             String("GET ") + url + " HTTP/1.1\r\n" + "Host: " + firmwareHost + "\r\n"
                     + "User-Agent: NinjaPCR\r\n" + "Connection: close\r\n\r\n");
 
-    Serial.println("request sent");
+    PCR_DEBUG_LINE("request sent");
     while (httpsClient->connected()) {
         String line = httpsClient->readStringUntil('\n');
-        Serial.println(line);
+        PCR_DEBUG_LINE(line);
         if (line == "\r") {
             break;
         }
     }
     String line = httpsClient->readStringUntil('\n');
-    Serial.println(line);
+    PCR_DEBUG_LINE(line);
     delete httpsClient;
     return line;
 }
@@ -67,7 +67,7 @@ void loadOTAConfig() {
     int otaType = typeValueCh - '0';
 
     if (otaType == OTA_TYPE_LOCAL_UPLOAD) {
-        Serial.println("OTA_TYPE_LOCAL_UPLOAD");
+        PCR_DEBUG_LINE("OTA_TYPE_LOCAL_UPLOAD");
         char *cOriginalVersion = (char *) malloc(
                 sizeof(char) * (EEPROM_OTA_CURRENT_VERSION_MAXLENGTH + 1));
         readStringFromEEPROM(cOriginalVersion, EEPROM_OTA_CURRENT_VERSION_ADDR,
@@ -75,14 +75,14 @@ void loadOTAConfig() {
         String originalVersion(cOriginalVersion);
         String currentVersion(OPENPCR_FIRMWARE_VERSION_STRING);
         free(cOriginalVersion);
-        Serial.println("OriginalVersion=" + originalVersion);
+        PCR_DEBUG_LINE("OriginalVersion=" + originalVersion);
 
         if (currentVersion.equals(originalVersion)) {
-            Serial.println("Same version.");
+            PCR_DEBUG_LINE("Same version.");
             isUpdateMode = true;
         }
         else {
-            Serial.println("Version Changed.");
+            PCR_DEBUG_LINE("Version Changed.");
             clearOTAFlag();
             EEPROM.commit();
             isUpdateMode = false;
@@ -100,7 +100,7 @@ void loadOTAConfig() {
     }
 
     Serial.print("OTA Type=");
-    Serial.println(otaType);
+    PCR_DEBUG_LINE(otaType);
 }
 
 void requestHandlerOTATop() {
@@ -140,7 +140,7 @@ void requestHandlerOTAError() {
 
 void startUpdaterServer() {
     // OTA mode
-    Serial.println("Starting OTA mode (isUpdateMode=true)");
+    PCR_DEBUG_LINE("Starting OTA mode (isUpdateMode=true)");
     httpUpdater.setup(&server, OTA_UPDATE_PATH);
     server.on("/", requestHandlerOTATop);
     server.on("/cancel", requestHandlerOTACancel);
@@ -189,7 +189,7 @@ NinjaUpdate ninjaUpdate;
  * Online update
  * */
 void execUpdate() {
-    Serial.println("Updating...");
+    PCR_DEBUG_LINE("Updating...");
     // Fetch MD5 of latest firmware by SSL
     String md5 = getMD5("/secure/NinjaPCR.md5");
     Serial.print("Expected MD5=" + md5);
@@ -204,11 +204,11 @@ void execUpdate() {
         break;
 
     case HTTP_UPDATE_NO_UPDATES:
-        Serial.println("HTTP_UPDATE_NO_UPDATES");
+        PCR_DEBUG_LINE("HTTP_UPDATE_NO_UPDATES");
         break;
 
     case HTTP_UPDATE_OK:
-        Serial.println("HTTP_UPDATE_OK");
+        PCR_DEBUG_LINE("HTTP_UPDATE_OK");
         ESP.restart();
         break;
     }

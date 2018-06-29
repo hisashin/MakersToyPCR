@@ -73,21 +73,23 @@ static double SWITCHING_VOLTAGE_85_LID = 0;
 
 CLidThermistor::CLidThermistor() :
         iTemp(0.0) {
-    Serial.println("CLidThermistor");
+    PCR_DEBUG_LINE("CLidThermistor");
 
     SWITCHING_VOLTAGE_50_LID = tempToVoltageRatio(50, R_HEATER, B_CONST_25_50, R_0_WELL);
     SWITCHING_VOLTAGE_85_LID = tempToVoltageRatio(85, R_HEATER, B_CONST_25_85, R_0_WELL);
-    Serial.print("Lid 50=");
-    Serial.println(SWITCHING_VOLTAGE_50_LID);
-    Serial.print("Lid 85=");
-    Serial.println(SWITCHING_VOLTAGE_85_LID);
+    PCR_DEBUG("Lid 50=");
+    PCR_DEBUG_LINE(SWITCHING_VOLTAGE_50_LID);
+    PCR_DEBUG("Lid 85=");
+    PCR_DEBUG_LINE(SWITCHING_VOLTAGE_85_LID);
 
 #ifdef PRINT_DEBUG_CHART
 
     for (double v=0; v<1.0; v+=0.05) {
       double b_constant = B_CONST_HEATER;
       double temp = voltageToTemp(v, R_HEATER, b_constant, R_0_HEATER);
-      Serial.print(v);Serial.print("\t");Serial.println(temp);
+      PCR_DEBUG(v);
+      PCR_DEBUG("\t");
+      PCR_DEBUG_LINE(temp);
     }
 #endif /* PRINT_DEBUG_CHART */
 }
@@ -98,6 +100,8 @@ HardwareStatus CLidThermistor::ReadTemp() {
     HardwareStatus result = getLidADCValue(&lidADCValue);
     if (result!=HARD_NO_ERROR) { return result; }
     voltageRatio = 1.0-lidADCValue;
+    PCR_ADC_DEBUG("LidR=");
+    PCR_ADC_DEBUG_LINE(voltageRatio);
     
     if (voltageRatio < 0.1) {
         // ThermistorR=0 (Short)
@@ -131,13 +135,15 @@ static double SWITCHING_VOLTAGE_50_HIGHMODE = 0;
 static double SWITCHING_VOLTAGE_85_HIGHMODE = 0;
 
 void printVoltageTempTable () {
-    Serial.print("SWITCHING_VOLTAGE_50_LOWMODE="); Serial.println(SWITCHING_VOLTAGE_50_LOWMODE*3.3);
-    Serial.print("SWITCHING_VOLTAGE_85_LOWMODE="); Serial.println(SWITCHING_VOLTAGE_85_LOWMODE*3.3);
+    PCR_DEBUG("SWITCHING_VOLTAGE_50_LOWMODE=");
+    PCR_DEBUG_LINE(SWITCHING_VOLTAGE_50_LOWMODE*3.3);
+    PCR_DEBUG("SWITCHING_VOLTAGE_85_LOWMODE="); 
+    PCR_DEBUG_LINE(SWITCHING_VOLTAGE_85_LOWMODE*3.3);
 
-    Serial.print("SWITCHING_VOLTAGE_50_HIGHMODE="); Serial.println(SWITCHING_VOLTAGE_50_HIGHMODE*3.3);
-    Serial.print("SWITCHING_VOLTAGE_85_HIGHMODE="); Serial.println(SWITCHING_VOLTAGE_85_HIGHMODE*3.3);
+    PCR_DEBUG("SWITCHING_VOLTAGE_50_HIGHMODE="); PCR_DEBUG_LINE(SWITCHING_VOLTAGE_50_HIGHMODE*3.3);
+    PCR_DEBUG("SWITCHING_VOLTAGE_85_HIGHMODE="); PCR_DEBUG_LINE(SWITCHING_VOLTAGE_85_HIGHMODE*3.3);
     double resistance = 0;
-    Serial.println("HIGH");
+    PCR_DEBUG_LINE("HIGH");
     for (double v=0; v<3.3; v+=0.1) {
       double b_constant;
       double voltageRatio = v/3.3;
@@ -149,9 +155,9 @@ void printVoltageTempTable () {
       else
           b_constant = B_CONST_25_100;
       double temp = voltageToTemp (voltageRatio, resistance, b_constant, R_0_WELL);
-      Serial.print(v);Serial.print("\t");Serial.println(temp);
+      PCR_DEBUG(v);PCR_DEBUG("\t");PCR_DEBUG_LINE(temp);
     }
-    Serial.println("LOW");
+    PCR_DEBUG_LINE("LOW");
     for (double v=0; v<3.3; v+=0.1) {
       double b_constant;
       double voltageRatio = v/3.3;
@@ -163,7 +169,7 @@ void printVoltageTempTable () {
       else
           b_constant = B_CONST_25_100;
       double temp = voltageToTemp (voltageRatio, resistance, b_constant, R_0_WELL);
-      Serial.print(v);Serial.print("\t");Serial.println(temp);
+      PCR_DEBUG(v);PCR_DEBUG("\t");PCR_DEBUG_LINE(temp);
     }
 
 }
@@ -197,8 +203,8 @@ HardwareStatus CPlateThermistor::ReadTemp() {
     float voltageRatio;
     HardwareStatus result = getWellADCValue(&voltageRatio);
     if (result!=HARD_NO_ERROR) { return result; }
-    Serial.print("WR=");
-    Serial.println(voltageRatio);
+    PCR_ADC_DEBUG("WellR=");
+    PCR_ADC_DEBUG_LINE(voltageRatio);
     if (voltageRatio < 0.1) {
         // ThermistorR=0 (Short)
         return HARD_ERROR_WELL_THERMISTOR_SHORT;

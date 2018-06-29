@@ -47,12 +47,12 @@ Display::Display():
 
   iLcd(PIN_LCD_RS, PIN_LCD_ENABLE, PIN_LCD_D4, PIN_LCD_D5, PIN_LCD_D6, PIN_LCD_D7),
   iLastState(Thermocycler::EStartup) {
-    Serial.println("Display 0");
+    PCR_DEBUG_LINE("Display 0");
 
 #ifndef USE_LCD
     return; //debug
 #endif
-    Serial.println("Display 1");
+    PCR_DEBUG_LINE("Display 1");
 
   iLcd.begin(20, 4);
   iLastReset = millis();

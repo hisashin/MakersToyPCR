@@ -35,7 +35,7 @@ void Communicator::ProcessMessage() {
   char* pCommandBuf;
   switch (currentCommand) {
   case SEND_CMD:
-    Serial.println("ProcessMessage SEND_CMD");
+    PCR_DEBUG_LINE("ProcessMessage SEND_CMD");
     SCommand command;
     pCommandBuf = (char*) (commandBody);
 
@@ -48,7 +48,7 @@ void Communicator::ProcessMessage() {
     break;
 
   case STATUS_REQ:
-    Serial.println("ProcessMessage STATUS_REQ");
+    PCR_DEBUG_LINE("ProcessMessage STATUS_REQ");
     iReceivedStatusRequest = true;
     SendStatus();
     break;

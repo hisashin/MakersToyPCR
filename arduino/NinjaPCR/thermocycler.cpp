@@ -74,7 +74,8 @@
 #endif
 
 #ifdef PID_CONF_NINJAPCR_WIFI
-#define PLATE_PID_INC_NORM_P (300)
+//#define PLATE_PID_INC_NORM_P (300)
+#define PLATE_PID_INC_NORM_P (200)
 #define PLATE_PID_INC_NORM_I (75)
 #define PLATE_PID_INC_NORM_D (75)
 
@@ -156,7 +157,7 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
 
 // It shoud be called before Thermocycler initialization
 void initHardware () {
-    Serial.println("initHardware");
+    PCR_DEBUG_LINE("initHardware");
     //init pins
     pinMode(PIN_LID_PWM, OUTPUT);
   #ifdef PIN_LID_PWM_ACTIVE_LOW
@@ -426,11 +427,11 @@ boolean Thermocycler::Loop() {
       ControlLid();
       ControlPeltier();
       if (iHardwareStatus!=HARD_NO_ERROR) {
-        Serial.print("ERR=");
-        Serial.println(iHardwareStatus);
+        PCR_DEBUG("ERR=");
+        PCR_DEBUG_LINE(iHardwareStatus);
       }
   } else {
-      Serial.println("ALL OFF");
+      PCR_DEBUG_LINE("ALL OFF");
       iProgramState = EError;
       SetPeltier(OFF, 0);
       SetLidOutput(0);
@@ -665,15 +666,15 @@ const float POSSIBLE_WELL_TEMP_MAX = 110;
 
 // Return true if val0 is valid.
 float pickValidValue (float val0, float val1, float val2) {
-    Serial.print(" ");Serial.print(val0);Serial.print("/");Serial.print(val1);Serial.print("/");Serial.print(val2);
+    PCR_DEBUG(" ");PCR_DEBUG(val0);PCR_DEBUG("/");PCR_DEBUG(val1);PCR_DEBUG("/");PCR_DEBUG(val2);
     if (abs(val0-val1) < 10) {
         return val0;
     }
     if (abs(val1-val2) < 10) {
-        Serial.print("Suspicious value ");
-        Serial.print(val0);
-        Serial.print("<=>");
-        Serial.print(val1);
+        PCR_DEBUG("Suspicious value ");
+        PCR_DEBUG(val0);
+        PCR_DEBUG("<=>");
+        PCR_DEBUG(val1);
         return val1;
     }
     return val0;
@@ -699,8 +700,8 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
     }
 
     if (errorsCount > 3) {
-        Serial.println("Continuous errors found!");
-        Serial.println(errNo);
+        PCR_DEBUG_LINE("Continuous errors found!");
+        PCR_DEBUG_LINE(errNo);
         iHardwareStatus = errNo;
     }
     if (validStatusCount==0) {
@@ -742,25 +743,25 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
         
         if (isWellHeating) {
              if (wellDiff<-1.5) {
-              Serial.println("Well Reverse?");
+              PCR_DEBUG_LINE("Well Reverse?");
               statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
              } else if (wellDiff<1.5) {
-              Serial.println("Well is not getting hot.");
+              PCR_DEBUG_LINE("Well is not getting hot.");
               statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
             }
         }
         if (isWellCooling) {
             if (wellDiff>2) {
-              Serial.println("Well is not getting cool.");
+              PCR_DEBUG_LINE("Well is not getting cool.");
               statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
             } else if (wellDiff>-1) {
-              Serial.println("Well is not getting cool.");
+              PCR_DEBUG_LINE("Well is not getting cool.");
               statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
             }
         }
         if (isLidHeating) {
             if (lidDiff < 2) {
-              Serial.println("Lid is not heated.");
+              PCR_DEBUG_LINE("Lid is not heated.");
               statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_NOT_REFLECTED;
             }
         }
@@ -780,8 +781,8 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
-  Serial.print("P=");
-  Serial.println(pwm);
+  PCR_DEBUG("P=");
+  PCR_DEBUG_LINE(pwm);
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
   if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
@@ -832,8 +833,6 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of p
 }
 #else
 void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm) {
-    Serial.print("pwm2=");
-    Serial.println(pwm);
   if (dir == COOL) {
     digitalWrite(PIN_WELL_INA, HIGH);
     digitalWrite(PIN_WELL_INB, LOW);

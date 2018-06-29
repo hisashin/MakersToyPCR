@@ -62,7 +62,6 @@ SERIAL_STATUS SerialControl::ReadPacket() {
       startFound = true;
       waitingForMessage = false;
       nextByteIndex++;
-      Serial.println("START FOUND");
     }
     else if (nextByteIndex == 1) {
       // Read command code

@@ -110,7 +110,7 @@ void Cycle::RestartCycle() {
 // Class CommandParser
 void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
   char* pValue;
-  Serial.println("ParseCommand 1");
+  PCR_DEBUG_LINE("ParseCommand 1");
   memset(&command, NULL, sizeof(command));
   char buf[32];
 
@@ -120,8 +120,9 @@ void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
   while (pParam) {  
     pValue = strchr(pParam, '=');
     *pValue++ = '\0';
-    Serial.print(pParam);Serial.print("=");
-    Serial.println(pValue);
+    PCR_DEBUG(pParam);
+    PCR_DEBUG("=");
+    PCR_DEBUG_LINE(pValue);
     AddComponent(&command, pParam[0], pValue);
     pParam = strtok(NULL, "&");
   }
@@ -217,9 +218,9 @@ Step* CommandParser::ParseStep(char* pBuffer) {
   if (pEnd) {
     *pEnd = '\0';
   } else {
-    Serial.println("pEnd null?");
+    PCR_DEBUG_LINE("pEnd null?");
   }
-  Serial.println(pBuffer);
+  PCR_DEBUG_LINE(pBuffer);
 	
   unsigned long stepDuration = atol(pBuffer);
   unsigned long rampDuration = pRampDuration == NULL ? 0 : atol(pRampDuration);

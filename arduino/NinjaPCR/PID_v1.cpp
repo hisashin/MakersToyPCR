@@ -29,7 +29,6 @@ PID::PID(double* Input, double* Output, double* Setpoint,
     myOutput = Output;
     myInput = Input;
     mySetpoint = Setpoint;
-    Serial.println("PID 1");
 		
 }
  
