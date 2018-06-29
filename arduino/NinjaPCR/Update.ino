@@ -10,9 +10,6 @@
 ESP8266HTTPUpdateServer httpUpdater;
 
 // OTA boot type (0:normal mode, 1:local upload, 2:web download)
-#define EEPROM_OTA_TYPE_ADDR  (EEPROM_WIFI_MDNS_HOST_ADDR+EEPROM_WIFI_MDNS_HOST_MAX_LENGTH+1)
-#define EEPROM_OTA_CURRENT_VERSION_ADDR (EEPROM_OTA_TYPE_ADDR+1)
-#define EEPROM_OTA_CURRENT_VERSION_MAXLENGTH 128
 
 String PARAM_OTA_TYPE = "ot";
 String PARAM_OTA_URL = "ou";

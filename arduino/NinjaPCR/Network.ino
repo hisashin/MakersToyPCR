@@ -3,29 +3,17 @@
 // #include "wifi_conf.h"
 #include "wifi_communicator.h"
 #include "thermocycler.h"
+#include "pcr_includes.h"
 #include <EEPROM.h>
+#include <WiFiClient.h>
 #include <WiFiClient.h>
 #include <ESP8266mDNS.h>
 #include <ESP8266WiFiMulti.h>
 
 
-//ESP8266WiFiMulti WiFiMulti;
+ESP8266WiFiMulti wifiMulti;
 bool isUpdateMode = false;
 String DEFAULT_HOST_NAME = "ninjapcr";
-
-/* Addresses of WiFi configuration */
-/* Wfite 0xF0 when WiFi configuration is done. */
-#define EEPROM_WIFI_CONF_DONE_ADDR 512
-#define EEPROM_WIFI_CONF_DONE_VAL 0xF0
-
-#define EEPROM_WIFI_SSID_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+1)
-#define EEPROM_WIFI_SSID_MAX_LENGTH 31
-
-#define EEPROM_WIFI_PASSWORD_ADDR (EEPROM_WIFI_SSID_ADDR+EEPROM_WIFI_SSID_MAX_LENGTH+1)
-#define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
-
-#define EEPROM_WIFI_MDNS_HOST_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
-#define EEPROM_WIFI_MDNS_HOST_MAX_LENGTH 31
 
 char ssid[EEPROM_WIFI_SSID_MAX_LENGTH + 1];
 char password[EEPROM_WIFI_PASSWORD_MAX_LENGTH + 1];
@@ -48,11 +36,8 @@ void wifi_send(char *response, char *funcName) {
     str += "\");";
     char *buff = (char*)malloc(sizeof(char) * (str.length()+1));
     str.toCharArray(buff, str.length()+1);
-    Serial.print("WiFi Sendss");
-    Serial.println(buff);
     server.send(200, "text/plain", buff);
     free(buff);
-    Serial.println("sent.");
 }
 
 /* HTTP request handlers */
@@ -62,17 +47,12 @@ void requestHandlerTop() {
 }
 /* Handle request to "/command" */
 void requestHandlerCommand() {
-    Serial.print("rc.");
-    Serial.println(server.uri());
     wifi->ResetCommand();
     wifi->SendCommand();
     char buff[256];
     for (uint8_t i = 0; i < server.args(); i++) {
         String sKey = server.argName(i);
         String sValue = server.arg(i);
-        Serial.print(sKey);
-        Serial.print("->");
-        Serial.println(sValue);
         char *key = (char *) malloc(sKey.length() + 1);
         char *value = (char *) malloc(sValue.length() + 1);
         sKey.toCharArray(key, sKey.length() + 1);
@@ -81,7 +61,6 @@ void requestHandlerCommand() {
         free(key);
         free(value);
     }
-    Serial.println(buff);
 }
 /* Handle request to "/status" */
 int statusCount = 0;
@@ -400,12 +379,12 @@ String byteToHexStr(char c) {
 boolean connectToAP (int timeoutInMillis) {
     WiFi.mode(WIFI_STA);
     WiFi.setAutoReconnect (true);
-    WiFi.begin(ssid, password);
+    wifiMulti.addAP(ssid, password);
     Serial.println("WiFi connecting.");
     bool noTimeout = (timeoutInMillis==0);
 
     do {
-      if (WiFi.status() == WL_CONNECTED) {
+      if (wifiMulti.run()==WL_CONNECTED) {
         return true;
       }
       Serial.print(".");
@@ -419,6 +398,9 @@ boolean connectToAP (int timeoutInMillis) {
 /* Start network as a HTTP server */
 boolean startWiFiHTTPServer() {
     // Check existence of WiFi Config
+    
+     //connectToAP(10*1000);
+        
     if (!isWifiConfDone()) {
         Serial.println("WiFi config not found.");
         return false;
@@ -431,10 +413,12 @@ boolean startWiFiHTTPServer() {
     loadWifiConfig();
 
     // Connect with saved SSID and password
-    Serial.print("SSID:"); Serial.println(ssid);
-    Serial.print("Pass:"); Serial.println(password);
-    Serial.print("Host:"); Serial.println(host);
 
+    Serial.print("SSID:"); Serial.println(ssid);
+    Serial.println(strlen(ssid));
+    Serial.print("Pass:"); Serial.println(password);
+    Serial.println(strlen(password));
+    Serial.print("Host:"); Serial.println(host);
     
     if (isUpdateMode) {
         connectToAP(0); // No timeout

@@ -49,7 +49,7 @@
 // Counter resistors
 #define R_LOW_TEMP 30.0 // Well low mode
 #define R_HIGH_TEMP 10 // Well high mode (30x3)
-#define R_HEATER 5.0 // Heater
+#define R_HEATER 4.99 // Heater
 
 #define HIGH_LOW_SWITCHING_TEMP 54
 //#define PRINT_DEBUG_CHART

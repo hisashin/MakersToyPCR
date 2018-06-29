@@ -51,16 +51,17 @@ bool isApMode = false;
 
 void setup() {
     Serial.begin(BAUD_RATE);
+    pinMode(PIN_WIFI_MODE, INPUT);
+    isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
     delay(250);
     Serial.print("NinjaPCR ver. "); 
     Serial.println(OPENPCR_FIRMWARE_VERSION_STRING);
+    delay(3000);
     initHardware();
     EEPROM.begin(1024);
 
-    pinMode(PIN_WIFI_MODE, INPUT);
     Serial.print("PIN_WIFI_MODE=");
-    Serial.println(digitalRead(PIN_WIFI_MODE));
-    isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
+    Serial.println(isApMode);
     if (isApMode) {
         Serial.println("AP mode");
         startWiFiAPMode();

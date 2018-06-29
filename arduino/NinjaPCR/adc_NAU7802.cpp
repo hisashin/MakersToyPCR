@@ -11,7 +11,7 @@
 
 /* Implementation of NAU7802 A/D Converter */
 char i2c_err;
-
+void printRevisionCode ();
 // Basic communication
 
 static char wellADCWriteRegValue(uint8_t reg_address, uint8_t b) {
@@ -126,6 +126,7 @@ bool waitForFlag (uint8_t regAddress, int flagIndex, bool flagValue, long timeou
 }
 
 uint8_t initADC () {
+  Serial.println("initADC");
   if (isAdcInitialized) {
     return 0;
   }
@@ -142,7 +143,12 @@ uint8_t initADC () {
   // Power up digital
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUD);
   // Wait for power up ready flag
-  waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUR, true, 500);
+  if (waitForFlag(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUR, true, 500)) {
+    Serial.println("initADC SUCCESS");
+  } else {
+    Serial.println("initADC FAIL");
+    
+  }
   // Power up analog
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUA);
   // Cycle start
@@ -160,6 +166,7 @@ uint8_t initADC () {
   
   Serial.print("CTRL2=");
   Serial.println(wellADCReadRegValue(NAU7802_REG_ADDR_CTRL2));
+  printRevisionCode();
   return NO_ERR;
 }
 

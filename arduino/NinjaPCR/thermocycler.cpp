@@ -408,12 +408,11 @@ boolean Thermocycler::Loop() {
   float wellTemp = 0;
 
   CheckHardware(&lidTemp, &wellTemp);
-  // Serial.print(" L=");Serial.print(lidTemp);Serial.print(",W=");Serial.println(wellTemp);
   iLidThermistor.setTemp(lidTemp);
   iPlateThermistor.setTemp(wellTemp);
 
-  double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;//TODO WELL_TEST
-  //double estimatedAirTemp = wellTemp * 0.4 + 110.0 * 0.6;//TODO WELL_TEST
+  //double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;//TODO WELL_TEST
+  double estimatedAirTemp = wellTemp * 0.4 + 110.0 * 0.6;//TODO WELL_TEST
   double diff = ((wellTemp-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
   if (iEstimatedSampleTemp!=25 || ( 5>diff && diff > -5)) {
     iEstimatedSampleTemp += diff;
@@ -422,10 +421,14 @@ boolean Thermocycler::Loop() {
   CalcPlateTarget();
 
   // Check error
-  //if (iHardwareStatus==HARD_NO_ERROR || true) { //TODO WELL_TEST
-  if (iHardwareStatus==HARD_NO_ERROR) { //TODO WELL_TEST
+  if (iHardwareStatus==HARD_NO_ERROR || true) { //TODO WELL_TEST
+  //if (iHardwareStatus==HARD_NO_ERROR) { //TODO WELL_TEST
       ControlLid();
       ControlPeltier();
+      if (iHardwareStatus!=HARD_NO_ERROR) {
+        Serial.print("ERR=");
+        Serial.println(iHardwareStatus);
+      }
   } else {
       Serial.println("ALL OFF");
       iProgramState = EError;
@@ -703,6 +706,7 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
     if (validStatusCount==0) {
         *wellTemp = 25.0;
         *lidTemp = 25.0;
+        return;
     } else if (validStatusCount<3) {
         // Use last valid status
         *lidTemp = recentStats[0]->lidTemp;
@@ -776,6 +780,8 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
+  Serial.print("P=");
+  Serial.println(pwm);
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
   if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
