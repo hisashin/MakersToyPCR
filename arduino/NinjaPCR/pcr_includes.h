@@ -24,9 +24,11 @@
 
 /* Debug on/off */
 #define DEBUG
-/* Debug ADC */
-// #define DEBUG_ADC
-#define DEBUG_NETWORK
+
+#define DEBUG_ADC /* Debug ADC */
+//#define DEBUG_NETWORK /* Debug Network Status */
+// TODO DEBUG_TEMPERATURE
+// TODO_DEBUG_HARDWARE_OUTPUT
 
 #ifdef DEBUG
  #define PCR_DEBUG(x)  Serial.print (x)
@@ -55,7 +57,7 @@
 
 
 #define SERIAL_PREFIX "pcr"
-#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.8"
+#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.7"
 
 #ifndef USE_WIFI
 #include <avr/pgmspace.h>

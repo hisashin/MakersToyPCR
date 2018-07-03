@@ -192,25 +192,28 @@ void execUpdate() {
     PCR_DEBUG_LINE("Updating...");
     // Fetch MD5 of latest firmware by SSL
     String md5 = getMD5("/secure/NinjaPCR.md5");
-    Serial.print("Expected MD5=" + md5);
+    Serial.println("Expected MD5=" + md5);
 
     t_httpUpdate_return ret = HTTP_UPDATE_FAILED;
-    ret = ninjaUpdate.update("http://ninjapcr.tori.st/bin/NinjaPCR.bin", md5);
+    ret = ninjaUpdate.update("http://ninjapcr.tori.st/update/NinjaPCR.bin", md5);
 
     switch (ret) {
     case HTTP_UPDATE_FAILED:
-        //Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", NinjaUpdate.getLastError(), NinjaUpdate.getLastErrorString().c_str());
+        Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ninjaUpdate.getLastError(), ninjaUpdate.getLastErrorString().c_str());
         Serial.printf("HTTP_UPDATE_FAILD Error");
         break;
 
     case HTTP_UPDATE_NO_UPDATES:
-        PCR_DEBUG_LINE("HTTP_UPDATE_NO_UPDATES");
+        Serial.printf("HTTP_UPDATE_NO_UPDATES");
         break;
 
     case HTTP_UPDATE_OK:
-        PCR_DEBUG_LINE("HTTP_UPDATE_OK");
-        ESP.restart();
+        Serial.printf("HTTP_UPDATE_OK");
+        break;
+    default:
+        Serial.printf("HTTP_UPDATE_FAILD Error (%d): %s", ninjaUpdate.getLastError(), ninjaUpdate.getLastErrorString().c_str());
         break;
     }
+    ESP.restart();
 }
 

@@ -9,7 +9,7 @@
 /* Skip init sequence and return dummy values. This mode is for testing board without */
 // #define ADC_DUMMY_MODE 
 #define NO_ERR 0x00
-
+HardwareStatus switchADCConfig (uint8_t channel, uint8_t SPS0, uint8_t SPS1, uint8_t SPS2);
 /* Implementation of NAU7802 A/D Converter */
 char i2c_err;
 // Basic communication
@@ -114,6 +114,7 @@ uint8_t initADC () {
   if (isAdcInitialized) {
     return 0;
   }
+  delay(200);
   isAdcInitialized = true;
 
   Wire.begin(PIN_WELL_NAU7802_SDA, PIN_WELL_NAU7802_SCL); //sda, scl
@@ -121,6 +122,7 @@ uint8_t initADC () {
   char write_init_block[1] = {0x16};
   char write_calib_block[1] = {0x04};
   char write_rate_block[1] = {adc_default_conf}; // 111=320SPS
+  
   // Reset registers
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_RR);
   clearRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_RR);
@@ -137,13 +139,15 @@ uint8_t initADC () {
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUA);
   // Cycle start
   setRegisterBit(NAU7802_REG_ADDR_PU_CTRL, NAU7802_BIT_PUA);
-
   wellADCWriteRegValue(NAU7802_REG_ADDR_CTRL2, adc_default_conf);
 
   // Set sampling rate
+  HardwareStatus result = switchADCConfig(0, 0, 1, 1); //1ch, 80SPS
+  /*
   setRegisterBit(NAU7802_REG_ADDR_CTRL2, 4);
   setRegisterBit(NAU7802_REG_ADDR_CTRL2, 5);
   setRegisterBit(NAU7802_REG_ADDR_CTRL2, 6);
+  */
 
   // Start conversion
   setRegisterBit(NAU7802_REG_ADDR_CTRL2, NAU7802_BIT_CS);

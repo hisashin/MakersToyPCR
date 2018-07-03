@@ -6,7 +6,7 @@
 #ifdef USE_ADC_MCP3554
 
 /* Implementation of USE_ADC_MCP3554 A/D Converter */
-static bool isAdcInitialized = false;1
+static bool isAdcInitialized = false;
 uint8_t initADC () {
     if (isAdcInitialized) {
         return 0;

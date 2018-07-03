@@ -52,6 +52,7 @@ bool isApMode = false;
 void setup() {
     Serial.begin(BAUD_RATE);
     pinMode(PIN_WIFI_MODE, INPUT);
+    delay(100);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
     delay(250);
     PCR_DEBUG("NinjaPCR ver. "); 
@@ -142,7 +143,7 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    PCR_DEBUG("pcr1.0.8"); //TODO
+    PCR_DEBUG("pcr1.0.7"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);
