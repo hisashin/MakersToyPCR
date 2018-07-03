@@ -161,25 +161,34 @@ void initHardware () {
     //init pins
     pinMode(PIN_LID_PWM, OUTPUT);
   #ifdef PIN_LID_PWM_ACTIVE_LOW
+    PCR_DEBUG_LINE("Lid HIGH");
     digitalWrite(PIN_LID_PWM, HIGH);
   #else
+    PCR_DEBUG_LINE("Lid LOW");
     digitalWrite(PIN_LID_PWM, LOW);
   #endif
     // Peltier pins
     pinMode(PIN_WELL_INA, OUTPUT);
     pinMode(PIN_WELL_INB, OUTPUT);
     // Fan
-  #ifdef USE_FAN
-    pinMode(PIN_FAN, OUTPUT);
-    digitalWrite(PIN_FAN, PIN_FAN_VALUE_OFF);
-  #endif
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
     pinMode(PIN_WELL_PWM, OUTPUT);
+#ifdef PIN_WELL_PWM_ACTIVE_LOW
+    PCR_DEBUG_LINE("Well HIGH");
+    digitalWrite(PIN_WELL_PWM, HIGH);
+#else
+    PCR_DEBUG_LINE("Well LOW");
+    digitalWrite(PIN_WELL_PWM, LOW);
+#endif
 
   #ifdef PIN_LCD_CONTRAST
     pinMode(5, OUTPUT);
   #endif /* PIN_LCD_CONTRAST */
+  #ifdef USE_FAN
+    pinMode(PIN_FAN, OUTPUT);
+    digitalWrite(PIN_FAN, PIN_FAN_VALUE_OFF);
+  #endif
 
 }
 //public
@@ -409,6 +418,11 @@ boolean Thermocycler::Loop() {
   float wellTemp = 0;
 
   CheckHardware(&lidTemp, &wellTemp);
+  PCR_DEBUG("L=");
+  PCR_DEBUG(lidTemp);
+  PCR_DEBUG(" W=wellTemp");
+  PCR_DEBUG_LINE(wellTemp);
+  
   iLidThermistor.setTemp(lidTemp);
   iPlateThermistor.setTemp(wellTemp);
 
@@ -666,7 +680,6 @@ const float POSSIBLE_WELL_TEMP_MAX = 110;
 
 // Return true if val0 is valid.
 float pickValidValue (float val0, float val1, float val2) {
-    PCR_DEBUG(" ");PCR_DEBUG(val0);PCR_DEBUG("/");PCR_DEBUG(val1);PCR_DEBUG("/");PCR_DEBUG(val2);
     if (abs(val0-val1) < 10) {
         return val0;
     }

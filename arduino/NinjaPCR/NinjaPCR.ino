@@ -57,7 +57,6 @@ void setup() {
     delay(250);
     PCR_DEBUG("NinjaPCR ver. "); 
     PCR_DEBUG_LINE(OPENPCR_FIRMWARE_VERSION_STRING);
-    delay(3000);
     initHardware();
     EEPROM.begin(1024);
 
