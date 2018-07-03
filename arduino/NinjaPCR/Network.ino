@@ -10,6 +10,11 @@
 #include <ESP8266mDNS.h>
 #include <ESP8266WiFiMulti.h>
 
+/* For displaying previous errors */
+#define WIFI_RESULT_CONNECTION_SUCCESS 0x01
+#define WIFI_RESULT_CONNECTION_FAILURE 0x02
+#define WIFI_RESULT_CONF_DONE 0x03
+#define WIFI_RESULT_CONF_ERROR 0x04
 
 ESP8266WiFiMulti wifiMulti;
 bool isUpdateMode = false;
@@ -216,6 +221,12 @@ void saveStringToEEPROM(String str, int startAddress, int maxLength) {
     EEPROM.write(startAddress + len, 0x00); // Write \0
 }
 
+
+void saveWifiResult (uint8_t value) {
+  EEPROM.write(EEPROM_WIFI_RESULT, value);
+  EEPROM.commit();
+}
+
 void saveWiFiConnectionInfo(String ssid, String password, String host) {
     // Flags
     EEPROM.write(EEPROM_WIFI_CONF_DONE_ADDR, EEPROM_WIFI_CONF_DONE_VAL);
@@ -236,6 +247,20 @@ void saveWiFiConnectionInfo(String ssid, String password, String host) {
 // Returned string ends with <body> tag.
 String getHTMLHeader() {
     return "<!DOCTYPE HTML>\r\n<html><head><title>NinjaPCR</title></head><body>\r\n";
+}
+String getPrevWiFiStatusLabel (uint8_t val) {
+  switch (val) {
+    case WIFI_RESULT_CONNECTION_SUCCESS:
+      return "Connected";
+    case WIFI_RESULT_CONNECTION_FAILURE:
+      return "Connection error";
+    case WIFI_RESULT_CONF_DONE:
+      return "Conf done";
+    case WIFI_RESULT_CONF_ERROR:
+      return "Conf error";
+    default:
+      return "No conf found";
+  }
 }
 /*
 String hostName = ;
@@ -283,6 +308,10 @@ void requestHandlerConfInit() {
     s += "\"/>(Alphabetic letters and numbers)</div>";
     s += "<div><input type=\"submit\" value=\"Join\"/></div>";
     s += "</form>";
+    s += "Previous WiFi status: ";
+    uint8_t prevResult = EEPROM.read(EEPROM_WIFI_RESULT);
+    s += getPrevWiFiStatusLabel(prevResult);
+    s += " (" + String(prevResult) + ")";
     s += "</body></html>\n";
     server.send(200, "text/html", s);
 }
@@ -347,9 +376,11 @@ void requestHandlerConfJoin() {
         PCR_NETWORK_DEBUG_LINE("Valid input. Saving...");
         saveWiFiConnectionInfo(ssid, password, host);
         PCR_NETWORK_DEBUG_LINE("saved.");
+        saveWifiResult(WIFI_RESULT_CONF_DONE);
         ESP.restart();
     }
     else {
+        saveWifiResult(WIFI_RESULT_CONF_ERROR);
         PCR_NETWORK_DEBUG_LINE("Invalid input.");
     }
 }
@@ -382,9 +413,11 @@ boolean connectToAP (int timeoutInMillis) {
     wifiMulti.addAP(ssid, password);
     PCR_NETWORK_DEBUG_LINE("WiFi connecting.");
     bool noTimeout = (timeoutInMillis==0);
+    saveWifiResult(WIFI_RESULT_CONNECTION_FAILURE);
 
     do {
       if (wifiMulti.run()==WL_CONNECTED) {
+        saveWifiResult(WIFI_RESULT_CONNECTION_SUCCESS);
         return true;
       }
       PCR_NETWORK_DEBUG(".");
@@ -399,8 +432,6 @@ boolean connectToAP (int timeoutInMillis) {
 boolean startWiFiHTTPServer() {
     // Check existence of WiFi Config
     
-     //connectToAP(10*1000);
-        
     if (!isWifiConfDone()) {
         PCR_NETWORK_DEBUG_LINE("WiFi config not found.");
         return false;
