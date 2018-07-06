@@ -400,6 +400,11 @@ boolean Thermocycler::Loop() {
     break;
   }
   statusBuff[statusIndex].timestamp = millis();
+  statusBuff[statusIndex].rampElapsedTimeMsec = (iRamping)? GetRampElapsedTimeMs() : 0;
+  
+  PCR_DEBUG("rampElapsedTimeMsec=");
+  PCR_DEBUG_LINE(statusBuff[statusIndex].rampElapsedTimeMsec);
+  
   //Read lid and well temp
   statusBuff[statusIndex].hardwareStatus = HARD_NO_ERROR;
   HardwareStatus result = iPlateThermistor.ReadTemp();
@@ -748,12 +753,13 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
         for (int i=0; i<min(validStatusCount, 6); i++) {
             CyclerStatus *stat = recentStats[i];
             if (stat->lidOutput!=MAX_LID_PWM) { isLidHeating = false; }
-            if (stat->wellOutput!=MIN_PELTIER_PWM) { isWellCooling = false; }
-            if (stat->wellOutput!=MAX_PELTIER_PWM) { isWellHeating = false; }
+            // Ignore output when well is holding or have just started ramping.
+            if (stat->wellOutput!=MIN_PELTIER_PWM || stat->rampElapsedTimeMsec < 5*1000) { isWellCooling = false; }
+            if (stat->wellOutput!=MAX_PELTIER_PWM || stat->rampElapsedTimeMsec < 5*1000) { isWellHeating = false; }
         }
         float wellDiff = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
         float lidDiff = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
-        
+
         if (isWellHeating) {
              if (wellDiff<-1.5) {
               PCR_DEBUG_LINE("Well Reverse?");
