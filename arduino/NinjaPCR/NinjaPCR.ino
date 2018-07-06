@@ -30,6 +30,43 @@
 #include "serialcontrol_chrome.h"
 #include "wifi_communicator.h"
 
+
+#ifdef DEBUG
+String debug = "NINJAPCR_DEBUG";
+#endif
+#ifdef DEBUG_NETWORK
+String debugNetwork = "NINJAPCR_DEBUG_NETWORK";
+#endif
+#ifdef DEBUG_ADC
+String debugADC = "NINJAPCR_DEBUG_ADC";
+#endif
+#ifdef DEBUG_ESP_CORE 
+String debugEspCore = "NINJAPCR_DEBUG_ESP_CORE";
+#endif
+#ifdef DEBUG_ESP_SSL 
+String debugEspSSL = "NINJAPCR_DEBUG_ESP_SSL";
+#endif
+#ifdef DEBUG_ESP_WIFI 
+String debugEspWiFi = "NINJAPCR_DEBUG_ESP_WIFI";
+#endif
+#ifdef DEBUG_ESP_HTTP_CLIENT 
+String debugEspHTTPClient = "NINJAPCR_DEBUG_ESP_HTTP_CLIENT";
+#endif
+#ifdef DEBUG_ESP_HTTP_UPDATE 
+String debugEspHTTPUpdate = "NINJAPCR_DEBUG_ESP_HTTP_UPDATE";
+#endif
+#ifdef DEBUG_ESP_HTTP_SERVER 
+String debugEspHTTPServer = "NINJAPCR_DEBUG_ESP_HTTP_SERVER";
+#endif
+#ifdef DEBUG_ESP_UPDATER 
+String debugEspUpdater = "NINJAPCR_DEBUG_ESP_UPDATER";
+#endif
+#ifdef DEBUG_ESP_OTA
+String debugEspOTA = "NINJAPCR_DEBUG_ESP_OTA";
+#endif
+
+String versionDescription = FIRMWARE_VERSION_DESCRIPTION; // NEVER REMOVE THIS LINE!
+
 Thermocycler* gpThermocycler = NULL;
 WifiCommunicator *wifi = NULL;
 
@@ -142,7 +179,7 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    PCR_DEBUG("pcr1.0.7"); //TODO
+    PCR_DEBUG("pcr1.0.1"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);

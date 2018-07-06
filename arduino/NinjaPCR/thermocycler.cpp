@@ -426,8 +426,8 @@ boolean Thermocycler::Loop() {
   iLidThermistor.setTemp(lidTemp);
   iPlateThermistor.setTemp(wellTemp);
 
-  //double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;//TODO WELL_TEST
-  double estimatedAirTemp = wellTemp * 0.4 + 110.0 * 0.6;//TODO WELL_TEST
+  double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;//TODO WELL_TEST
+  // double estimatedAirTemp = wellTemp * 0.4 + 110.0 * 0.6;//TODO WELL_TEST (dummy line)
   double diff = ((wellTemp-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
   if (iEstimatedSampleTemp!=25 || ( 5>diff && diff > -5)) {
     iEstimatedSampleTemp += diff;
@@ -436,8 +436,8 @@ boolean Thermocycler::Loop() {
   CalcPlateTarget();
 
   // Check error
-  if (iHardwareStatus==HARD_NO_ERROR || true) { //TODO WELL_TEST
-  //if (iHardwareStatus==HARD_NO_ERROR) { //TODO WELL_TEST
+  //if (iHardwareStatus==HARD_NO_ERROR || true) { //TODO WELL_TEST (dummy line)
+  if (iHardwareStatus==HARD_NO_ERROR) { //TODO WELL_TEST
       ControlLid();
       ControlPeltier();
       if (iHardwareStatus!=HARD_NO_ERROR) {
@@ -794,7 +794,7 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
-  PCR_DEBUG("P=");
+  PCR_DEBUG("Pout=");
   PCR_DEBUG_LINE(pwm);
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
