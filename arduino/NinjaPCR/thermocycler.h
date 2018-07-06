@@ -110,6 +110,7 @@ private:
       float wellTemp;
       int lidOutput;
       int wellOutput;
+      unsigned long rampElapsedTimeMsec;
       HardwareStatus hardwareStatus;
   };
 private:
