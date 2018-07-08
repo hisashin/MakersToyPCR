@@ -749,16 +749,27 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
     bool isWellHeating = true;
     bool isWellCooling = true;
     if (validStatusCount >= 6) {
+      
+        float wellMax = recentStats[0]->wellTemp;
+        float wellMin = recentStats[0]->wellTemp;
+        float lidMin = recentStats[0]->lidTemp;
+        float lidMax = recentStats[0]->lidTemp;
         
-        for (int i=0; i<min(validStatusCount, 6); i++) {
+        for (int i=0; i<6; i++) {
             CyclerStatus *stat = recentStats[i];
+            float w = stat->wellTemp;
+            float l = stat->lidTemp;
+            wellMax = max(wellMax, w);
+            wellMin = min(wellMin, w);
+            lidMax = max(lidMax, l);
+            lidMin = min(lidMin, l);
             if (stat->lidOutput!=MAX_LID_PWM) { isLidHeating = false; }
             // Ignore output when well is holding or have just started ramping.
             if (stat->wellOutput!=MIN_PELTIER_PWM || stat->rampElapsedTimeMsec < 5*1000) { isWellCooling = false; }
             if (stat->wellOutput!=MAX_PELTIER_PWM || stat->rampElapsedTimeMsec < 5*1000) { isWellHeating = false; }
         }
-        float wellDiff = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
-        float lidDiff = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
+        float wellDiff = wellMax - wellMin;
+        float lidDiff = lidMax - lidMin;
 
         if (isWellHeating) {
              if (wellDiff<-1.5) {

@@ -23,7 +23,7 @@
 #include "board_conf.h"
 
 /* Debug on/off */
-//#define DEBUG
+#define DEBUG
 
 // #define DEBUG_ADC /* Debug ADC */
 // #define DEBUG_NETWORK /* Debug Network Status */
