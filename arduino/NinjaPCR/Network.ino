@@ -310,6 +310,9 @@ void requestHandlerConfInit() {
     s += "</form>";
     s += "Previous WiFi status: ";
     uint8_t prevResult = EEPROM.read(EEPROM_WIFI_RESULT);
+    if (prevResult > WIFI_RESULT_CONF_ERROR) {
+      prevResult = 0;
+    }
     s += getPrevWiFiStatusLabel(prevResult);
     s += " (" + String(prevResult) + ")";
     s += "</body></html>\n";

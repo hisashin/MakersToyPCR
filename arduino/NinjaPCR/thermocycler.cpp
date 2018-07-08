@@ -745,22 +745,20 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
     }
 
     // (C) Heater/peltier output is not reflected to temperature
-    bool isLidHeating = true;
-    bool isWellHeating = true;
-    bool isWellCooling = true;
+    bool isLidHeating = (iProgramState == ELidWait || iProgramState == ERunning);
+    bool isWellHeating = iProgramState == ERunning;
+    bool isWellCooling = isWellHeating;
+    PCR_DEBUG("Stat=");
+    PCR_DEBUG_LINE(iProgramState);
     if (validStatusCount >= 6) {
       
-        float wellMax = recentStats[0]->wellTemp;
-        float wellMin = recentStats[0]->wellTemp;
         float lidMin = recentStats[0]->lidTemp;
         float lidMax = recentStats[0]->lidTemp;
         
         for (int i=0; i<6; i++) {
             CyclerStatus *stat = recentStats[i];
-            float w = stat->wellTemp;
+            //float w = stat->wellTemp;
             float l = stat->lidTemp;
-            wellMax = max(wellMax, w);
-            wellMin = min(wellMin, w);
             lidMax = max(lidMax, l);
             lidMin = min(lidMin, l);
             if (stat->lidOutput!=MAX_LID_PWM) { isLidHeating = false; }
@@ -768,7 +766,7 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
             if (stat->wellOutput!=MIN_PELTIER_PWM || stat->rampElapsedTimeMsec < 5*1000) { isWellCooling = false; }
             if (stat->wellOutput!=MAX_PELTIER_PWM || stat->rampElapsedTimeMsec < 5*1000) { isWellHeating = false; }
         }
-        float wellDiff = wellMax - wellMin;
+        float wellDiff = recentStats[0]->wellTemp - recentStats[5]->wellTemp;
         float lidDiff = lidMax - lidMin;
 
         if (isWellHeating) {
@@ -790,8 +788,12 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
             }
         }
         if (isLidHeating) {
-            if (lidDiff < 2) {
+            if (iProgramState == ELidWait && lidDiff < 2) {
               PCR_DEBUG_LINE("Lid is not heated.");
+              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_NOT_REFLECTED;
+            }
+            if (iProgramState == ERunning && lidMax < iTargetLidTemp-5.0) {
+              PCR_DEBUG_LINE("Lid is not heated (Cooling)");
               statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_NOT_REFLECTED;
             }
         }

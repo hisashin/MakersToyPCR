@@ -36,11 +36,11 @@ class Thermocycler {
 public:
   enum ProgramState {
     EStartup = 0,
-    EStopped,
-    ELidWait,
-    ERunning,
-    EComplete,
-    EError,
+    EStopped, //1
+    ELidWait, //2
+    ERunning, //3
+    EComplete, //4
+    EError, //5
     EClear //for Display clearing only
   };
   
