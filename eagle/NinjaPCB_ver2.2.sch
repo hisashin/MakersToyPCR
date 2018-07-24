@@ -660,6 +660,26 @@
 </device>
 </devices>
 </deviceset>
+<deviceset name="SMD-RES-100K-5%-1/10W(0603)" prefix="R" uservalue="yes">
+<description>301010089</description>
+<gates>
+<gate name="G$1" symbol="RES" x="0" y="0"/>
+</gates>
+<devices>
+<device name="" package="R0603">
+<connects>
+<connect gate="G$1" pin="1" pad="1"/>
+<connect gate="G$1" pin="2" pad="2"/>
+</connects>
+<technologies>
+<technology name="">
+<attribute name="MPN" value="RC0603JR-07100KL" constant="no"/>
+<attribute name="VALUE" value="100K 1/10W" constant="no"/>
+</technology>
+</technologies>
+</device>
+</devices>
+</deviceset>
 <deviceset name="SMD-RES-10K-5%-1/10W(0603)" prefix="R" uservalue="yes">
 <description>301010293</description>
 <gates>
@@ -1954,10 +1974,10 @@ DIN A3, landscape with location and doc. field</description>
 <smd name="3" x="-1.1938" y="-0.95" dx="1.3208" dy="0.5588" layer="1"/>
 <smd name="4" x="1.1938" y="-0.95" dx="1.3208" dy="0.5588" layer="1"/>
 <smd name="6" x="1.1938" y="0.95" dx="1.3208" dy="0.5588" layer="1"/>
-<wire x1="-0.8636" y1="-1.4986" x2="0.8636" y2="-1.4986" width="0.1524" layer="51"/>
-<wire x1="0.8636" y1="-1.4986" x2="0.8636" y2="1.4986" width="0.1524" layer="51"/>
-<wire x1="0.8636" y1="1.4986" x2="-0.8636" y2="1.4986" width="0.1524" layer="51"/>
-<wire x1="-0.8636" y1="1.4986" x2="-0.8636" y2="-1.4986" width="0.1524" layer="51"/>
+<wire x1="-0.8636" y1="-1.4986" x2="0.8636" y2="-1.4986" width="0.1524" layer="21"/>
+<wire x1="0.8636" y1="-1.4986" x2="0.8636" y2="1.4986" width="0.1524" layer="21"/>
+<wire x1="0.8636" y1="1.4986" x2="-0.8636" y2="1.4986" width="0.1524" layer="21"/>
+<wire x1="-0.8636" y1="1.4986" x2="-0.8636" y2="-1.4986" width="0.1524" layer="21"/>
 <text x="-3.2766" y="-3.175" size="1.27" layer="21" ratio="6" rot="SR0">&gt;NAME</text>
 <circle x="-1.7272" y="2.1844" radius="0.60214375" width="0.127" layer="21"/>
 </package>
@@ -2952,7 +2972,7 @@ grid 2.54 mm</description>
 <part name="P+6" library="supply1" deviceset="VCC" device="" value="12V"/>
 <part name="GND17" library="supply1" deviceset="GND" device=""/>
 <part name="IO0" library="pinhead" deviceset="PINHD-1X2" device=""/>
-<part name="R9" library="Seeed-Resistor" deviceset="SMD-RES-10K-5%-1/10W(0603)" device="" value="10K 1/10W"/>
+<part name="R9" library="Seeed-Resistor" deviceset="SMD-RES-100K-5%-1/10W(0603)" device="" value="100K 1/10W"/>
 <part name="3V12" library="supply1" deviceset="VCC" device="" value="3V3"/>
 <part name="GND19" library="supply1" deviceset="GND" device=""/>
 <part name="RESET" library="pinhead" deviceset="PINHD-1X2" device=""/>
@@ -2972,12 +2992,13 @@ grid 2.54 mm</description>
 <text x="269.24" y="240.03" size="3.81" layer="97">PELTIER_CTRL</text>
 <text x="26.67" y="238.76" size="3.81" layer="97">MCU</text>
 <text x="148.59" y="92.71" size="3.81" layer="97">POWER</text>
-<text x="1.27" y="-13.97" size="1.778" layer="97">Diff from ver2.1: 
+<text x="255.27" y="8.89" size="1.778" layer="97">Diff from ver2.1: 
 1. Serial doesn't power
 2. Rename MODE to TOUT
 3. Replace R14 from 1K to 0K
 4. Stable EN</text>
 <text x="19.05" y="92.71" size="3.81" layer="97">CONFIG</text>
+<text x="6.35" y="247.65" size="6.4516" layer="97">KEEP R9, R14 and R21 OPEN</text>
 </plain>
 <instances>
 <instance part="GND1" gate="1" x="217.17" y="71.12"/>

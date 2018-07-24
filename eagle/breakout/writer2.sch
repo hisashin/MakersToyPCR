@@ -324,7 +324,6 @@
 <parts>
 <part name="JP1" library="pinhead" deviceset="PINHD-1X10" device=""/>
 <part name="JP2" library="pinhead" deviceset="PINHD-1X10" device=""/>
-<part name="JP3" library="pinhead" deviceset="PINHD-1X10" device=""/>
 </parts>
 <sheets>
 <sheet>
@@ -333,7 +332,6 @@
 <instances>
 <instance part="JP1" gate="A" x="2.54" y="17.78" rot="MR0"/>
 <instance part="JP2" gate="A" x="17.78" y="17.78"/>
-<instance part="JP3" gate="A" x="27.94" y="17.78"/>
 </instances>
 <busses>
 </busses>
@@ -343,8 +341,6 @@
 <pinref part="JP1" gate="A" pin="10"/>
 <pinref part="JP2" gate="A" pin="10"/>
 <wire x1="5.08" y1="5.08" x2="15.24" y2="5.08" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="10"/>
-<wire x1="25.4" y1="5.08" x2="15.24" y2="5.08" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$2" class="0">
@@ -352,8 +348,6 @@
 <pinref part="JP1" gate="A" pin="9"/>
 <pinref part="JP2" gate="A" pin="9"/>
 <wire x1="5.08" y1="7.62" x2="15.24" y2="7.62" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="9"/>
-<wire x1="25.4" y1="7.62" x2="15.24" y2="7.62" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$3" class="0">
@@ -361,8 +355,6 @@
 <pinref part="JP1" gate="A" pin="8"/>
 <pinref part="JP2" gate="A" pin="8"/>
 <wire x1="5.08" y1="10.16" x2="15.24" y2="10.16" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="8"/>
-<wire x1="25.4" y1="10.16" x2="15.24" y2="10.16" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$4" class="0">
@@ -370,8 +362,6 @@
 <pinref part="JP1" gate="A" pin="7"/>
 <pinref part="JP2" gate="A" pin="7"/>
 <wire x1="5.08" y1="12.7" x2="15.24" y2="12.7" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="7"/>
-<wire x1="25.4" y1="12.7" x2="15.24" y2="12.7" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$5" class="0">
@@ -379,8 +369,6 @@
 <pinref part="JP1" gate="A" pin="6"/>
 <pinref part="JP2" gate="A" pin="6"/>
 <wire x1="5.08" y1="15.24" x2="15.24" y2="15.24" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="6"/>
-<wire x1="25.4" y1="15.24" x2="15.24" y2="15.24" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$6" class="0">
@@ -388,8 +376,6 @@
 <pinref part="JP1" gate="A" pin="5"/>
 <pinref part="JP2" gate="A" pin="5"/>
 <wire x1="5.08" y1="17.78" x2="15.24" y2="17.78" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="5"/>
-<wire x1="25.4" y1="17.78" x2="15.24" y2="17.78" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$7" class="0">
@@ -397,8 +383,6 @@
 <pinref part="JP1" gate="A" pin="4"/>
 <pinref part="JP2" gate="A" pin="4"/>
 <wire x1="5.08" y1="20.32" x2="15.24" y2="20.32" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="4"/>
-<wire x1="25.4" y1="20.32" x2="15.24" y2="20.32" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$8" class="0">
@@ -406,8 +390,6 @@
 <pinref part="JP1" gate="A" pin="3"/>
 <pinref part="JP2" gate="A" pin="3"/>
 <wire x1="5.08" y1="22.86" x2="15.24" y2="22.86" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="3"/>
-<wire x1="25.4" y1="22.86" x2="15.24" y2="22.86" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$9" class="0">
@@ -415,8 +397,6 @@
 <pinref part="JP1" gate="A" pin="2"/>
 <pinref part="JP2" gate="A" pin="2"/>
 <wire x1="5.08" y1="25.4" x2="15.24" y2="25.4" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="2"/>
-<wire x1="25.4" y1="25.4" x2="15.24" y2="25.4" width="0.1524" layer="91"/>
 </segment>
 </net>
 <net name="N$10" class="0">
@@ -424,8 +404,6 @@
 <pinref part="JP1" gate="A" pin="1"/>
 <pinref part="JP2" gate="A" pin="1"/>
 <wire x1="5.08" y1="27.94" x2="15.24" y2="27.94" width="0.1524" layer="91"/>
-<pinref part="JP3" gate="A" pin="1"/>
-<wire x1="25.4" y1="27.94" x2="15.24" y2="27.94" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>
