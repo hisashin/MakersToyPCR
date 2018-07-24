@@ -2992,7 +2992,7 @@ grid 2.54 mm</description>
 <text x="269.24" y="240.03" size="3.81" layer="97">PELTIER_CTRL</text>
 <text x="26.67" y="238.76" size="3.81" layer="97">MCU</text>
 <text x="148.59" y="92.71" size="3.81" layer="97">POWER</text>
-<text x="255.27" y="8.89" size="1.778" layer="97">Diff from ver2.1: 
+<text x="290.83" y="8.89" size="1.778" layer="97">Diff from ver2.1: 
 1. Serial doesn't power
 2. Rename MODE to TOUT
 3. Replace R14 from 1K to 0K
