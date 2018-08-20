@@ -9,9 +9,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="800mm"
+   width="450mm"
    height="450mm"
-   viewBox="0 0 800 450"
+   viewBox="0 0 450 450"
    version="1.1"
    id="svg280"
    inkscape:version="0.92.2 5c3e80d, 2017-08-06"
@@ -1322,14 +1322,15 @@
        id="*PAPER_SPACE-39" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-73">
       <path
          id="path1949"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
@@ -1363,14 +1364,15 @@
        id="*PAPER_SPACE-18" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-71">
       <path
          id="path2006"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
@@ -1404,14 +1406,15 @@
        id="*PAPER_SPACE-67" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-79">
       <path
          id="path1000-3"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
@@ -1445,14 +1448,15 @@
        id="*PAPER_SPACE-83" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-90">
       <path
          id="path1048-5"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
@@ -1486,14 +1490,15 @@
        id="*PAPER_SPACE-90" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-23">
       <path
          id="path1093"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
@@ -1527,14 +1532,15 @@
        id="*PAPER_SPACE-65" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-76">
       <path
          id="path1147"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
@@ -1568,14 +1574,15 @@
        id="*PAPER_SPACE-991" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-793">
       <path
          id="path511"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
@@ -1609,14 +1616,15 @@
        id="*PAPER_SPACE-390" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-227">
       <path
          id="path559"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
@@ -1650,14 +1658,15 @@
        id="*PAPER_SPACE-997" />
     <marker
        style="overflow:visible"
-       refY="0.0"
-       refX="0.0"
+       refY="0"
+       refX="0"
        orient="auto"
        id="DistanceX-039">
       <path
          id="path607"
-         style="stroke:#000000; stroke-width:0.5"
-         d="M 3,-3 L -3,3 M 0,-5 L  0,5" />
+         style="stroke:#000000;stroke-width:0.5"
+         d="M 3,-3 -3,3 M 0,-5 V 5"
+         inkscape:connector-curvature="0" />
     </marker>
     <pattern
        y="0"
