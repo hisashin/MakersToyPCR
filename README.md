@@ -16,6 +16,6 @@ Major changes from OpenPCR:<br />
 05. Auto update for new features (ex. IFTTT support scheduled)<br />
 
 Minor differences from OpenPCR:<br />
-06. Safer PCB (Cleared Design Rule Check)<br />
-07. Simpler metal parts<br />
-08. Unit is changed from inch to mm<br />
+01. Safer PCB (Cleared Design Rule Check)<br />
+02. Easier to build (Simpler metal parts)<br />
+03. Unit is changed from inch to mm<br />
