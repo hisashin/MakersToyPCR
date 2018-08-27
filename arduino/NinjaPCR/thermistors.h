@@ -19,30 +19,47 @@
 #ifndef _LID_THERMISTOR_H_
 #define _LID_THERMISTOR_H_
 
+#include "adc.h"
+
 class CLidThermistor {
 public:
-  CLidThermistor();
-  double& GetTemp() { return iTemp; }
-  unsigned long& GetResistance() { return resistance; }
-  void ReadTemp();
-  
+    CLidThermistor();
+    double& GetTemp() {
+        return iTemp;
+    }
+    void setTemp(double newValue) {
+      iTemp = newValue;
+    }
+    unsigned long& GetResistance() {
+        return resistance;
+    }
+    HardwareStatus ReadTemp();
+
 private:
-  double iTemp;
-  unsigned long resistance;
+    double iTemp;
+    unsigned long resistance;
 };
 
 class CPlateThermistor {
 public:
-  CPlateThermistor();
-  double& GetTemp() { return iTemp; }
-  unsigned long& GetResistance() { return resistance; }
-  void ReadTemp();
+    CPlateThermistor();
+    double& GetTemp() {
+        return iTemp;
+    }
+    void setTemp(double newValue) {
+      iTemp = newValue;
+    }
+    unsigned long& GetResistance() {
+        return resistance;
+    }
+    HardwareStatus ReadTemp();
+    void start();
 private:
-   char SPITransfer(volatile char data);
-   
+    char SPITransfer(volatile char data);
+
 private:
-  double iTemp;
-  unsigned long resistance;
+    double iTemp;
+    unsigned long resistance;
 };
 
 #endif

@@ -19,15 +19,19 @@
 #ifndef _THERMOCYCLER_H_
 #define _THERMOCYCLER_H_
 
+#include <Arduino.h>
 #include "PID_v1.h"
 #include "pid.h"
 #include "program.h"
 #include "thermistors.h"
-
+#include "adc.h"
 
 class Display;
 class SerialControl;
-
+class WifiCommunicator;
+class Communicator;
+void initHardware();
+const int CyclerStatusBuffSize = 10;
 class Thermocycler {
 public:
   enum ProgramState {
@@ -48,7 +52,7 @@ public:
   };
   
   enum ThermalDirection {
-    OFF,
+    OFF = 0,
     HEAT,
     COOL
   };
@@ -58,7 +62,8 @@ public:
     EPIDLid,
     EPIDPlate
   };
-  
+
+  Thermocycler();
   Thermocycler(boolean restarted);
   ~Thermocycler();
   
@@ -69,15 +74,18 @@ public:
   Cycle* GetDisplayCycle() { return ipDisplayCycle; }
   int GetNumCycles();
   int GetCurrentCycleNum();
+  int GetErrorCode() { return iHardwareStatus; }
   const char* GetProgName() { return iszProgName; }
   Display* GetDisplay() { return ipDisplay; }
-  ProgramComponentPool<Cycle, 4>& GetCyclePool() { return iCyclePool; }
+  ProgramComponentPool<Cycle, 6>& GetCyclePool() { return iCyclePool; }
   ProgramComponentPool<Step, 20>& GetStepPool() { return iStepPool; }
+  void SetCommunicator(Communicator *comm);
   
   boolean Ramping() { return iRamping; }
   int GetPeltierPwm() { return iPeltierPwm; }
   double GetLidTemp() { return iLidThermistor.GetTemp(); }
   double GetPlateTemp() { return iPlateThermistor.GetTemp(); }
+  double GetTemp () { return iEstimatedSampleTemp; }
   double GetPlateResistance() { return iPlateThermistor.GetResistance(); }
   unsigned long GetTimeRemainingS() { return iEstimatedTimeRemainingS; }
   unsigned long GetElapsedTimeS() { return (millis() - iProgramStartTimeMs) / 1000; }
@@ -94,10 +102,17 @@ public:
   void ProcessCommand(SCommand& command);
   
   // internal
-  void Loop();
-  
+  boolean Loop();
 private:
-  void CheckPower();
+  struct CyclerStatus {
+      long timestamp;
+      float lidTemp;
+      float wellTemp;
+      int lidOutput;
+      int wellOutput;
+      HardwareStatus hardwareStatus;
+  };
+private:
   void ReadLidTemp();
   void ReadPlateTemp();
   void CalcPlateTarget();
@@ -105,25 +120,29 @@ private:
   void ControlLid();
   void PreprocessProgram();
   void UpdateEta();
+  void CheckHardware(float *lidTemp, float *wellTemp);
  
   //util functions
   void AdvanceToNextStep();
   void SetPlateControlStrategy();
   void SetPeltier(ThermalDirection dir, int pwm);
-  
+  void SetLidOutput(int drive);
+  void StopAll();
+public:
+  Communicator* ipSerialControl;
 private:
   // components
   Display* ipDisplay;
-  SerialControl* ipSerialControl;
   CLidThermistor iLidThermistor;
   CPlateThermistor iPlateThermistor;
-  ProgramComponentPool<Cycle, 4> iCyclePool;
+  ProgramComponentPool<Cycle, 6> iCyclePool;
   ProgramComponentPool<Step, 20> iStepPool;
   
   // state
   ProgramState iProgramState;
   double iTargetPlateTemp;
   double iTargetLidTemp;
+  double iEstimatedSampleTemp;
   Cycle* ipProgram;
   Cycle* ipDisplayCycle;
   char iszProgName[21];
@@ -135,7 +154,13 @@ private:
   boolean iRestarted;
   
   ControlMode iPlateControlMode;
+  HardwareStatus iHardwareStatus;
   
+  // Log buffer
+  CyclerStatus statusBuff[CyclerStatusBuffSize];
+  int statusIndex; // Index of satus ring buffer
+  int statusCount; // Total count of status log
+
   // peltier control
   PID iPlatePid;
   CPIDController iLidPid;

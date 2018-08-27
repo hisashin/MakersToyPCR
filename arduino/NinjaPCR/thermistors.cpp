@@ -18,6 +18,12 @@
 
 #include "pcr_includes.h"
 #include "thermistors.h"
+#include "adc.h"
+
+#ifdef TEHRMISTORS_OPENPCR_ORIGINAL
+
+
+// Original implementation for OpenPCR's lid and well thermistors
 
 /*
 // lid resistance table, in Ohms
@@ -88,12 +94,6 @@ PROGMEM const unsigned long PLATE_RESISTANCE_TABLE[] = {
 	//No.9
 	491368, 478131, 465250, 452716, 440520, 428652, 417104, 405868, 394934, 384294, 373941, 363867, 354065, 344526, 335245, 326213, 317425, 308874, 300553, 292456, 284577, 276910, 269450, 262191, 255128, 248255, 241567, 235059, 228727, 222565, 216569, 210735, 205057, 199533, 194158, 188927, 183837, 178885, 174066, 169376, 164813, 160373, 156053, 151849, 147758, 143777, 139904, 136135, 132468, 128899, 125426, 122047, 118759, 115560, 112447, 109418, 106470, 103602, 100811, 98095, 95452, 92881, 90378, 87944, 85574, 83269, 81026, 78843, 76719, 74652, 72641, 70684, 68780, 66927, 65124, 63369, 61662, 60001, 58385, 56812, 55281, 53792, 52343, 50933, 49561, 48225, 46926, 45662, 44432, 43235, 42070, 40937, 39834, 38761, 37717, 36701, 35712, 34750, 33814, 32903, 32016, 31154, 30314, 29498, 28703, 27930, 27177, 26445, 25733, 25040, 24365, 23709, 23070, 22448, 21844, 21255, 20683, 20125, 19583, 19056, 18542, 18043, 17557, 17084, 16623, 16176, 15740, 15316, 14903, 14502, 14111, 13731, 13361, 13001, 12651, 12310, 11978, 11656, 11342, 11036, 10739, 10450, 10168, 9894, 9628, 9368
 };
-  
-//spi
-#define DATAOUT 11//MOSI
-#define DATAIN  12//MISO 
-#define SPICLOCK  13//sck
-#define SLAVESELECT 10//ss
 
 //------------------------------------------------------------------------------
 float TableLookup(const unsigned long lookupTable[], unsigned int tableSize, int startValue, unsigned long searchValue) {
@@ -136,56 +136,39 @@ CLidThermistor::CLidThermistor():
   iTemp(0.0) {
 }
 //------------------------------------------------------------------------------
-void CLidThermistor::ReadTemp() {
-  unsigned long voltage_mv = (unsigned long)analogRead(1) * 5000 / 1024;
+HardwareStatus CLidThermistor::ReadTemp() {
+  unsigned long voltage_mv = (unsigned long)analogRead(PIN_LID_THERMISTOR_AIN) * 5000 / 1024;
   resistance = voltage_mv * 2200 / (5000 - voltage_mv);
   iTemp = TableLookup(LID_RESISTANCE_TABLE, sizeof(LID_RESISTANCE_TABLE) / sizeof(LID_RESISTANCE_TABLE[0]), 0, resistance);
+  return HARD_NO_ERROR;
 }
 
 ////////////////////////////////////////////////////////////////////
 // Class CPlateThermistor
 CPlateThermistor::CPlateThermistor():
   iTemp(0.0) {
-
-  //spi setup
-  pinMode(DATAOUT, OUTPUT);
-  pinMode(DATAIN, INPUT);
-  pinMode(SPICLOCK,OUTPUT);
-  pinMode(SLAVESELECT,OUTPUT);
-  digitalWrite(SLAVESELECT,HIGH); //disable device 
+}
+void CPlateThermistor::start() {
+    // ADC setup
+    initADC();
 }
 //------------------------------------------------------------------------------
-void CPlateThermistor::ReadTemp() {
-  digitalWrite(SLAVESELECT, LOW);
-
-  //read data
-  while(digitalRead(DATAIN)) {}
-  
-  uint8_t spiBuf[4];
-  memset(spiBuf, 0, sizeof(spiBuf));
-
-  digitalWrite(SLAVESELECT, LOW);  
-  for(int i = 0; i < 4; i++)
-    spiBuf[i] = SPITransfer(0xFF);
-
-  unsigned long conv = (((unsigned long)spiBuf[3] >> 7) & 0x01) + ((unsigned long)spiBuf[2] << 1) + ((unsigned long)spiBuf[1] << 9) + (((unsigned long)spiBuf[0] & 0x1F) << 17); //((spiBuf[0] & 0x1F) << 16) + (spiBuf[1] << 8) + spiBuf[2];
-  
-  unsigned long adcDivisor = 0x1FFFFF;
-  float voltage = (float)conv * 5.0 / adcDivisor;
-
-  unsigned int convHigh = (conv >> 16);
-  
-  digitalWrite(SLAVESELECT, HIGH);
-  
-  unsigned long voltage_mv = voltage * 1000;
-  resistance = voltage_mv * 22000 / (5000 - voltage_mv); // in hecto ohms
- 
+HardwareStatus CPlateThermistor::ReadTemp() {
+  float voltageRatio;
+  HardwareStatus result = getWellADCValue(*voltageRatio);
+  resistance = voltageRatio * 22000 / (1.0 - voltageRatio); // in hecto ohms
   iTemp = TableLookup(PLATE_RESISTANCE_TABLE, sizeof(PLATE_RESISTANCE_TABLE) / sizeof(PLATE_RESISTANCE_TABLE[0]), -40, resistance);
+  return HARD_NO_ERROR;
 }
 //------------------------------------------------------------------------------
+
 char CPlateThermistor::SPITransfer(volatile char data) {
+#ifndef USE_WIFI
   SPDR = data;                    // Start the transmission
   while (!(SPSR & (1<<SPIF)))     // Wait the end of the transmission
   {};
   return SPDR;                    // return the received byte
+#endif
 }
+
+#endif /* TEHRMISTORS_OPENPCR_ORIGINAL */

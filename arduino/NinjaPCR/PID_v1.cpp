@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include "PID_v1.h"
+#include "board_conf.h"
 
 /*Constructor (...)*********************************************************
  *    The parameters specified here are those for for which we can't set up 
@@ -15,7 +16,7 @@
 PID::PID(double* Input, double* Output, double* Setpoint,
         double Kp, double Ki, double Kd, int ControllerDirection)
 {
-	PID::SetOutputLimits(0, 255);				//default output limit corresponds to 
+	  PID::SetOutputLimits(MIN_LID_PWM, MAX_LID_PWM);				//default output limit corresponds to
 												//the arduino pwm limits
 
     SampleTime = 100;							//default Controller Sample Time is 0.1 seconds
@@ -39,7 +40,9 @@ PID::PID(double* Input, double* Output, double* Setpoint,
  **********************************************************************************/ 
 void PID::Compute()
 {
-   if(!inAuto) return;
+   if(!inAuto) {
+       return;
+   }
    unsigned long now = millis();
    int timeChange = (now - lastTime);
    if(timeChange>=SampleTime)
@@ -87,7 +90,7 @@ void PID::SetTunings(double Kp, double Ki, double Kd)
    ki = Ki * SampleTimeInSec;
    kd = Kd / SampleTimeInSec;
  
-  if(controllerDirection ==REVERSE)
+  if(controllerDirection == REVERSE)
    {
       kp = (0 - kp);
       ki = (0 - ki);
@@ -155,11 +158,15 @@ void PID::SetMode(int Mode)
  ******************************************************************************/ 
 void PID::Initialize()
 {
-   ITerm = *myOutput;
+   ITerm = *myOutput; //OK
    lastInput = *myInput;
    lastTime = millis() -SampleTime;
-   if(ITerm > outMax) ITerm = outMax;
-   else if(ITerm < outMin) ITerm = outMin;
+   if(ITerm > outMax) {
+    ITerm = outMax;
+   }
+   else if(ITerm < outMin) {
+    ITerm = outMin;
+   }
 }
 
 /* SetControllerDirection(...)*************************************************

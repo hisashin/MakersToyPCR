@@ -20,6 +20,7 @@
 #include "program.h"
 
 #include <EEPROM.h>
+
 #include "display.h"
 
 ////////////////////////////////////////////////////////////////////
@@ -28,6 +29,8 @@ void Step::SetName(const char* szName) {
   strncpy(iName, szName, sizeof(iName));
   iName[sizeof(iName) - 1] = '\0';
 }
+//SEND_CMD
+//STATUS_REQ
 
 void Step::Reset() {
   iStepReturned = false;
@@ -107,6 +110,7 @@ void Cycle::RestartCycle() {
 // Class CommandParser
 void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
   char* pValue;
+  PCR_DEBUG_LINE("ParseCommand 1");
   memset(&command, NULL, sizeof(command));
   char buf[32];
 
@@ -116,16 +120,14 @@ void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
   while (pParam) {  
     pValue = strchr(pParam, '=');
     *pValue++ = '\0';
+    PCR_DEBUG(pParam);
+    PCR_DEBUG("=");
+    PCR_DEBUG_LINE(pValue);
     AddComponent(&command, pParam[0], pValue);
     pParam = strtok(NULL, "&");
   }
 }
-/*
-const char STATUS_START[] PROGMEM = "start";
-const char STATUS_STOP[] PROGMEM = "stop";
-const char STATUS_CFG[] PROGMEM = "cfg";
-const char PAREHTHESES[] PROGMEM = "()";
-*/
+
 void CommandParser::AddComponent(SCommand* pCommand, char key, char* szValue) {
   switch(key) {
   case 'n':
@@ -169,7 +171,6 @@ Cycle* CommandParser::ParseProgram(char* pBuffer) {
 
 ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
   char countBuf[5];
-	
   //find first step
   char* pStep = strchr(pBuffer, '[');
 	
@@ -178,10 +179,10 @@ ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
   strncpy(countBuf, pBuffer, countLen);
   countBuf[countLen] = '\0';
   int cycCount = atoi(countBuf);
-  
+
   Cycle* pCycle = gpThermocycler->GetCyclePool().AllocateComponent();
   pCycle->SetNumCycles(cycCount);
-	
+
   //add steps
   while (pStep != NULL) {
     *pStep++ = '\0';
@@ -197,6 +198,7 @@ ProgramComponent* CommandParser::ParseCycle(char* pBuffer) {
 }
 
 Step* CommandParser::ParseStep(char* pBuffer) {
+  //10|95|Initial Step|0]
   //parse temp
   char* pTemp = strchr(pBuffer, '|');
   *pTemp++ = '\0';
@@ -204,7 +206,6 @@ Step* CommandParser::ParseStep(char* pBuffer) {
   //parse name
   char* pName = strchr(pTemp, '|');
   *pName++ = '\0';
-  
   //parse ramp duration if exists
   char* pEnd;
   char* pRampDuration = strchr(pName, '|');
@@ -214,7 +215,12 @@ Step* CommandParser::ParseStep(char* pBuffer) {
   } else {
     pEnd = strchr(pName, '|');
   }
-  *pEnd = '\0';
+  if (pEnd) {
+    *pEnd = '\0';
+  } else {
+    PCR_DEBUG_LINE("pEnd null?");
+  }
+  PCR_DEBUG_LINE(pBuffer);
 	
   unsigned long stepDuration = atol(pBuffer);
   unsigned long rampDuration = pRampDuration == NULL ? 0 : atol(pRampDuration);
@@ -240,9 +246,7 @@ uint8_t ProgramStore::RetrieveContrast() {
   return EEPROM.read(0);
 }
 
-//#define PROG_START_STR "&c=start"
 const char PROG_START_STR[] PROGMEM = "&c=start";
-//const char PROG_START_STR[] PROGMEM = "&c=start";
 //const char PROG_START_STR_P[] PROGMEM = PROG_START_STR;
 boolean ProgramStore::RetrieveProgram(SCommand& command, char* pBuffer) {
   for (int i = 0; i < MAX_COMMAND_SIZE; i++)

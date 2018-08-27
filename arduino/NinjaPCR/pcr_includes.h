@@ -19,14 +19,73 @@
 #ifndef _PCR_INCLUDES_H_
 #define _PCR_INCLUDES_H_
 
-//#define DEBUG_DISPLAY
+#include "Arduino.h"
+#include "board_conf.h"
+
+/* Debug on/off */
+//#define DEBUG
+
+// #define DEBUG_ADC /* Debug ADC */
+// #define DEBUG_NETWORK /* Debug Network Status */
+// TODO DEBUG_TEMPERATURE
+// TODO_DEBUG_HARDWARE_OUTPUT
+
+#ifdef DEBUG
+ #define PCR_DEBUG(x)  Serial.print (x)
+ #define PCR_DEBUG_LINE(x)  Serial.println (x)
+#else
+ #define PCR_DEBUG(x)
+ #define PCR_DEBUG_LINE(x)
+#endif
+
+#ifdef DEBUG_ADC
+  #define PCR_ADC_DEBUG(x) PCR_DEBUG(x)
+  #define PCR_ADC_DEBUG_LINE(x) PCR_DEBUG_LINE(x)
+#else
+  #define PCR_ADC_DEBUG(x)
+  #define PCR_ADC_DEBUG_LINE(x)
+#endif
+
+
+#ifdef DEBUG_NETWORK
+  #define PCR_NETWORK_DEBUG(x) PCR_DEBUG(x)
+  #define PCR_NETWORK_DEBUG_LINE(x) PCR_DEBUG_LINE(x)
+#else
+  #define PCR_NETWORK_DEBUG(x)
+  #define PCR_NETWORK_DEBUG_LINE(x)
+#endif
+
 
 #define SERIAL_PREFIX "pcr"
-#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.5"
+#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.1"
+#define FIRMWARE_VERSION_DESCRIPTION "NinjaPCR_v1.0.1"
 
-
-#include "Arduino.h"
+#ifndef USE_WIFI
 #include <avr/pgmspace.h>
+#endif
+
+
+
+/* Addresses of WiFi configuration */
+/* Wfite 0xF0 when WiFi configuration is done. */
+
+#define EEPROM_WIFI_CONF_DONE_ADDR 512
+#define EEPROM_WIFI_CONF_DONE_VAL 0xF0
+
+#define EEPROM_WIFI_SSID_ADDR (EEPROM_WIFI_CONF_DONE_ADDR+1)
+#define EEPROM_WIFI_SSID_MAX_LENGTH 31
+
+#define EEPROM_WIFI_PASSWORD_ADDR (EEPROM_WIFI_SSID_ADDR+EEPROM_WIFI_SSID_MAX_LENGTH+1)
+#define EEPROM_WIFI_PASSWORD_MAX_LENGTH 31
+
+#define EEPROM_WIFI_MDNS_HOST_ADDR (EEPROM_WIFI_PASSWORD_ADDR+EEPROM_WIFI_PASSWORD_MAX_LENGTH+1)
+#define EEPROM_WIFI_MDNS_HOST_MAX_LENGTH 31
+
+#define EEPROM_WIFI_RESULT (EEPROM_WIFI_MDNS_HOST_ADDR+EEPROM_WIFI_MDNS_HOST_MAX_LENGTH+1)
+
+#define EEPROM_OTA_TYPE_ADDR (EEPROM_WIFI_RESULT+1)
+#define EEPROM_OTA_CURRENT_VERSION_ADDR (EEPROM_OTA_TYPE_ADDR+1)
+#define EEPROM_OTA_CURRENT_VERSION_MAXLENGTH 31
 
 #define PLATE_FAST_RAMP_THRESHOLD_MS 1000
 
@@ -37,7 +96,7 @@ inline Thermocycler& GetThermocycler() { return *gpThermocycler; }
 //fixes for incomplete C++ implementation, defined in util.cpp
 void* operator new(size_t size);
 void operator delete(void * ptr);
-extern "C" void __cxa_pure_virtual(void);
+extern "C" void __cxa_pure_virtual(void); 
 
 //defines
 #define STEP_NAME_LENGTH       14
