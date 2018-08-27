@@ -1,4 +1,4 @@
-/*
+s/*
  *  openpcr.pde - OpenPCR control software.
  *  Copyright (C) 2010-2012 Josh Perfetto. All Rights Reserved.
  *
@@ -179,7 +179,7 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    PCR_DEBUG("pcr1.0.2"); //TODO
+    PCR_DEBUG("pcr1.0.7"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);
