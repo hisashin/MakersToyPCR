@@ -105,6 +105,9 @@ void setup() {
     }
     else {
         PCR_DEBUG_LINE("Server mode");
+  #ifdef USE_FAN
+    digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
+  #endif
         startWiFiHTTPServer();
         setup_normal();
         wifi = new WifiCommunicator(wifi_receive, wifi_send);
@@ -179,7 +182,7 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    PCR_DEBUG("pcr1.0.1"); //TODO
+    PCR_DEBUG("pcr1.0.10"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);

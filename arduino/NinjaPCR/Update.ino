@@ -121,6 +121,7 @@ void requestHandlerOTACancel() {
     s += getRestartLink();
     s += "</body></html>\n";
     server.send(200, "text/html", s);
+    delay(1500);
     ESP.restart();
 }
 
@@ -131,6 +132,7 @@ void requestHandlerRestart() {
     String s = getHTMLHeader();
     s += "<h1>Device is restarting</h1>\n";
     server.send(200, "text/html", s);
+    delay(1500);
     ESP.restart();
 }
 
@@ -166,6 +168,7 @@ void requestHandlerConfig() {
     wifi_send("{accepted:true}", "onConf");
 
     EEPROM.commit();
+    delay(1500);
     ESP.restart();
 }
 
@@ -179,8 +182,9 @@ void requestHandlerFirmwareUpdate() {
     EEPROM_OTA_CURRENT_VERSION_ADDR,
     EEPROM_OTA_CURRENT_VERSION_MAXLENGTH);
     wifi_send("{accepted:true}", "onConf");
-
     EEPROM.commit();
+    
+    delay(1500);
     ESP.restart();
 }
 NinjaUpdate ninjaUpdate;

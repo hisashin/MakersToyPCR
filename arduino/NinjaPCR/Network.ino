@@ -206,9 +206,6 @@ void loadWifiConfig () {
     readStringFromEEPROM(host, EEPROM_WIFI_MDNS_HOST_ADDR, EEPROM_WIFI_MDNS_HOST_MAX_LENGTH);
 }
 
-int min(int a, int b) {
-    return (a < b) ? a : b;
-}
 void saveStringToEEPROM(String str, int startAddress, int maxLength) {
     int len = min(str.length(), maxLength);
     PCR_NETWORK_DEBUG("to EEPROM ");
@@ -377,6 +374,7 @@ void requestHandlerConfJoin() {
         saveWiFiConnectionInfo(ssid, password, host);
         PCR_NETWORK_DEBUG_LINE("saved.");
         saveWifiResult(WIFI_RESULT_CONF_DONE);
+        delay(1500);
         ESP.restart();
     }
     else {
