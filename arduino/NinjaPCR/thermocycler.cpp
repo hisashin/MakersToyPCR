@@ -472,11 +472,6 @@ void Thermocycler::PauseHeatUnits () {
 #endif
   SetLidOutput(0);
 }
-void Thermocycler::StopAll () {
-    // Stop all devices when error is found.
-    // stop heater
-    // stop peltier
-}
 
 void Thermocycler::SetCommunicator(Communicator *comm) {
   ipCommunicator = comm;

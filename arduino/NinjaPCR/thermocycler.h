@@ -128,7 +128,6 @@ private:
   void SetPlateControlStrategy();
   void SetPeltier(ThermalDirection dir, int pwm);
   void SetLidOutput(int drive);
-  void StopAll();
 public:
   Communicator* ipCommunicator;
 private:
