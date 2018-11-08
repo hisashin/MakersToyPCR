@@ -569,7 +569,7 @@ void Thermocycler::ControlPeltier() {
     // Apply control mode
     if (iPlateControlMode == EBangBang) {
       // Full drive
-      iPeltierPwm = iTargetPlateTemp > plateTemp ? MAX_PELTIER_PWM : MIN_PELTIER_PWM;
+      iPeltierPwm = (iTargetPlateTemp > plateTemp) ? MAX_PELTIER_PWM : MIN_PELTIER_PWM;
     }
     iPlatePid.Compute();
 
@@ -596,14 +596,19 @@ void Thermocycler::ControlPeltier() {
   SetPeltier(newDirection, iPeltierPwm);
 }
 void Thermocycler::SetLidOutput (int drive) {
+  PCR_DEBUG("Lout=");
+  PCR_DEBUG(drive);
+  PCR_DEBUG("->");
+  pwm = min(MAX_LID_PWM, (int)(drive * iPowerOutputRatio))
+  PCR_DEBUG_LINE(drive);
 #ifdef USE_ESP8266
 // Use on-off control instead of PWM because ESP8266 does not have enough pins
 #ifdef PIN_LID_PWM_ACTIVE_LOW
-  //analogWrite(PIN_LID_PWM, 1023-drive);
-  int v = (int)(!(drive>(MAX_PELTIER_PWM/2)));
+  //analogWrite(PIN_LID_PWM, MAX_LID_PWM-drive);
+  int v = (int)(!(drive>(MAX_LID_PWM/2)));
   digitalWrite(PIN_LID_PWM, v);
 #else
-  int v = (int)(drive>(MAX_PELTIER_PWM/2));
+  int v = (int)(drive>(MAX_LID_PWM/2));
   digitalWrite(PIN_LID_PWM, v);
   //analogWrite(PIN_LID_PWM, drive);
 #endif /* PIN_LID_PWM_ACTIVE_LOW */
@@ -611,7 +616,7 @@ void Thermocycler::SetLidOutput (int drive) {
 #else
 
 #ifdef PIN_LID_PWM_ACTIVE_LOW
-  analogWrite(PIN_LID_PWM, 1023-drive);
+  analogWrite(PIN_LID_PWM, MAX_LID_PWM-drive);
 #else
   // Active high
   analogWrite(PIN_LID_PWM, drive);
@@ -807,6 +812,9 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
   PCR_DEBUG("Pout=");
+  PCR_DEBUG(pwm);
+  PCR_DEBUG("->");
+  pwm = min(MAX_PELTIER_PWM, (int)(pwm * iPowerOutputRatio))
   PCR_DEBUG_LINE(pwm);
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
