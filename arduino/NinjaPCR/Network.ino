@@ -374,7 +374,7 @@ void requestHandlerConfJoin() {
         saveWiFiConnectionInfo(ssid, password, host);
         PCR_NETWORK_DEBUG_LINE("saved.");
         saveWifiResult(WIFI_RESULT_CONF_DONE);
-        delay(1500);
+        delay(4000);
         ESP.restart();
     }
     else {

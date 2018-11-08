@@ -153,18 +153,25 @@ bool finishSent = false;
 void loop() {
     unsigned long startMillis;
     unsigned long elapsed;
+    
     if (isApMode) {
-        
         delay(100);
         loopWiFiAP();
         return;
     }
-    startMillis = millis();
-    gpThermocycler->Loop();
     
+    startMillis = millis();
+
+    /* 
+     * Pause heating & cooling units while processing HTTP requests 
+     * to avoid overheating
+     */
+    gpThermocycler->PauseHeatUnits();
     if (isWiFiConnected()) {
         loopWiFiHTTPServer();
     }
+    gpThermocycler->Loop();
+    
     
     elapsed = millis() - startMillis;
     if (elapsed<0 || elapsed > INTERVAL_MSEC) {
@@ -182,7 +189,7 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    PCR_DEBUG("pcr1.0.10"); //TODO
+    PCR_DEBUG("pcr1.0.12"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);

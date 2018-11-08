@@ -197,7 +197,7 @@ iRestarted(restarted),
 ipDisplay(NULL),
 ipProgram(NULL),
 ipDisplayCycle(NULL),
-ipSerialControl(NULL),
+ipCommunicator(NULL),
 iProgramState(EStartup),
 ipPreviousStep(NULL),
 ipCurrentStep(NULL),
@@ -221,7 +221,7 @@ iHardwareStatus(HARD_NO_ERROR) {
 #else
   ipDisplay = NULL;
 #endif /* USE_LCD */
-  ipSerialControl = new SerialControl(ipDisplay);
+  ipCommunicator = new SerialControl(ipDisplay);
 #endif /* USE_WIFI */
   // SPCR = 01010000 // TODO
   //interrupt disabled,spi enabled,msb 1st,master,clk low when idle,
@@ -256,7 +256,7 @@ TCCR1A |= (1<<WGM11) | (1<<WGM10);
 }
 
 Thermocycler::~Thermocycler() {
-  delete ipSerialControl;
+  delete ipCommunicator;
   delete ipDisplay;
 }
 
@@ -329,17 +329,17 @@ static boolean lamp = false;
 // internal
 boolean Thermocycler::Loop() {
 
-  ipSerialControl->Process();
+  ipCommunicator->Process();
   switch (iProgramState) {
   case EStartup:
     if (millis() > STARTUP_DELAY) {
       iProgramState = EStopped;
       	iRestarted = false;
-      if (!iRestarted && !ipSerialControl->CommandReceived()) {
+      if (!iRestarted && !ipCommunicator->CommandReceived()) {
         //check for stored program
         SCommand command;
         /*
-        if (ProgramStore::RetrieveProgram(command, (char*)ipSerialControl->GetBuffer())) {
+        if (ProgramStore::RetrieveProgram(command, (char*)ipCommunicator->GetBuffer())) {
           ProcessCommand(command);
         }
         */
@@ -456,18 +456,30 @@ boolean Thermocycler::Loop() {
  #ifdef USE_LCD
   ipDisplay->Update();
   #endif
-  ipSerialControl->Process();
   statusIndex = (statusIndex+1) % CyclerStatusBuffSize;
   statusCount++;
   return true;
+}
+
+/*
+ * Turn off power of heating units while network is busy
+ */
+void Thermocycler::PauseHeatUnits () {
+#ifdef PIN_WELL_PWM_ACTIVE_LOW
+  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM);
+#else
+  analogWrite(PIN_WELL_PWM, 0);
+#endif
+  SetLidOutput(0);
 }
 void Thermocycler::StopAll () {
     // Stop all devices when error is found.
     // stop heater
     // stop peltier
 }
+
 void Thermocycler::SetCommunicator(Communicator *comm) {
-  ipSerialControl = comm;
+  ipCommunicator = comm;
 }
 //private
 void Thermocycler::AdvanceToNextStep() {

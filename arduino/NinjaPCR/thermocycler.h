@@ -103,6 +103,7 @@ public:
   
   // internal
   boolean Loop();
+  void PauseHeatUnits();
 private:
   struct CyclerStatus {
       long timestamp;
@@ -129,7 +130,7 @@ private:
   void SetLidOutput(int drive);
   void StopAll();
 public:
-  Communicator* ipSerialControl;
+  Communicator* ipCommunicator;
 private:
   // components
   Display* ipDisplay;
