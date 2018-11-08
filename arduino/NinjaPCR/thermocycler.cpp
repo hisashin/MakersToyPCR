@@ -204,6 +204,7 @@ ipCurrentStep(NULL),
 iThermalDirection(OFF),
 iPeltierPwm(0),
 iCycleStartTime(0),
+iPowerOutputRatio(1.0),
 iRamping(true),
 //iPlatePid(&iPlateThermistor.GetTemp(), // Use measured well temp
 iPlatePid(&iEstimatedSampleTemp, // Use estimated sample temp (test)
@@ -471,6 +472,10 @@ void Thermocycler::PauseHeatUnits () {
   analogWrite(PIN_WELL_PWM, 0);
 #endif
   SetLidOutput(0);
+}
+
+void Thermocycler::SetPowerOutputRatio (double newValue) {
+  iPowerOutputRatio = newValue;
 }
 
 void Thermocycler::SetCommunicator(Communicator *comm) {

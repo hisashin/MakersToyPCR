@@ -65,6 +65,7 @@
 #endif
 
 #define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
 
 /* Addresses of WiFi configuration */
 /* Wfite 0xF0 when WiFi configuration is done. */

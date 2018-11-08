@@ -104,6 +104,7 @@ public:
   // internal
   boolean Loop();
   void PauseHeatUnits();
+  void SetPowerOutputRatio(double newValue);
 private:
   struct CyclerStatus {
       long timestamp;
@@ -170,6 +171,8 @@ private:
   // program eta calculation
   unsigned long iProgramStartTimeMs;
   unsigned long iProgramHoldDurationS;
+
+  double iPowerOutputRatio;
   
   unsigned long iProgramControlledRampDurationS;
   double iProgramFastRampDegrees;
