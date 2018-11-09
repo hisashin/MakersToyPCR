@@ -170,7 +170,7 @@ void initHardware () {
     // Peltier pins
     pinMode(PIN_WELL_INA, OUTPUT);
     pinMode(PIN_WELL_INB, OUTPUT);
-    // Fan
+    // Peltier
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
     pinMode(PIN_WELL_PWM, OUTPUT);
@@ -395,6 +395,8 @@ boolean Thermocycler::Loop() {
     break;
 
   case EComplete:
+    PCR_DEBUG("EComplete t=");
+    PCR_DEBUG_LINE(ipCurrentStep->GetTemp());
     if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE) {
       iRamping = false;
     }
@@ -456,7 +458,7 @@ boolean Thermocycler::Loop() {
   UpdateEta();
  #ifdef USE_LCD
   ipDisplay->Update();
-  #endif
+ #endif
   statusIndex = (statusIndex+1) % CyclerStatusBuffSize;
   statusCount++;
   return true;
@@ -811,11 +813,7 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
-  PCR_DEBUG("Pout=");
-  PCR_DEBUG(pwm);
-  PCR_DEBUG("->");
-  pwm = min(MAX_PELTIER_PWM, (int)(pwm * iPowerOutputRatio));
-  PCR_DEBUG_LINE(pwm);
+  pwm = max(-MAX_PELTIER_PWM, min(MAX_PELTIER_PWM, (int)(pwm * iPowerOutputRatio)));
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
   if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
@@ -834,9 +832,14 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of p
       dirActual = dir;
       pwmActual = pwm;
   }
+  PCR_DEBUG("Pout(A)=");
+  PCR_DEBUG(pwmActual);
+  PCR_DEBUG(", dir=");
+  PCR_DEBUG_LINE(dirActual);
 #ifdef USE_FAN
   digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
 #endif
+
   if (dirActual == COOL) {
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_ON);
@@ -851,12 +854,12 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of p
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
   }
      
-#ifdef PIN_WELL_PWM_ACTIVE_LOW
-  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-pwmActual);
-#else
-  analogWrite(PIN_WELL_PWM, pwmActual);
-#endif /* PIN_WELL_PWM_ACTIVE_LOW */
   analogValuePeltier = (dir==COOL)?-pwmActual:pwmActual;
+#ifdef PIN_WELL_PWM_ACTIVE_LOW
+  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-analogValuePeltier);
+#else
+  analogWrite(PIN_WELL_PWM, analogValuePeltier);
+#endif /* PIN_WELL_PWM_ACTIVE_LOW */
   statusBuff[statusIndex].wellOutput = pwm;
 
   prevDirection = dir;
@@ -880,7 +883,7 @@ void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm) {
   }
 
 #ifdef PIN_WELL_PWM_ACTIVE_LOW
-  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-5pwm);
+  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-pwm);
 #else
   analogWrite(PIN_WELL_PWM, pwm);
 #endif /* PIN_WELL_PWM_ACTIVE_LOW */
