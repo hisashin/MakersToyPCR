@@ -206,11 +206,9 @@ HardwareStatus CPlateThermistor::ReadTemp() {
     PCR_ADC_DEBUG("WellR=");
     PCR_ADC_DEBUG_LINE(voltageRatio);
     if (voltageRatio < 0.1) {
-        // ThermistorR=0 (Short)
         return HARD_ERROR_WELL_THERMISTOR_SHORT;
     }
-    if (voltageRatio > 0.9 ) {
-        // ThermistorR=INF (Thermistor is disconnected)
+    if (voltageRatio > 0.95 ) {
         return HARD_ERROR_WELL_THERMISTOR_DISCONNECTED;
     }
     float resistance, b_constant;

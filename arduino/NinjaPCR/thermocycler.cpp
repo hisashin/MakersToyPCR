@@ -599,7 +599,7 @@ void Thermocycler::SetLidOutput (int drive) {
   PCR_DEBUG("Lout=");
   PCR_DEBUG(drive);
   PCR_DEBUG("->");
-  pwm = min(MAX_LID_PWM, (int)(drive * iPowerOutputRatio))
+  drive = min(MAX_LID_PWM, (int)(drive * iPowerOutputRatio));
   PCR_DEBUG_LINE(drive);
 #ifdef USE_ESP8266
 // Use on-off control instead of PWM because ESP8266 does not have enough pins
@@ -814,7 +814,7 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of p
   PCR_DEBUG("Pout=");
   PCR_DEBUG(pwm);
   PCR_DEBUG("->");
-  pwm = min(MAX_PELTIER_PWM, (int)(pwm * iPowerOutputRatio))
+  pwm = min(MAX_PELTIER_PWM, (int)(pwm * iPowerOutputRatio));
   PCR_DEBUG_LINE(pwm);
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;

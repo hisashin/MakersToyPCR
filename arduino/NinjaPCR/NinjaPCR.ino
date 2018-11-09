@@ -174,11 +174,11 @@ void loop() {
     elapsed = millis() - startMillis;
     if (elapsed<0 || elapsed > INTERVAL_MSEC) {
         elapsed = 0;
-        double powerOutputRatio = (double)INTERVAL_MSEC/(double)max(INTERVAL_MSEC/2, INTERVAL_MSEC-elapsed);
-        PCR_DEBUG("powerOutputRatio");
-        PCR_DEBUG_LINE(powerOutputRatio);
-        gpThermocycler->SetPowerOutputRatio(powerOutputRatio);
     }
+    double powerOutputRatio = (double)INTERVAL_MSEC/(double)max(INTERVAL_MSEC/2, INTERVAL_MSEC-elapsed);
+    PCR_DEBUG("powerOutputRatio=");
+    PCR_DEBUG_LINE(powerOutputRatio);
+    gpThermocycler->SetPowerOutputRatio(powerOutputRatio);
     gpThermocycler->Loop();
     
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
