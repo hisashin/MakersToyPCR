@@ -95,16 +95,17 @@ void Communicator::SendStatus() {
     //statusPtr = AddParam(statusPtr, 'n', tc.GetProgName());
     if (tc.GetCurrentStep() != NULL)
       statusPtr = AddParam(statusPtr, 'p', tc.GetCurrentStep()->GetName());
-
   }
+  
   else if (state == Thermocycler::EIdle) {
     statusPtr = AddParam(statusPtr, 'v', OPENPCR_FIRMWARE_VERSION_STRING);
   } else if (state == Thermocycler::EError) {
       statusPtr = AddParam(statusPtr, 'w', tc.GetErrorCode());
   }
-  statusPtr = AddParam(statusPtr, 'x', tc.getAnalogValueLid());
-  statusPtr = AddParam(statusPtr, 'y', tc.getAnalogValuePeltier());
-  statusPtr = AddParam(statusPtr, 'z', tc.GetTemp(), 1, false);
+  
+  statusPtr = AddParam(statusPtr, 'x', tc.getAnalogValueLid()); // Hardware output
+  statusPtr = AddParam(statusPtr, 'y', tc.getAnalogValuePeltier()); // Hardware output
+  statusPtr = AddParam(statusPtr, 'z', tc.GetTemp(), 1, false); // Sample temp
   statusPtr++; //to include null terminator
 
   int statusBufLen = statusPtr - statusBuf;

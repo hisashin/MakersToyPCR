@@ -826,7 +826,6 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of p
           pwmActual = 0;
           dirActual = prevActualDirection;
       }
-
   } else {
       // No need of switching direction.
       dirActual = dir;
@@ -853,12 +852,12 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of p
     digitalWrite(PIN_WELL_INA, PIN_WELL_VALUE_OFF);
     digitalWrite(PIN_WELL_INB, PIN_WELL_VALUE_OFF);
   }
-     
-  analogValuePeltier = (dir==COOL)?-pwmActual:pwmActual;
+  analogValuePeltier = pwmActual;
+  int absOutput = (dir==COOL)?-pwmActual:pwmActual;
 #ifdef PIN_WELL_PWM_ACTIVE_LOW
-  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-analogValuePeltier);
+  analogWrite(PIN_WELL_PWM, MAX_PELTIER_PWM-absOutput);
 #else
-  analogWrite(PIN_WELL_PWM, analogValuePeltier);
+  analogWrite(PIN_WELL_PWM, absOutput);
 #endif /* PIN_WELL_PWM_ACTIVE_LOW */
   statusBuff[statusIndex].wellOutput = pwm;
 
@@ -868,7 +867,7 @@ void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of p
   prevActualPWMDuty = pwmActual;
 }
 #else
-void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm) {
+void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm /* Signed value of peltier */) {
   if (dir == COOL) {
     digitalWrite(PIN_WELL_INA, HIGH);
     digitalWrite(PIN_WELL_INB, LOW);
