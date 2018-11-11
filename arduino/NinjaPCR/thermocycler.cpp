@@ -429,8 +429,7 @@ boolean Thermocycler::Loop() {
   iLidThermistor.setTemp(lidTemp);
   iPlateThermistor.setTemp(wellTemp);
 
-  double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;//TODO WELL_TEST
-  // double estimatedAirTemp = wellTemp * 0.4 + 110.0 * 0.6;//TODO WELL_TEST (dummy line)
+  double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;
   double diff = ((wellTemp-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
   if (iEstimatedSampleTemp!=25 || ( 5>diff && diff > -5)) {
     iEstimatedSampleTemp += diff;
@@ -771,6 +770,10 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
             if (stat->wellOutput!=MAX_PELTIER_PWM) { isWellHeating = false; }
         }
         float wellDiff = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
+        PCR_DEBUG("w[0]=");
+        PCR_DEBUG(recentStats[0]->wellTemp);
+        PCR_DEBUG(", w[4]=");
+        PCR_DEBUG_LINE(recentStats[4]->wellTemp);
         float lidDiff = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
         
         if (isWellHeating) {
@@ -813,6 +816,22 @@ static int prevActualPWMDuty = 0; // Actual status of hardware
 
 #define PWM_SWITCHING_THRESHOLD 10
 void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
+
+  // TODO Use table of internal heat & peltier efficiency
+  if (dir == COOL) {
+    if (GetPlateTemp() < 30) {
+      pwm = pwm/8;
+    }
+    else if (GetPlateTemp() < 35) {
+      pwm = pwm/4;
+    }
+    else if (GetPlateTemp() < 40) {
+      pwm = pwm/2;
+    }
+    else if (GetPlateTemp() < 50) {
+      pwm = pwm * 2 / 3;
+    }
+  }
   pwm = max(-MAX_PELTIER_PWM, min(MAX_PELTIER_PWM, (int)(pwm * iPowerOutputRatio)));
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
