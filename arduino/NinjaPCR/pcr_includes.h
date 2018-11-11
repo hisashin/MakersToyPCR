@@ -23,7 +23,7 @@
 #include "board_conf.h"
 
 /* Debug on/off */
-#define DEBUG 1
+// #define DEBUG 1
 
 // #define DEBUG_ADC /* Debug ADC */
 // #define DEBUG_NETWORK /* Debug Network Status */
@@ -57,8 +57,8 @@
 
 
 #define SERIAL_PREFIX "pcr"
-#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.12"
-#define FIRMWARE_VERSION_DESCRIPTION "NinjaPCR_v1.0.12"
+#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.13"
+#define FIRMWARE_VERSION_DESCRIPTION "NinjaPCR_v1.0.13"
 
 #ifndef USE_WIFI
 #include <avr/pgmspace.h>
