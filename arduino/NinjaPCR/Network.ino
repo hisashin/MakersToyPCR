@@ -266,6 +266,8 @@ void requestHandlerConfInit() {
     // Send form
     boolean isConfDone = isWifiConfDone();
     String s = getHTMLHeader();
+    byte *mac = (byte *)malloc(sizeof(byte) * 6);
+    WiFi.macAddress(mac);
     if (hasPrevWifiError) {
         s += "<div style=\"color:red\">" + prevWifiError + "</div>";
     }
@@ -301,7 +303,6 @@ void requestHandlerConfInit() {
     } else {
       s += DEFAULT_HOST_NAME;
     }
-    // TODO default
     s += "\"/>(Alphabetic letters and numbers)</div>";
     s += "<div><input type=\"submit\" value=\"Join\"/></div>";
     s += "</form>";
@@ -309,8 +310,16 @@ void requestHandlerConfInit() {
     uint8_t prevResult = EEPROM.read(EEPROM_WIFI_RESULT);
     s += getPrevWiFiStatusLabel(prevResult);
     s += " (" + String(prevResult) + ")";
+    s += "<br/>MAC ";
+    for (int i=5; i>=0; i--) {
+      s += String(mac[i],HEX);
+      if (i > 0) {
+        s += String(":");
+      }
+    }
     s += "</body></html>\n";
     server.send(200, "text/html", s);
+    free(mac);
 }
 String BR_TAG = "<br/>";
 bool isValidHostName (String host) {
