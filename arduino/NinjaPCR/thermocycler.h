@@ -43,20 +43,20 @@ public:
     EError,
     EClear //for Display clearing only
   };
-  
+
   enum ThermalState {
     EHolding = 0,
     EHeating,
     ECooling,
     EIdle
   };
-  
+
   enum ThermalDirection {
     OFF = 0,
     HEAT,
     COOL
   };
-  
+
   enum ControlMode {
     EBangBang,
     EPIDLid,
@@ -66,7 +66,7 @@ public:
   Thermocycler();
   Thermocycler(boolean restarted);
   ~Thermocycler();
-  
+
   // accessors
   ProgramState GetProgramState() { return iProgramState; }
   ThermalState GetThermalState();
@@ -80,7 +80,7 @@ public:
   ProgramComponentPool<Cycle, 6>& GetCyclePool() { return iCyclePool; }
   ProgramComponentPool<Step, 20>& GetStepPool() { return iStepPool; }
   void SetCommunicator(Communicator *comm);
-  
+
   boolean Ramping() { return iRamping; }
   int GetPeltierPwm() { return iPeltierPwm; }
   double GetLidTemp() { return iLidThermistor.GetTemp(); }
@@ -91,16 +91,20 @@ public:
   unsigned long GetElapsedTimeS() { return (millis() - iProgramStartTimeMs) / 1000; }
   unsigned long GetRampElapsedTimeMs() { return millis() - iRampStartTime; }
   boolean InControlledRamp() { return iRamping && ipCurrentStep->GetRampDurationS() > 0 && ipPreviousStep != NULL; }
-  
+
   int getAnalogValuePeltier() { return analogValuePeltier; }
   int getAnalogValueLid() { return analogValueLid; }
-  
+
   // control
   void SetProgram(Cycle* pProgram, Cycle* pDisplayCycle, const char* szProgName, int lidTemp); //takes ownership of cycles
   void Stop();
+  void Pause();
+  void Resume();
+  void NextStep();
+  void NextCycle();
   PcrStatus Start();
   void ProcessCommand(SCommand& command);
-  
+
   // internal
   boolean Loop();
   void PauseHeatUnits();
@@ -123,7 +127,7 @@ private:
   void PreprocessProgram();
   void UpdateEta();
   void CheckHardware(float *lidTemp, float *wellTemp);
- 
+
   //util functions
   void AdvanceToNextStep();
   void SetPlateControlStrategy();
@@ -138,7 +142,7 @@ private:
   CPlateThermistor iPlateThermistor;
   ProgramComponentPool<Cycle, 6> iCyclePool;
   ProgramComponentPool<Step, 20> iStepPool;
-  
+
   // state
   ProgramState iProgramState;
   double iTargetPlateTemp;
@@ -153,10 +157,10 @@ private:
   boolean iRamping;
   boolean iDecreasing;
   boolean iRestarted;
-  
+
   ControlMode iPlateControlMode;
   HardwareStatus iHardwareStatus;
-  
+
   // Log buffer
   CyclerStatus statusBuff[CyclerStatusBuffSize];
   int statusIndex; // Index of satus ring buffer
@@ -167,18 +171,18 @@ private:
   CPIDController iLidPid;
   ThermalDirection iThermalDirection; //holds actual real-time state
   double iPeltierPwm;
-  
+
   // program eta calculation
   unsigned long iProgramStartTimeMs;
   unsigned long iProgramHoldDurationS;
 
   double iPowerOutputRatio;
-  
+
   unsigned long iProgramControlledRampDurationS;
   double iProgramFastRampDegrees;
   double iElapsedFastRampDegrees;
   unsigned long iTotalElapsedFastRampDurationMs;
-  
+
   double iRampStartTemp;
   unsigned long iRampStartTime;
   unsigned long iEstimatedTimeRemainingS;

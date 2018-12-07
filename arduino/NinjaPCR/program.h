@@ -31,10 +31,10 @@ public:
     EStep = 0,
     ECycle
   };
-  
+
   virtual void Reset() = 0;
   virtual TType GetType() = 0;
-  
+
   // iteration
   virtual void BeginIteration() = 0;
   virtual Step* GetNextStep() = 0;
@@ -43,7 +43,7 @@ public:
 ////////////////////////////////////////////////////////////////////
 // Class Step
 class Step: public ProgramComponent {
-public:  
+public:
   // accessors
   char* GetName() { return iName; }
   unsigned int GetStepDurationS() { return iStepDurationS; }
@@ -57,9 +57,9 @@ public:
   void SetRampDurationS(unsigned long rampDurationS) { iRampDurationS = rampDurationS; }
   void SetTemp(float temp) { iTemp = temp; }
   void SetName(const char* szName);
-  
+
   virtual void Reset();
-  
+
   // iteration
   virtual void BeginIteration();
   virtual Step* GetNextStep();
@@ -82,16 +82,16 @@ public:
   int GetNumCycles() { return iNumCycles; }
   int GetNumComponents() { return iNumComponents; }
   ProgramComponent* GetComponent(int index);
-  
+
   // mutators
   void SetNumCycles(int numCycles) { iNumCycles = numCycles; }
   PcrStatus AddComponent(ProgramComponent* pComponent); //takes ownership
   virtual void Reset();
-  
+
   // iteration
   virtual void BeginIteration();
   virtual Step* GetNextStep();
-  
+
 private:
   void RestartCycle();
 
@@ -99,7 +99,7 @@ private:
   ProgramComponent* iComponents[MAX_CYCLE_ITEMS];
   int iNumComponents;
   int iNumCycles;
-  
+
   int iCurrentCycle;
   int iCurrentComponent; // -1 means no component
 };
@@ -111,17 +111,17 @@ class ProgramComponentPool {
 public:
   ProgramComponentPool() { iAllocatedComponents = 0; }
 
-  T* AllocateComponent() { 
+  T* AllocateComponent() {
     if (iAllocatedComponents == N)
       return NULL;
-      
+
     T* pComponent = &iComponents[iAllocatedComponents++];
     pComponent->Reset();
     return pComponent;
   }
-  
+
   void ResetPool() { iAllocatedComponents = 0; }
-  
+
 private:
   int iAllocatedComponents;
   T iComponents[N];
@@ -136,7 +136,11 @@ struct SCommand {
     ENone = 0,
     EStart,
     EStop,
-    EConfig
+    EConfig,
+    EPause,
+    EResume,
+    ENextCycle,
+    ENextStep
   } command;
   int lidTemp;
   uint8_t contrast;
@@ -168,6 +172,6 @@ public:
   static void StoreContrast(uint8_t contrast);
   static void StoreProgram(const char* szProgram);
 };
-  
+
 
 #endif
