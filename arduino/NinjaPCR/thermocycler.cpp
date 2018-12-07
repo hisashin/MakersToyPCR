@@ -148,10 +148,10 @@
 //pid parameters
 const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
   //maxTemp, kP, kI, kD
-  { 
+  {
     70, 160, 0.15, 60   }
   ,
-  { 
+  {
     200, 320, 1.1, 10   }
 };
 
@@ -232,7 +232,7 @@ iHardwareStatus(HARD_NO_ERROR) {
   SPCR = (1<<SPE)|(1<<MSTR)|(1<<4);
   clr=SPSR;
   clr=SPDR;
-  delay(10); 
+  delay(10);
 
   iPlatePid.SetOutputLimits(MIN_PELTIER_PWM, MAX_PELTIER_PWM);
 
@@ -278,11 +278,11 @@ Thermocycler::ThermalState Thermocycler::GetThermalState() {
   if (iRamping) {
     if (ipPreviousStep != NULL) {
       return ipCurrentStep->GetTemp() > ipPreviousStep->GetTemp() ? EHeating : ECooling;
-    } 
+    }
     else {
       return iThermalDirection == HEAT ? EHeating : ECooling;
     }
-  } 
+  }
   else {
     return EHolding;
   }
@@ -312,6 +312,19 @@ void Thermocycler::Stop() {
   if (ipDisplay != NULL) {
     ipDisplay->Clear();
   }
+}
+
+void Thermocycler::Pause() {
+  // TODO stop_and_resume
+}
+void Thermocycler::Resume() {
+  // TODO stop_and_resume
+}
+void Thermocycler::NextStep() {
+  // TODO stop_and_resume
+}
+void Thermocycler::NextCycle() {
+  // TODO stop_and_resume
 }
 
 PcrStatus Thermocycler::Start() {
@@ -381,14 +394,14 @@ boolean Thermocycler::Loop() {
         iRamping = false;
         iCycleStartTime = millis();
 
-      } 
+      }
       else if (!iRamping && !ipCurrentStep->IsFinal() && millis() - iCycleStartTime > (unsigned long)ipCurrentStep->GetStepDurationS() * 1000) {
         //begin next step
         AdvanceToNextStep();
 
         //check for program completion
         if (ipCurrentStep == NULL || ipCurrentStep->IsFinal()) {
-          iProgramState = EComplete;        
+          iProgramState = EComplete;
         }
       }
     }
@@ -413,7 +426,7 @@ boolean Thermocycler::Loop() {
   if (result!=HARD_NO_ERROR) {
       statusBuff[statusIndex].hardwareStatus = result;
   }
-  
+
   statusBuff[statusIndex].lidTemp = GetLidTemp();
   statusBuff[statusIndex].wellTemp = GetPlateTemp();
 
@@ -425,7 +438,7 @@ boolean Thermocycler::Loop() {
   PCR_DEBUG(lidTemp);
   PCR_DEBUG(" W=wellTemp");
   PCR_DEBUG_LINE(wellTemp);
-  
+
   iLidThermistor.setTemp(lidTemp);
   iPlateThermistor.setTemp(wellTemp);
 
@@ -434,7 +447,7 @@ boolean Thermocycler::Loop() {
   if (iEstimatedSampleTemp!=25 || ( 5>diff && diff > -5)) {
     iEstimatedSampleTemp += diff;
   }
-  
+
   CalcPlateTarget();
 
   // Check error
@@ -494,7 +507,7 @@ void Thermocycler::AdvanceToNextStep() {
     iRamping = true;
     iRampStartTime = millis();
     iRampStartTemp = GetPlateTemp();
-  } 
+  }
   else {
     iCycleStartTime = millis(); //next step starts immediately
   }
@@ -510,7 +523,7 @@ void Thermocycler::SetPlateControlStrategy() {
   if (absf(iTargetPlateTemp - GetPlateTemp()) >= PLATE_BANGBANG_THRESHOLD && !InControlledRamp()) {
     iPlateControlMode = EBangBang;
     iPlatePid.SetMode(MANUAL);
-  } 
+  }
   else {
     iPlateControlMode = EPIDPlate;
     iPlatePid.SetMode(AUTOMATIC);
@@ -524,7 +537,7 @@ void Thermocycler::SetPlateControlStrategy() {
       else
         iPlatePid.SetTunings(PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D);
 
-    } 
+    }
     else {
       iDecreasing = true;
       if (iTargetPlateTemp > PLATE_PID_DEC_HIGH_THRESHOLD)
@@ -547,7 +560,7 @@ void Thermocycler::CalcPlateTarget() {
     double rampPoint = (double)GetRampElapsedTimeMs() / (ipCurrentStep->GetRampDurationS() * 1000);
     iTargetPlateTemp = ipPreviousStep->GetTemp() + tempDelta * rampPoint;
 
-  } 
+  }
   else {
     //fast ramp
     iTargetPlateTemp = ipCurrentStep->GetTemp();
@@ -581,15 +594,15 @@ void Thermocycler::ControlPeltier() {
       else {
         iDecreasing = false;
       }
-    } 
+    }
 
     if (iPeltierPwm > 0)
       newDirection = HEAT;
     else if (iPeltierPwm < 0)
-      newDirection = COOL; 
+      newDirection = COOL;
     else
       newDirection = OFF;
-  } 
+  }
   else {
     iPeltierPwm = 0;
   }
@@ -650,7 +663,7 @@ void Thermocycler::PreprocessProgram() {
   iProgramControlledRampDurationS = 0;
   iProgramFastRampDegrees = 0;
   iElapsedFastRampDegrees = 0;
-  iTotalElapsedFastRampDurationMs = 0;  
+  iTotalElapsedFastRampDurationMs = 0;
 
   ipProgram->BeginIteration();
   while ((pCurrentStep = ipProgram->GetNextStep()) && !pCurrentStep->IsFinal()) {
@@ -667,7 +680,7 @@ void Thermocycler::PreprocessProgram() {
     if (pCurrentStep->GetRampDurationS() > 0) {
       //controlled ramp
       iProgramControlledRampDurationS += pCurrentStep->GetRampDurationS();
-    } 
+    }
     else {
       //fast ramp
       double previousTemp = pPreviousStep ? pPreviousStep->GetTemp() : GetPlateTemp();
@@ -762,7 +775,7 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
     bool isWellHeating = true;
     bool isWellCooling = true;
     if (validStatusCount >= 6) {
-        
+
         for (int i=0; i<min(validStatusCount, 6); i++) {
             CyclerStatus *stat = recentStats[i];
             if (stat->lidOutput!=MAX_LID_PWM) { isLidHeating = false; }
@@ -775,7 +788,7 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
         PCR_DEBUG(", w[4]=");
         PCR_DEBUG_LINE(recentStats[4]->wellTemp);
         float lidDiff = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
-        
+
         if (isWellHeating) {
              if (wellDiff<-1.5) {
               PCR_DEBUG_LINE("Well Reverse?");
@@ -890,11 +903,11 @@ void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm /* Sig
   if (dir == COOL) {
     digitalWrite(PIN_WELL_INA, HIGH);
     digitalWrite(PIN_WELL_INB, LOW);
-  } 
+  }
   else if (dir == HEAT) {
     digitalWrite(PIN_WELL_INA, LOW);
     digitalWrite(PIN_WELL_INB, HIGH);
-  } 
+  }
   else {
     digitalWrite(PIN_WELL_INA, LOW);
     digitalWrite(PIN_WELL_INB, LOW);
@@ -930,11 +943,22 @@ void Thermocycler::ProcessCommand(SCommand& command) {
     GetThermocycler().SetProgram(pProgram, pDisplayCycle, command.name, command.lidTemp);
     GetThermocycler().Start();
 
-  } 
+  }
   else if (command.command == SCommand::EStop) {
     GetThermocycler().Stop(); //redundant as we already stopped during parsing
-
-  } 
+  }
+  else if (command.command == SCommand::EPause) {
+    GetThermocycler().Pause();
+  }
+  else if (command.command == SCommand::EResume) {
+    GetThermocycler().Resume();
+  }
+  else if (command.command == SCommand::ENextStep) {
+    GetThermocycler().NextStep();
+  }
+  else if (command.command == SCommand::ENextCycle) {
+    GetThermocycler().NextCycle();
+  }
   else if (command.command == SCommand::EConfig) {
     //update displayed
     ipDisplay->SetContrast(command.contrast);
@@ -943,4 +967,3 @@ void Thermocycler::ProcessCommand(SCommand& command) {
     ProgramStore::StoreContrast(command.contrast);
   }
 }
-
