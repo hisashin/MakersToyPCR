@@ -136,11 +136,7 @@ struct SCommand {
     ENone = 0,
     EStart,
     EStop,
-    EConfig,
-    EPause,
-    EResume,
-    ENextCycle,
-    ENextStep
+    EConfig
   } command;
   int lidTemp;
   uint8_t contrast;

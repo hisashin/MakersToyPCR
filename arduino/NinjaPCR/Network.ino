@@ -67,6 +67,30 @@ void requestHandlerCommand() {
         free(value);
     }
 }
+
+void sendAcceptedMessage (bool isAccepted) {
+  if (isAccepted) {
+    wifi_send("true", "command");
+  } else {
+    wifi_send("false", "command");
+  }
+}
+/* Handle request to "/pause" */
+void requestHandlerPause() {
+  sendAcceptedMessage(gpThermocycler->Pause());
+}
+/* Handle request to "/pause" */
+void requestHandlerResume() {
+  sendAcceptedMessage(gpThermocycler->Resume());
+}
+/* Handle request to "/pause" */
+void requestHandlerNextStep() {
+  sendAcceptedMessage(gpThermocycler->NextStep());
+}
+/* Handle request to "/pause" */
+void requestHandlerNextCycle() {
+  sendAcceptedMessage(gpThermocycler->NextCycle());
+}
 /* Handle request to "/status" */
 int statusCount = 0;
 
@@ -181,7 +205,7 @@ void startWiFiAPMode() {
     }
     stopScanMode();
     startAP();
-    
+
     server.begin();
     server.on("/", requestHandlerConfInit);
     server.on("/join", requestHandlerConfJoin);
@@ -285,7 +309,7 @@ void requestHandlerConfInit() {
         }
         s += ">" + optionSSID + "</option>";
     }
-    
+
     s += "</select></div>";
     s += "(If not in the list above)<input name=\"st\"";
     if (isConfDone && !ssidFoundInList) {
@@ -433,12 +457,12 @@ boolean connectToAP (int timeoutInMillis) {
     } while (timeoutInMillis > 0 || noTimeout);
     PCR_NETWORK_DEBUG_LINE("Connection timeout.");
     return false;
-  
+
 }
 /* Start network as a HTTP server */
 boolean startWiFiHTTPServer() {
     // Check existence of WiFi Config
-    
+
     if (!isWifiConfDone()) {
         PCR_NETWORK_DEBUG_LINE("WiFi config not found.");
         return false;
@@ -457,7 +481,7 @@ boolean startWiFiHTTPServer() {
     PCR_NETWORK_DEBUG("Pass:"); PCR_NETWORK_DEBUG_LINE(password);
     PCR_NETWORK_DEBUG_LINE(strlen(password));
     PCR_NETWORK_DEBUG("Host:"); PCR_NETWORK_DEBUG_LINE(host);
-    
+
     if (isUpdateMode) {
         connectToAP(0); // No timeout
         while (WiFi.status() != WL_CONNECTED) {
@@ -484,7 +508,7 @@ boolean startWiFiHTTPServer() {
         return false;
       }
     }
-    
+
 }
 int beginMDNS (const char *hostName) {
     MDNS.begin(hostName);
@@ -495,15 +519,19 @@ int beginMDNS (const char *hostName) {
 void startNormalOperationServer() {
     // Normal PCR operation mode
     /* Add handlers for paths */
-    
+
     // Never remove it (for OTA configuration)
     server.on("/config", requestHandlerConfig);
     server.on("/update", requestHandlerFirmwareUpdate);
-    
+
     server.on("/", requestHandlerTop);
     server.on("/connect", requestHandlerConnect);
     server.on("/command", requestHandlerCommand);
     server.on("/status", requestHandlerStatus);
+    server.on("/pause", requestHandlerPause);
+    server.on("/resume", requestHandlerResume);
+    server.on("/nxs", requestHandlerNextStep);
+    server.on("/nxc", requestHandlerNextCycle);
     server.onNotFound(requestHandler404);
 
     server.begin();
