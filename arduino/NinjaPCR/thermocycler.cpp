@@ -203,7 +203,6 @@ ipPreviousStep(NULL),
 ipCurrentStep(NULL),
 iThermalDirection(OFF),
 iPeltierPwm(0),
-iCycleStartTime(0),
 iPowerOutputRatio(1.0),
 iRamping(true),
 //iPlatePid(&iPlateThermistor.GetTemp(), // Use measured well temp
@@ -214,6 +213,9 @@ iEstimatedSampleTemp(25),
 iTargetLidTemp(0),
 statusIndex(0),
 statusCount(0),
+iRampElapsedTimeMs(0),
+iCycleElapsedTimeMs(0),
+iPrevLoopStartTimeMs(0),
 iHardwareStatus(HARD_NO_ERROR) {
     initHardware();
 #ifndef USE_WIFI
@@ -306,6 +308,8 @@ void Thermocycler::Stop() {
   ipPreviousStep = NULL;
   ipCurrentStep = NULL;
 
+  iPaused = false;
+
   iStepPool.ResetPool();
   iCyclePool.ResetPool();
 
@@ -314,17 +318,28 @@ void Thermocycler::Stop() {
   }
 }
 
-void Thermocycler::Pause() {
-  // TODO stop_and_resume
+boolean Thermocycler::Pause() {
+  if (iProgramState == ERunning && !iPaused) {
+    iPauseTemp = GetPlateTemp();
+    iPaused = true;
+    return true;
+  }
+  return false;
 }
-void Thermocycler::Resume() {
-  // TODO stop_and_resume
+boolean Thermocycler::Resume() {
+  if (iPaused) {
+    iPaused = false;
+    return true;
+  }
+  return false;
 }
-void Thermocycler::NextStep() {
+boolean Thermocycler::NextStep() {
   // TODO stop_and_resume
+  return false;
 }
-void Thermocycler::NextCycle() {
+boolean Thermocycler::NextCycle() {
   // TODO stop_and_resume
+  return false;
 }
 
 PcrStatus Thermocycler::Start() {
@@ -334,6 +349,7 @@ PcrStatus Thermocycler::Start() {
 
   //advance to lid wait state
   iProgramState = ELidWait;
+  iPaused = false;
 
   return ESuccess;
 }
@@ -344,6 +360,9 @@ static boolean lamp = false;
 boolean Thermocycler::Loop() {
 
   ipCommunicator->Process();
+  unsigned long loopElapsedTimeMs = millis() - iPrevLoopStartTimeMs;
+  iPrevLoopStartTimeMs = millis();
+
   switch (iProgramState) {
   case EStartup:
     if (millis() > STARTUP_DELAY) {
@@ -378,43 +397,53 @@ boolean Thermocycler::Loop() {
 
   case ERunning:
     //update program
-    if (iProgramState == ERunning) {
-      if (iRamping && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE && GetRampElapsedTimeMs() > ipCurrentStep->GetRampDurationS() * 1000) {
-        //begin step hold
-        //eta updates
-        if (ipCurrentStep->GetRampDurationS() == 0) {
-          //fast ramp
-          iElapsedFastRampDegrees += absf(GetTemp() - iRampStartTemp);
-          iTotalElapsedFastRampDurationMs += millis() - iRampStartTime;
-        }
+    if (!iPaused) {
+      if (iRamping) {
+        // Increment ramping time
+        iRampElapsedTimeMs += loopElapsedTimeMs;
+      } else {
+        // Increment holding time
+        iCycleElapsedTimeMs += loopElapsedTimeMs;
+      }
+      if (iProgramState == ERunning) {
+        if (iRamping && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE && GetRampElapsedTimeMs() > ipCurrentStep->GetRampDurationS() * 1000) {
+          //begin step hold
+          //eta updates
+          if (ipCurrentStep->GetRampDurationS() == 0) {
+            //fast ramp
+            iElapsedFastRampDegrees += absf(GetTemp() - iRampStartTemp);
+            iTotalElapsedFastRampDurationMs += iRampElapsedTimeMs;
+          }
 
-        if (iRampStartTemp > GetTemp()) {
-          iHasCooled = true;
+          if (iRampStartTemp > GetTemp()) {
+            iHasCooled = true;
+          }
+          iRamping = false;
+          iCycleElapsedTimeMs = 0;
+
         }
+        else if (!iRamping && !ipCurrentStep->IsFinal() && iCycleElapsedTimeMs > (unsigned long)ipCurrentStep->GetStepDurationS() * 1000) {
+          //begin next step
+          AdvanceToNextStep();
+
+          //check for program completion
+          if (ipCurrentStep == NULL || ipCurrentStep->IsFinal()) {
+            iProgramState = EComplete;
+          }
+        }
+      }
+      break;
+
+    case EComplete:
+      PCR_DEBUG("EComplete t=");
+      PCR_DEBUG_LINE(ipCurrentStep->GetTemp());
+      if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE) {
         iRamping = false;
-        iCycleStartTime = millis();
-
       }
-      else if (!iRamping && !ipCurrentStep->IsFinal() && millis() - iCycleStartTime > (unsigned long)ipCurrentStep->GetStepDurationS() * 1000) {
-        //begin next step
-        AdvanceToNextStep();
-
-        //check for program completion
-        if (ipCurrentStep == NULL || ipCurrentStep->IsFinal()) {
-          iProgramState = EComplete;
-        }
-      }
+      break;
     }
-    break;
-
-  case EComplete:
-    PCR_DEBUG("EComplete t=");
-    PCR_DEBUG_LINE(ipCurrentStep->GetTemp());
-    if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE) {
-      iRamping = false;
-    }
-    break;
   }
+
   statusBuff[statusIndex].timestamp = millis();
   //Read lid and well temp
   statusBuff[statusIndex].hardwareStatus = HARD_NO_ERROR;
@@ -505,11 +534,11 @@ void Thermocycler::AdvanceToNextStep() {
   //update eta calc params
   if (ipPreviousStep == NULL || ipPreviousStep->GetTemp() != ipCurrentStep->GetTemp()) {
     iRamping = true;
-    iRampStartTime = millis();
+    iRampElapsedTimeMs = 0;
     iRampStartTemp = GetPlateTemp();
   }
   else {
-    iCycleStartTime = millis(); //next step starts immediately
+    iCycleElapsedTimeMs = 0; //next step starts immediately
   }
 
   CalcPlateTarget();
@@ -551,10 +580,13 @@ void Thermocycler::SetPlateControlStrategy() {
 }
 
 void Thermocycler::CalcPlateTarget() {
-  if (ipCurrentStep == NULL)
-    return;
 
-  if (InControlledRamp()) {
+  if (ipCurrentStep == NULL) {
+    return;
+  }
+  if (iPaused) {
+    iTargetPlateTemp = iPauseTemp;
+  } else if (InControlledRamp()) {
     //controlled ramp
     double tempDelta = ipCurrentStep->GetTemp() - ipPreviousStep->GetTemp();
     double rampPoint = (double)GetRampElapsedTimeMs() / (ipCurrentStep->GetRampDurationS() * 1000);
@@ -946,18 +978,6 @@ void Thermocycler::ProcessCommand(SCommand& command) {
   }
   else if (command.command == SCommand::EStop) {
     GetThermocycler().Stop(); //redundant as we already stopped during parsing
-  }
-  else if (command.command == SCommand::EPause) {
-    GetThermocycler().Pause();
-  }
-  else if (command.command == SCommand::EResume) {
-    GetThermocycler().Resume();
-  }
-  else if (command.command == SCommand::ENextStep) {
-    GetThermocycler().NextStep();
-  }
-  else if (command.command == SCommand::ENextCycle) {
-    GetThermocycler().NextCycle();
   }
   else if (command.command == SCommand::EConfig) {
     //update displayed

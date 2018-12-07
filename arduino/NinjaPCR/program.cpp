@@ -110,7 +110,6 @@ void Cycle::RestartCycle() {
 // Class CommandParser
 void CommandParser::ParseCommand(SCommand& command, char* pCommandBuf) {
   char* pValue;
-  PCR_DEBUG_LINE("ParseCommand 1");
   memset(&command, NULL, sizeof(command));
   char buf[32];
 
@@ -140,18 +139,6 @@ void CommandParser::AddComponent(SCommand* pCommand, char key, char* szValue) {
     }
     else if (strcmp(szValue, "stop") == 0) {
       pCommand->command = SCommand::EStop;
-    }
-    else if (strcmp(szValue, "pause") == 0) {
-      pCommand->command = SCommand::EPause;
-    }
-    else if (strcmp(szValue, "resume") == 0) {
-      pCommand->command = SCommand::EResume;
-    }
-    else if (strcmp(szValue, "nxc") == 0) {
-      pCommand->command = SCommand::ENextCycle;
-    }
-    else if (strcmp(szValue, "nxs") == 0) {
-      pCommand->command = SCommand::ENextStep;
     }
     else if (strcmp(szValue, "cfg") == 0) {
       pCommand->command = SCommand::EConfig;

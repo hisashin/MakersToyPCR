@@ -82,6 +82,7 @@ public:
   void SetCommunicator(Communicator *comm);
 
   boolean Ramping() { return iRamping; }
+  boolean Paused() { return iPaused; }
   int GetPeltierPwm() { return iPeltierPwm; }
   double GetLidTemp() { return iLidThermistor.GetTemp(); }
   double GetPlateTemp() { return iPlateThermistor.GetTemp(); }
@@ -89,7 +90,7 @@ public:
   double GetPlateResistance() { return iPlateThermistor.GetResistance(); }
   unsigned long GetTimeRemainingS() { return iEstimatedTimeRemainingS; }
   unsigned long GetElapsedTimeS() { return (millis() - iProgramStartTimeMs) / 1000; }
-  unsigned long GetRampElapsedTimeMs() { return millis() - iRampStartTime; }
+  unsigned long GetRampElapsedTimeMs() { return iRampElapsedTimeMs; }
   boolean InControlledRamp() { return iRamping && ipCurrentStep->GetRampDurationS() > 0 && ipPreviousStep != NULL; }
 
   int getAnalogValuePeltier() { return analogValuePeltier; }
@@ -98,10 +99,10 @@ public:
   // control
   void SetProgram(Cycle* pProgram, Cycle* pDisplayCycle, const char* szProgName, int lidTemp); //takes ownership of cycles
   void Stop();
-  void Pause();
-  void Resume();
-  void NextStep();
-  void NextCycle();
+  boolean Pause();
+  boolean Resume();
+  boolean NextStep();
+  boolean NextCycle();
   PcrStatus Start();
   void ProcessCommand(SCommand& command);
 
@@ -153,10 +154,14 @@ private:
   char iszProgName[21];
   Step* ipPreviousStep;
   Step* ipCurrentStep;
-  unsigned long iCycleStartTime;
+  unsigned long iCycleElapsedTimeMs;
   boolean iRamping;
+  boolean iPaused;
+  double iPauseTemp;
   boolean iDecreasing;
   boolean iRestarted;
+
+  unsigned int iPrevLoopStartTimeMs;
 
   ControlMode iPlateControlMode;
   HardwareStatus iHardwareStatus;
@@ -184,7 +189,7 @@ private:
   unsigned long iTotalElapsedFastRampDurationMs;
 
   double iRampStartTemp;
-  unsigned long iRampStartTime;
+  unsigned long iRampElapsedTimeMs;
   unsigned long iEstimatedTimeRemainingS;
   boolean iHasCooled;
   int analogValuePeltier;
