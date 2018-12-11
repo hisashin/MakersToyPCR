@@ -48,7 +48,7 @@ protected:
   virtual void OnFinishReaing () = 0;
 
   void FinishReading ();
-  
+
   char* AddParam(char* pBuffer, char key, int val, boolean init = false);
   char* AddParam(char* pBuffer, char key, unsigned long val, boolean init = false);
   char* AddParam(char* pBuffer, char key, float val, int decimalDigits, boolean pad, boolean init = false);

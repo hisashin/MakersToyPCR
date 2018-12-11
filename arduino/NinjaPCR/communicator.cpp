@@ -15,6 +15,14 @@ Communicator::~Communicator() {
 }
 
 
+const char STOPPED_STR[] PROGMEM = "stopped";
+const char LIDWAIT_STR[] PROGMEM = "lidwait";
+const char RUNNING_STR[] PROGMEM = "running";
+const char COMPLETE_STR[] PROGMEM = "complete";
+const char STARTUP_STR[] PROGMEM = "startup";
+const char ERROR_STR[] PROGMEM = "error";
+const char PAUSED_STR[] PROGMEM = "paused";
+
 void Communicator::Process() {
   boolean contentReceived = ParseWholeMessage();
   if (contentReceived) {
@@ -73,7 +81,7 @@ void Communicator::ProcessDummyMessage (unsigned char _currentCommand, String co
 #define STATUS_FILE_LEN 100
 void Communicator::SendStatus() {
   Thermocycler::ProgramState state = GetThermocycler().GetProgramState();
-  const char* szStatus = GetProgramStateString_P(state);
+  const char* szStatus = (GetThermocycler().Paused())? PAUSED_STR : GetProgramStateString_P(state);
   const char* szThermState = GetThermalStateString_P(
       GetThermocycler().GetThermalState());
 
@@ -90,19 +98,25 @@ void Communicator::SendStatus() {
   if (state == Thermocycler::ERunning || state == Thermocycler::EComplete) {
     statusPtr = AddParam(statusPtr, 'e', tc.GetElapsedTimeS());
     statusPtr = AddParam(statusPtr, 'r', tc.GetTimeRemainingS());
+
+    // Total cycles
+    statusPtr = AddParam(statusPtr, 'i', tc.GetTotalCycleIndex());
+    statusPtr = AddParam(statusPtr, 'a', tc.GetTotalCycleCount());
+
+    // Progress of current cycle
     statusPtr = AddParam(statusPtr, 'u', tc.GetNumCycles());
     statusPtr = AddParam(statusPtr, 'c', tc.GetCurrentCycleNum());
     //statusPtr = AddParam(statusPtr, 'n', tc.GetProgName());
     if (tc.GetCurrentStep() != NULL)
       statusPtr = AddParam(statusPtr, 'p', tc.GetCurrentStep()->GetName());
   }
-  
+
   else if (state == Thermocycler::EIdle) {
     statusPtr = AddParam(statusPtr, 'v', OPENPCR_FIRMWARE_VERSION_STRING);
   } else if (state == Thermocycler::EError) {
       statusPtr = AddParam(statusPtr, 'w', tc.GetErrorCode());
   }
-  
+
   statusPtr = AddParam(statusPtr, 'x', tc.getAnalogValueLid()); // Hardware output
   statusPtr = AddParam(statusPtr, 'y', tc.getAnalogValuePeltier()); // Hardware output
   statusPtr = AddParam(statusPtr, 'z', tc.GetTemp(), 1, false); // Sample temp
@@ -181,12 +195,6 @@ char* Communicator::AddParam_P(char* pBuffer, char key, const char* szVal,
   return pBuffer;
 }
 
-const char STOPPED_STR[] PROGMEM = "stopped";
-const char LIDWAIT_STR[] PROGMEM = "lidwait";
-const char RUNNING_STR[] PROGMEM = "running";
-const char COMPLETE_STR[] PROGMEM = "complete";
-const char STARTUP_STR[] PROGMEM = "startup";
-const char ERROR_STR[] PROGMEM = "error";
 const char* Communicator::GetProgramStateString_P(
     Thermocycler::ProgramState state) {
   switch (state) {

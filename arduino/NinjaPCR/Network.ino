@@ -68,28 +68,28 @@ void requestHandlerCommand() {
     }
 }
 
-void sendAcceptedMessage (bool isAccepted) {
+void sendAcceptedMessage (bool isAccepted, char * commandName) {
   if (isAccepted) {
-    wifi_send("true", "command");
+    wifi_send("true", commandName);
   } else {
-    wifi_send("false", "command");
+    wifi_send("false", commandName);
   }
 }
 /* Handle request to "/pause" */
 void requestHandlerPause() {
-  sendAcceptedMessage(gpThermocycler->Pause());
+  sendAcceptedMessage(gpThermocycler->Pause(),"pause");
 }
 /* Handle request to "/pause" */
 void requestHandlerResume() {
-  sendAcceptedMessage(gpThermocycler->Resume());
+  sendAcceptedMessage(gpThermocycler->Resume(),"resume");
 }
 /* Handle request to "/pause" */
 void requestHandlerNextStep() {
-  sendAcceptedMessage(gpThermocycler->NextStep());
+  sendAcceptedMessage(gpThermocycler->NextStep(),"nxs");
 }
 /* Handle request to "/pause" */
 void requestHandlerNextCycle() {
-  sendAcceptedMessage(gpThermocycler->NextCycle());
+  sendAcceptedMessage(gpThermocycler->NextCycle(),"nxc");
 }
 /* Handle request to "/status" */
 int statusCount = 0;

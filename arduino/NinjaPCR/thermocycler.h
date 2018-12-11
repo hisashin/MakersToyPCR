@@ -72,6 +72,8 @@ public:
   ThermalState GetThermalState();
   Step* GetCurrentStep() { return ipCurrentStep; }
   Cycle* GetDisplayCycle() { return ipDisplayCycle; }
+  int GetTotalCycleIndex();
+  int GetTotalCycleCount();
   int GetNumCycles();
   int GetCurrentCycleNum();
   int GetErrorCode() { return iHardwareStatus; }
