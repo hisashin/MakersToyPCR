@@ -264,6 +264,15 @@ Thermocycler::~Thermocycler() {
 }
 
 // accessors
+
+// Total cycles
+int Thermocycler::GetTotalCycleIndex () {
+  return ipProgram->GetCurrentComponent();
+}
+int Thermocycler::GetTotalCycleCount () {
+  return ipProgram->GetNumComponents();
+}
+// Repetition of current cycle
 int Thermocycler::GetNumCycles() {
   return ipDisplayCycle->GetNumCycles();
 }
@@ -435,7 +444,6 @@ boolean Thermocycler::Loop() {
       break;
 
     case EComplete:
-      PCR_DEBUG("EComplete t=");
       PCR_DEBUG_LINE(ipCurrentStep->GetTemp());
       if (iRamping && ipCurrentStep != NULL && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE) {
         iRamping = false;
