@@ -133,6 +133,7 @@ private:
 
   //util functions
   void AdvanceToNextStep();
+  void AdvanceToNextCycle();
   void SetPlateControlStrategy();
   void SetPeltier(ThermalDirection dir, int pwm);
   void SetLidOutput(int drive);
@@ -162,6 +163,8 @@ private:
   double iPauseTemp;
   boolean iDecreasing;
   boolean iRestarted;
+  boolean iNextStepPending;
+  boolean iNextCyclePending;
 
   unsigned int iPrevLoopStartTimeMs;
 
