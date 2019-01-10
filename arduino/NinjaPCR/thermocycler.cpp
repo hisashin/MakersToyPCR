@@ -427,7 +427,15 @@ boolean Thermocycler::Loop() {
         iCycleElapsedTimeMs += loopElapsedTimeMs;
       }
       if (iProgramState == ERunning) {
-        if (iRamping && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE && GetRampElapsedTimeMs() > ipCurrentStep->GetRampDurationS() * 1000) {
+        if (!ipCurrentStep->IsFinal() && iNextStepPending) {
+          iNextStepPending = false;
+          //begin next step
+          AdvanceToNextStep();
+          //check for program completion
+          if (ipCurrentStep == NULL || ipCurrentStep->IsFinal()) {
+            iProgramState = EComplete;
+          }
+        } else if (iRamping && abs(ipCurrentStep->GetTemp() - GetTemp()) <= CYCLE_START_TOLERANCE && GetRampElapsedTimeMs() > ipCurrentStep->GetRampDurationS() * 1000) {
           //begin step hold
           //eta updates
           if (ipCurrentStep->GetRampDurationS() == 0) {
@@ -441,12 +449,10 @@ boolean Thermocycler::Loop() {
           }
           iRamping = false;
           iCycleElapsedTimeMs = 0;
-
         }
         else if (!iRamping && !ipCurrentStep->IsFinal() && iCycleElapsedTimeMs > (unsigned long)ipCurrentStep->GetStepDurationS() * 1000) {
           //begin next step
           AdvanceToNextStep();
-
           //check for program completion
           if (ipCurrentStep == NULL || ipCurrentStep->IsFinal()) {
             iProgramState = EComplete;
