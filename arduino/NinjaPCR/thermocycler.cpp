@@ -345,7 +345,7 @@ boolean Thermocycler::Resume() {
   return false;
 }
 boolean Thermocycler::NextStep() {
-  if (!iNextStepPending) {
+  if (!iNextStepPending && !ipCurrentStep->IsFinal()) {
     // Accepted
     iNextStepPending = true;
     return true;
