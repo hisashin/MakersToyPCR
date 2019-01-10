@@ -82,6 +82,7 @@ public:
   int GetNumCycles() { return iNumCycles; }
   int GetNumComponents() { return iNumComponents; }
   int GetCurrentComponent() { return iCurrentComponent + 1; } // 1 origin
+  int GetCurrentComponentIndex() { return iCurrentComponent; } // 1 origin
   ProgramComponent* GetComponent(int index);
 
   // mutators

@@ -102,8 +102,9 @@ Step* Cycle::GetNextStep() {
 void Cycle::RestartCycle() {
   iCurrentComponent = 0;
 
-  for (int i = 0; i < iNumComponents; i++)
+  for (int i = 0; i < iNumComponents; i++) {
     iComponents[i]->BeginIteration();
+  }
 }
 
 ////////////////////////////////////////////////////////////////////

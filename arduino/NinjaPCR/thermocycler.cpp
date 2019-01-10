@@ -216,6 +216,8 @@ statusCount(0),
 iRampElapsedTimeMs(0),
 iCycleElapsedTimeMs(0),
 iPrevLoopStartTimeMs(0),
+iNextStepPending(false),
+iNextCyclePending(false),
 iHardwareStatus(HARD_NO_ERROR) {
     initHardware();
 #ifndef USE_WIFI
@@ -343,11 +345,21 @@ boolean Thermocycler::Resume() {
   return false;
 }
 boolean Thermocycler::NextStep() {
-  // TODO stop_and_resume
+  if (!iNextStepPending) {
+    // Accepted
+    iNextStepPending = true;
+    return true;
+  }
+  // Error (already in transition)
   return false;
 }
 boolean Thermocycler::NextCycle() {
-  // TODO stop_and_resume
+  if (!iNextCyclePending) {
+    // Accepted
+    iNextCyclePending = true;
+    return true;
+  }
+  // Error (already in transition)
   return false;
 }
 
@@ -548,9 +560,17 @@ void Thermocycler::AdvanceToNextStep() {
   else {
     iCycleElapsedTimeMs = 0; //next step starts immediately
   }
+  // Switch cycle to display
+  ProgramComponent *pComp = ipProgram->GetComponent(ipProgram->GetCurrentComponentIndex());
+  if (pComp->GetType() == ProgramComponent::ECycle) {
+      ipDisplayCycle = (Cycle*) pComp;
+  }
 
   CalcPlateTarget();
   SetPlateControlStrategy();
+}
+void Thermocycler::AdvanceToNextCycle() {
+  // TODO
 }
 
 void Thermocycler::SetPlateControlStrategy() {
@@ -973,11 +993,17 @@ void Thermocycler::ProcessCommand(SCommand& command) {
     for (int i = 0; i < pProgram->GetNumComponents(); i++) {
       ProgramComponent* pComp = pProgram->GetComponent(i);
       if (pComp->GetType() == ProgramComponent::ECycle) {
+        // Find first cycle
+        pDisplayCycle = (Cycle*) pComp;
+        break;
+        /*
         Cycle* pCycle = (Cycle*)pComp;
         if (pCycle->GetNumCycles() > largestCycleCount) {
+          // Find cycle with largest repeat count
           largestCycleCount = pCycle->GetNumCycles();
           pDisplayCycle = pCycle;
         }
+        */
       }
     }
     GetThermocycler().SetProgram(pProgram, pDisplayCycle, command.name, command.lidTemp);

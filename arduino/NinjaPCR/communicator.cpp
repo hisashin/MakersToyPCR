@@ -78,7 +78,7 @@ void Communicator::ProcessDummyMessage (unsigned char _currentCommand, String co
     FinishReading();
 }
 
-#define STATUS_FILE_LEN 100
+#define STATUS_FILE_LEN 128
 void Communicator::SendStatus() {
   Thermocycler::ProgramState state = GetThermocycler().GetProgramState();
   const char* szStatus = (GetThermocycler().Paused())? PAUSED_STR : GetProgramStateString_P(state);
