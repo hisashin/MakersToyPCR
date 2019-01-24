@@ -427,10 +427,15 @@ boolean Thermocycler::Loop() {
         iCycleElapsedTimeMs += loopElapsedTimeMs;
       }
       if (iProgramState == ERunning) {
-        if (!ipCurrentStep->IsFinal() && iNextStepPending) {
-          iNextStepPending = false;
-          //begin next step
-          AdvanceToNextStep();
+        if (!ipCurrentStep->IsFinal() && (iNextStepPending || iNextCyclePending)) {
+          if (iNextStepPending) {
+            iNextStepPending = false;
+            AdvanceToNextStep();
+          }
+          if (iNextCyclePending) {
+            iNextCyclePending = false;
+            AdvanceToNextCycle();
+          }
           //check for program completion
           if (ipCurrentStep == NULL || ipCurrentStep->IsFinal()) {
             iProgramState = EComplete;
@@ -554,9 +559,21 @@ void Thermocycler::SetCommunicator(Communicator *comm) {
 void Thermocycler::AdvanceToNextStep() {
   ipPreviousStep = ipCurrentStep;
   ipCurrentStep = ipProgram->GetNextStep();
-  if (ipCurrentStep == NULL)
+  if (ipCurrentStep == NULL) {
     return;
+  }
+  PrepareStep();
+}
 
+void Thermocycler::AdvanceToNextCycle() {
+  ipPreviousStep = ipCurrentStep;
+  ipCurrentStep = ipProgram->GetFirstStepOfNextCycle();
+  if (ipCurrentStep != NULL) {
+    PrepareStep();
+  }
+}
+
+void Thermocycler::PrepareStep() {
   //update eta calc params
   if (ipPreviousStep == NULL || ipPreviousStep->GetTemp() != ipCurrentStep->GetTemp()) {
     iRamping = true;
@@ -571,12 +588,8 @@ void Thermocycler::AdvanceToNextStep() {
   if (pComp->GetType() == ProgramComponent::ECycle) {
       ipDisplayCycle = (Cycle*) pComp;
   }
-
   CalcPlateTarget();
   SetPlateControlStrategy();
-}
-void Thermocycler::AdvanceToNextCycle() {
-  // TODO
 }
 
 void Thermocycler::SetPlateControlStrategy() {

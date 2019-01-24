@@ -134,6 +134,7 @@ private:
   //util functions
   void AdvanceToNextStep();
   void AdvanceToNextCycle();
+  void PrepareStep();
   void SetPlateControlStrategy();
   void SetPeltier(ThermalDirection dir, int pwm);
   void SetLidOutput(int drive);

@@ -84,7 +84,7 @@ public:
   int GetCurrentComponent() { return iCurrentComponent + 1; } // 1 origin
   int GetCurrentComponentIndex() { return iCurrentComponent; } // 1 origin
   ProgramComponent* GetComponent(int index);
-
+  Step* GetFirstStepOfNextCycle();
   // mutators
   void SetNumCycles(int numCycles) { iNumCycles = numCycles; }
   PcrStatus AddComponent(ProgramComponent* pComponent); //takes ownership
