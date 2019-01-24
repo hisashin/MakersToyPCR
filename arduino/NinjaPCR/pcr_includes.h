@@ -57,8 +57,8 @@
 
 
 #define SERIAL_PREFIX "pcr"
-#define OPENPCR_FIRMWARE_VERSION_STRING "1.0.13"
-#define FIRMWARE_VERSION_DESCRIPTION "NinjaPCR_v1.0.13"
+#define OPENPCR_FIRMWARE_VERSION_STRING "1.1"
+#define FIRMWARE_VERSION_DESCRIPTION "NinjaPCR_v1.1"
 
 #ifndef USE_WIFI
 #include <avr/pgmspace.h>

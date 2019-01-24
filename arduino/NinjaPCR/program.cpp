@@ -98,6 +98,13 @@ Step* Cycle::GetNextStep() {
 
   return pNextStep;
 }
+Step* Cycle::GetFirstStepOfNextCycle () {
+  if (++iCurrentComponent < iNumComponents) {
+    // Next cycle exists.
+    return iComponents[iCurrentComponent]->GetNextStep();
+  }
+  return NULL;
+}
 
 void Cycle::RestartCycle() {
   iCurrentComponent = 0;
