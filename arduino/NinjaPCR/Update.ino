@@ -20,7 +20,7 @@ String PARAM_OTA_URL = "ou";
 const char* OTA_HOST = "ninjapcrwifi";
 const char* OTA_UPDATE_PATH = "/update";
 
-char *firmwareHost = "ninjapcr.tori.st";
+char *firmwareHost = "ninjapcr.tori.st"; // Could this be changed to the server to which NinjaPCR is actually connected? Some users install the NinjaPCR-web locally.
 int port = 443;
 
 /* Fetch MD5 hash of latest firmware in secure way */
