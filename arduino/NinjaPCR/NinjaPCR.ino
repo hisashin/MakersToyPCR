@@ -40,25 +40,25 @@ String debugNetwork = "NINJAPCR_DEBUG_NETWORK";
 #ifdef DEBUG_ADC
 String debugADC = "NINJAPCR_DEBUG_ADC";
 #endif
-#ifdef DEBUG_ESP_CORE 
+#ifdef DEBUG_ESP_CORE
 String debugEspCore = "NINJAPCR_DEBUG_ESP_CORE";
 #endif
-#ifdef DEBUG_ESP_SSL 
+#ifdef DEBUG_ESP_SSL
 String debugEspSSL = "NINJAPCR_DEBUG_ESP_SSL";
 #endif
-#ifdef DEBUG_ESP_WIFI 
+#ifdef DEBUG_ESP_WIFI
 String debugEspWiFi = "NINJAPCR_DEBUG_ESP_WIFI";
 #endif
-#ifdef DEBUG_ESP_HTTP_CLIENT 
+#ifdef DEBUG_ESP_HTTP_CLIENT
 String debugEspHTTPClient = "NINJAPCR_DEBUG_ESP_HTTP_CLIENT";
 #endif
-#ifdef DEBUG_ESP_HTTP_UPDATE 
+#ifdef DEBUG_ESP_HTTP_UPDATE
 String debugEspHTTPUpdate = "NINJAPCR_DEBUG_ESP_HTTP_UPDATE";
 #endif
-#ifdef DEBUG_ESP_HTTP_SERVER 
+#ifdef DEBUG_ESP_HTTP_SERVER
 String debugEspHTTPServer = "NINJAPCR_DEBUG_ESP_HTTP_SERVER";
 #endif
-#ifdef DEBUG_ESP_UPDATER 
+#ifdef DEBUG_ESP_UPDATER
 String debugEspUpdater = "NINJAPCR_DEBUG_ESP_UPDATER";
 #endif
 #ifdef DEBUG_ESP_OTA
@@ -92,7 +92,7 @@ void setup() {
     delay(100);
     isApMode = (digitalRead(PIN_WIFI_MODE)==VALUE_WIFI_MODE_AP);
     delay(250);
-    PCR_DEBUG("NinjaPCR ver. "); 
+    PCR_DEBUG("NinjaPCR ver. ");
     PCR_DEBUG_LINE(OPENPCR_FIRMWARE_VERSION_STRING);
     initHardware();
     EEPROM.begin(1024);
@@ -102,13 +102,18 @@ void setup() {
     if (isApMode) {
         PCR_DEBUG_LINE("AP mode");
         startWiFiAPMode();
+
+        // Init AP mode
+        setup_normal();
+        wifi = new WifiCommunicator(wifi_receive, wifi_send);
+        gpThermocycler->SetCommunicator(wifi);
     }
     else {
-        PCR_DEBUG_LINE("Server mode");
+        PCR_DEBUG_LINE("HTTP Server mode");
   #ifdef USE_FAN
     digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
   #endif
-        startWiFiHTTPServer();
+        startWiFiHTTPServerMode();
         setup_normal();
         wifi = new WifiCommunicator(wifi_receive, wifi_send);
         gpThermocycler->SetCommunicator(wifi);
@@ -125,9 +130,11 @@ void setup_normal() {
 #endif /* USE_STATUS_PINS */
 
     //init factory settings
+    /*
     if (isInitialStart()) {
         EEPROM.write(0, 100); // set contrast to 100
     }
+    */
     //restart detection
 
 #ifdef USE_WIFI
@@ -153,24 +160,25 @@ bool finishSent = false;
 void loop() {
     unsigned long startMillis;
     unsigned long elapsed;
-    
+
+    /*
     if (isApMode) {
         delay(100);
         loopWiFiAP();
         return;
     }
-    
-    startMillis = millis();
+    */
 
-    /* 
-     * Pause heating & cooling units while processing HTTP requests 
+    startMillis = millis();
+    /*
+     * Pause heating & cooling units while processing HTTP requests
      * to avoid overheating
      */
     gpThermocycler->PauseHeatUnits();
     if (isWiFiConnected()) {
         loopWiFiHTTPServer();
     }
-    
+
     elapsed = millis() - startMillis;
     if (elapsed<0 || elapsed > INTERVAL_MSEC) {
         elapsed = 0;
@@ -180,7 +188,7 @@ void loop() {
     PCR_DEBUG_LINE(powerOutputRatio);
     gpThermocycler->SetPowerOutputRatio(powerOutputRatio);
     gpThermocycler->Loop();
-    
+
     if (gpThermocycler->GetProgramState() == Thermocycler::ProgramState::EComplete) {
         PCR_DEBUG_LINE("COMPLETE");
         if (!finishSent) {

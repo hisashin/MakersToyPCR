@@ -187,6 +187,16 @@ void startAP() {
     WiFi.softAP(apSSID,apPassword);
 }
 
+void setPCROperationHandlers () {
+  server.on("/connect", requestHandlerConnect);
+  server.on("/command", requestHandlerCommand);
+  server.on("/status", requestHandlerStatus);
+  server.on("/pause", requestHandlerPause);
+  server.on("/resume", requestHandlerResume);
+  server.on("/nxs", requestHandlerNextStep);
+  server.on("/nxc", requestHandlerNextCycle);
+}
+
 /* Scan for nearby APs -> save APs -> start AP */
 bool hasPrevWifiError = false;
 String prevWifiError;
@@ -209,7 +219,10 @@ void startWiFiAPMode() {
     server.begin();
     server.on("/", requestHandlerConfInit);
     server.on("/join", requestHandlerConfJoin);
+    // Enable PCR control functionalities on AP mode
+    setPCROperationHandlers ();
     server.onNotFound(requestHandler404);
+
     PCR_NETWORK_DEBUG_LINE("OK");
     PCR_NETWORK_DEBUG_LINE("1. Connect AP \"NinjaPCR\"");
     PCR_NETWORK_DEBUG_LINE("2. Access http://192.168.1.1");
@@ -283,9 +296,7 @@ String getPrevWiFiStatusLabel (uint8_t val) {
       return "No conf found";
   }
 }
-/*
-String hostName = ;
-*/
+
 void requestHandlerConfInit() {
     // Send form
     boolean isConfDone = isWifiConfDone();
@@ -460,7 +471,7 @@ boolean connectToAP (int timeoutInMillis) {
 
 }
 /* Start network as a HTTP server */
-boolean startWiFiHTTPServer() {
+boolean startWiFiHTTPServerMode() {
     // Check existence of WiFi Config
 
     if (!isWifiConfDone()) {
@@ -488,7 +499,7 @@ boolean startWiFiHTTPServer() {
           PCR_NETWORK_DEBUG(".");
           delay(500);
         }
-        PCR_NETWORK_DEBUG_LINE("WiFii connected.");
+        PCR_NETWORK_DEBUG_LINE("WiFi connected.");
         delay(2000);
         EEPROM.end();
         execUpdate();
@@ -516,24 +527,19 @@ int beginMDNS (const char *hostName) {
     PCR_NETWORK_DEBUG_LINE("MDNS started.");
     PCR_NETWORK_DEBUG_LINE(hostName);
 }
+
 void startNormalOperationServer() {
     // Normal PCR operation mode
     /* Add handlers for paths */
-
     // Never remove it (for OTA configuration)
     server.on("/config", requestHandlerConfig);
     server.on("/update", requestHandlerFirmwareUpdate);
 
     server.on("/", requestHandlerTop);
-    server.on("/connect", requestHandlerConnect);
-    server.on("/command", requestHandlerCommand);
-    server.on("/status", requestHandlerStatus);
-    server.on("/pause", requestHandlerPause);
-    server.on("/resume", requestHandlerResume);
-    server.on("/nxs", requestHandlerNextStep);
-    server.on("/nxc", requestHandlerNextCycle);
-    server.onNotFound(requestHandler404);
 
+    setPCROperationHandlers ();
+
+    server.onNotFound(requestHandler404);
     server.begin();
     PCR_NETWORK_DEBUG_LINE("Server started");
 }

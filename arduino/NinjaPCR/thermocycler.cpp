@@ -162,10 +162,10 @@ void initHardware () {
     pinMode(PIN_LID_PWM, OUTPUT);
   #ifdef PIN_LID_PWM_ACTIVE_LOW
     PCR_DEBUG_LINE("Lid HIGH");
-    digitalWrite(PIN_LID_PWM, HIGH);
+    digitalWrite(PIN_LID_PWM, HIGH); // Lid off
   #else
     PCR_DEBUG_LINE("Lid LOW");
-    digitalWrite(PIN_LID_PWM, LOW);
+    digitalWrite(PIN_LID_PWM, LOW); // Lid off
   #endif
     // Peltier pins
     pinMode(PIN_WELL_INA, OUTPUT);
@@ -176,10 +176,10 @@ void initHardware () {
     pinMode(PIN_WELL_PWM, OUTPUT);
 #ifdef PIN_WELL_PWM_ACTIVE_LOW
     PCR_DEBUG_LINE("Well HIGH");
-    digitalWrite(PIN_WELL_PWM, HIGH);
+    digitalWrite(PIN_WELL_PWM, HIGH); // Peltier off
 #else
     PCR_DEBUG_LINE("Well LOW");
-    digitalWrite(PIN_WELL_PWM, LOW);
+    digitalWrite(PIN_WELL_PWM, LOW); // Peltier off
 #endif
 
   #ifdef PIN_LCD_CONTRAST
@@ -187,7 +187,7 @@ void initHardware () {
   #endif /* PIN_LCD_CONTRAST */
   #ifdef USE_FAN
     pinMode(PIN_FAN, OUTPUT);
-    digitalWrite(PIN_FAN, PIN_FAN_VALUE_OFF);
+    digitalWrite(PIN_FAN, PIN_FAN_VALUE_ON);
   #endif
 
 }
