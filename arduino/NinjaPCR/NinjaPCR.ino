@@ -201,7 +201,7 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    PCR_DEBUG("pcr1.1"); //TODO
+    PCR_DEBUG("pcr1.2"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);

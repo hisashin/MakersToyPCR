@@ -210,6 +210,7 @@ iPlatePid(&iEstimatedSampleTemp, // Use estimated sample temp (test)
 &iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
 iLidPid(LID_PID_GAIN_SCHEDULE, MIN_LID_PWM, MAX_LID_PWM),
 iEstimatedSampleTemp(25),
+iTempUpdated(false),
 iTargetLidTemp(0),
 statusIndex(0),
 statusCount(0),
@@ -386,6 +387,7 @@ boolean Thermocycler::Loop() {
 
   switch (iProgramState) {
   case EStartup:
+    iTempUpdated = false;
     if (millis() > STARTUP_DELAY) {
       iProgramState = EStopped;
       	iRestarted = false;
@@ -503,8 +505,13 @@ boolean Thermocycler::Loop() {
   iPlateThermistor.setTemp(wellTemp);
 
   double estimatedAirTemp = wellTemp * 0.4 + lidTemp * 0.6;
-  double diff = ((wellTemp-iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
-  if (iEstimatedSampleTemp!=25 || ( 5>diff && diff > -5)) {
+  // Estimated delta to next 1 sec
+  double diff = ((wellTemp - iEstimatedSampleTemp)/THETA_WELL + (estimatedAirTemp-iEstimatedSampleTemp)/THETA_LID ) / CAPACITY_TUBE;
+
+  if (!iTempUpdated) {
+    iTempUpdated = true;
+    iEstimatedSampleTemp = estimatedAirTemp;
+  } else if ( 5>diff && diff > -5) {
     iEstimatedSampleTemp += diff;
   }
 

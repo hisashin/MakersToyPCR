@@ -153,6 +153,7 @@ private:
   double iTargetPlateTemp;
   double iTargetLidTemp;
   double iEstimatedSampleTemp;
+  boolean iTempUpdated;
   Cycle* ipProgram;
   Cycle* ipDisplayCycle;
   char iszProgName[21];
