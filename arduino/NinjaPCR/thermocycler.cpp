@@ -848,27 +848,28 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
         *wellTemp = pickValidValue (recentStats[0]->wellTemp, recentStats[1]->wellTemp, recentStats[2]->wellTemp);
     }
     if (statusBuff[statusIndex].hardwareStatus!=HARD_NO_ERROR) {
-      if (*lidTemp < POSSIBLE_LID_TEMP_MIN || *lidTemp > POSSIBLE_LID_TEMP_MAX) {
-          statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_DANGEROUS_TEMP;
-      }
-      if (*wellTemp < POSSIBLE_WELL_TEMP_MIN || *wellTemp > POSSIBLE_WELL_TEMP_MAX) {
-          statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_DANGEROUS_TEMP;
-      }
+        if (*lidTemp < POSSIBLE_LID_TEMP_MIN || *lidTemp > POSSIBLE_LID_TEMP_MAX) {
+            statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_DANGEROUS_TEMP;
+        }
+        if (*wellTemp < POSSIBLE_WELL_TEMP_MIN || *wellTemp > POSSIBLE_WELL_TEMP_MAX) {
+            statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_DANGEROUS_TEMP;
+        }
     }
 
     // (C) Heater/peltier output is not reflected to temperature
-    bool isLidHeating = true;
-    bool isWellHeating = true;
-    bool isWellCooling = true;
     if (validStatusCount >= 6) {
+        bool isLidHeating = true; // "True" if lid is running with the maximum output
+        bool isWellHeating = true; // "True" if Peltier is heating with the maximum output
+        bool isWellCooling = true; // "True" if Peltier is cooling with the maximum output
 
-        for (int i=0; i<min(validStatusCount, 6); i++) {
+        for (int i=0; i<6; i++) {
             CyclerStatus *stat = recentStats[i];
             if (stat->lidOutput!=MAX_LID_PWM) { isLidHeating = false; }
             if (stat->wellOutput!=MIN_PELTIER_PWM) { isWellCooling = false; }
             if (stat->wellOutput!=MAX_PELTIER_PWM) { isWellHeating = false; }
         }
-        float wellDiff = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
+
+        float wellTempDelta = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
         PCR_DEBUG("w[0]=");
         PCR_DEBUG(recentStats[0]->wellTemp);
         PCR_DEBUG(", w[4]=");
@@ -876,27 +877,27 @@ void Thermocycler::CheckHardware(float *lidTemp, float *wellTemp) {
         float lidDiff = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
 
         if (isWellHeating) {
-             if (wellDiff<-1.5) {
-              PCR_DEBUG_LINE("Well Reverse?");
-              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
-             } else if (wellDiff<1.5) {
-              PCR_DEBUG_LINE("Well is not getting hot.");
-              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
+             if (wellTempDelta < -1.5) {
+                  // Well temp is decreasing
+                  statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
+             } else if (wellTempDelta < 1.5) {
+                  // Heating speed is too slow
+                  statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
             }
         }
         if (isWellCooling) {
-            if (wellDiff>2) {
-              PCR_DEBUG_LINE("Well is not getting cool.");
-              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
-            } else if (wellDiff>-1) {
-              PCR_DEBUG_LINE("Well is not getting cool.");
-              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
+            if (wellTempDelta > 2) {
+                // Well temp is increasing
+                statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
+            } else if (wellTempDelta > -1) {
+                // Cooling speed is too slow
+                statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
             }
         }
         if (isLidHeating) {
             if (lidDiff < 2) {
-              PCR_DEBUG_LINE("Lid is not heated.");
-              statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_NOT_REFLECTED;
+                PCR_DEBUG_LINE("Lid is not heated.");
+                statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_NOT_REFLECTED;
             }
         }
     }
