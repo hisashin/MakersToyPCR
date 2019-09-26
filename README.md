@@ -9,7 +9,7 @@ NinjaPCR is Opensource(GPLv3) DNA Amplifier,Thermocycler Implementation for [Pol
 Forked from [OpenPCR](https://github.com/jperfetto/OpenPCR).
 
 Major changes from OpenPCR:<br />
-01. Smaller and easier to build<br />
+01. Smaller and [easier to build](https://ninjapcr.tori.st/assy/index.html)<br />
 02. Change platform from Adobe AIR to WiFi. Almost all PC and smartphones are supported<br />
 03. LCD removed. Everything on Browser<br />
 04. Keep precision from low to high temperature<br />
