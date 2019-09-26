@@ -14,3 +14,4 @@ Major changes from OpenPCR:<br />
 03. LCD removed. Everything on Browser<br />
 04. Keep precision from low to high temperature<br />
 05. Auto update for new features (ex. IFTTT support scheduled)<br />
+06. It's still [on sale](https://shop.tori.st) (OpenPCR is [discontinued](https://www.chaibio.com/openpcr))
