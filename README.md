@@ -2,9 +2,9 @@ NinjaPCR
 ============
 NinjaPCR is Opensource(GPLv3) DNA Amplifier,Thermocycler Implementation for [Polymerase Chain Reaction](http://en.wikipedia.org/wiki/Polymerase_chain_reaction) developed by [Toriningen Inc.](http://www.tori.st) ([Shingo Hisakawa](https://www.facebook.com/hisakawa) and [Mariko Hisakawa](https://www.facebook.com/maripo)) in Tokyo,Japan.<br />
 
-[We're fighting with COVID-19 by upgrading NinjaPCR into affordable Real-Time PCR.](https://github.com/hisashin/NinjaPCR/wiki/NinjaPCR-fight-with-COVID-19)
+## [We're fighting with COVID-19 by upgrading NinjaPCR into affordable Real-Time PCR.](https://github.com/hisashin/NinjaPCR/wiki/NinjaPCR-fight-with-COVID-19)
 
-## Check [support site](https://ninjapcr.tori.st) for more infomations including how to [make](https://ninjapcr.tori.st/maker/) it. BOM is [here](https://docs.google.com/spreadsheets/d/1QYWESJrQ2N63OPvq1pnQvB-iVQkymN-hYeTYLx7xuOw/edit?usp=sharing).
+Check [support site](https://ninjapcr.tori.st) for more infomations including how to [make](https://ninjapcr.tori.st/maker/) it. BOM is [here](https://docs.google.com/spreadsheets/d/1QYWESJrQ2N63OPvq1pnQvB-iVQkymN-hYeTYLx7xuOw/edit?usp=sharing).
 
 [![image](https://ninjapcr.tori.st/maker/images/maker_and_kit5.jpg)](https://ninjapcr.tori.st)
 
