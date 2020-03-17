@@ -1,4 +1,4 @@
-## [We're fighting with COVID-19 by upgrading NinjaPCR into affordable Real-Time PCR.](https://github.com/hisashin/NinjaPCR/wiki/NinjaPCR-fight-with-COVID-19)
+## [We're fighting with COVID-19 by upgrading NinjaPCR into affordable Real-Time PCR.](https://github.com/hisashin/NinjaPCR/wiki/NinjaPCR's-fight-with-COVID-19)
 
 NinjaPCR is Opensource(GPLv3) DNA Amplifier,Thermocycler Implementation for [Polymerase Chain Reaction](http://en.wikipedia.org/wiki/Polymerase_chain_reaction) developed by [Shingo Hisakawa](https://www.facebook.com/hisakawa) and [Mariko Hisakawa](https://www.facebook.com/maripo).<br />
 
