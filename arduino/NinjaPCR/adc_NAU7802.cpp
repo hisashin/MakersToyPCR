@@ -42,11 +42,11 @@ static uint8_t wellADCReadRegValue(char reg_address) {
 }
 // Read continuous registers
 static uint8_t wellADCReadRegValues(char reg_address, char *out, uint8_t dataSize) {
-  Wire.beginTransmission(NAU7802_DEVICE_ADDRESS); // transmit to device #0x2A
-  Wire.write((uint8_t)reg_address);// sends 1 byte
-  Wire.endTransmission(false);// stop transmitting
-  Wire.beginTransmission(NAU7802_DEVICE_ADDRESS);// transmit to device #0x2A
-  Wire.requestFrom(NAU7802_DEVICE_ADDRESS, dataSize);// request 6 bytes from slave device #0x2A
+  Wire.beginTransmission(NAU7802_DEVICE_ADDRESS);
+  Wire.write((uint8_t)reg_address);
+  Wire.endTransmission(false);
+  Wire.beginTransmission(NAU7802_DEVICE_ADDRESS);
+  Wire.requestFrom(NAU7802_DEVICE_ADDRESS, dataSize);
 
   uint8_t reg_val = 0;
   int index = 0;

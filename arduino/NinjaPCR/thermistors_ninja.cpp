@@ -33,7 +33,6 @@
 #define B_CONST_25_100 4334
 #define R_0_WELL 100.0
 
-
 /*
 // 103-JT-025
 #define B_CONST_HEATER 3435
@@ -63,7 +62,6 @@ double voltageToTemp (double voltageRatio, float resistance, float b_constant, f
 double tempToVoltageRatio (double tempCelsius, double resistance, double bConst, double r0) {
     double thermistorR = r0 * exp(bConst * (1/(tempCelsius+KELVIN) - 1/(THERMISTOR_BASE_TEMP+KELVIN)));
     return thermistorR/(thermistorR+ resistance);
-
 }
 
 ////////////////////////////////////////////////////////////////////
