@@ -208,9 +208,11 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
     iPeltierPwm(0),
     iPowerOutputRatio(1.0),
     iRamping(true),
-    //iPlatePid(&iPlateThermistor.GetTemp(), // Use measured well temp
-    iPlatePid(&iEstimatedSampleTemp, // Use estimated sample temp (test)
-    &iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
+    
+    iPlatePid(
+      // &iPlateThermistor.GetTemp(), // Use measured well temp
+      &iEstimatedSampleTemp, // Use estimated sample temp
+      &iPeltierPwm, &iTargetPlateTemp, PLATE_PID_INC_NORM_P, PLATE_PID_INC_NORM_I, PLATE_PID_INC_NORM_D, DIRECT),
     iLidPid(LID_PID_GAIN_SCHEDULE, MIN_LID_PWM, MAX_LID_PWM),
     iEstimatedSampleTemp(25),
     iTempUpdated(false),
@@ -821,6 +823,8 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
     for (int i=0; i<min(statusCount, CyclerStatusBuffSize); i++) {
       int index = (statusIndex + CyclerStatusBuffSize - i) % CyclerStatusBuffSize;
       CyclerStatus *stat = &statusBuff[index];
+      
+      // Use data within last 20 seconds
       long elapsed = millis() - stat->timestamp;
       if (stat->hardwareStatus == HARD_NO_ERROR) {
         if (elapsed < 20*1000) {
@@ -832,25 +836,27 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
       }
     }
 
-    if (errorsCount > 3) {
+    if (errorsCount >= CyclerStatusBuffSize) {
       PCR_DEBUG_LINE("Continuous errors found!");
       PCR_DEBUG_LINE(errNo);
       iHardwareStatus = errNo;
     }
+    
     if (validStatusCount==0) {
       *wellTemp = 25.0;
       *lidTemp = 25.0;
       return;
     } else if (validStatusCount<3) {
       // Use last valid status
-      *lidTemp = recentStats[0]->lidTemp;
       *wellTemp = recentStats[0]->wellTemp;
+      *lidTemp = recentStats[0]->lidTemp;
     } else {
       // 3 points rule
       *lidTemp = pickValidValue (recentStats[0]->lidTemp, recentStats[1]->lidTemp, recentStats[2]->lidTemp);
       *wellTemp = pickValidValue (recentStats[0]->wellTemp, recentStats[1]->wellTemp, recentStats[2]->wellTemp);
     }
-    if (statusBuff[statusIndex].hardwareStatus!=HARD_NO_ERROR) {
+    
+    if (statusBuff[statusIndex].hardwareStatus!=HARD_NO_ERROR) { // Latest error
       if (*lidTemp < POSSIBLE_LID_TEMP_MIN || *lidTemp > POSSIBLE_LID_TEMP_MAX) {
         statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_DANGEROUS_TEMP;
       }
@@ -861,9 +867,9 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
 
     // (C) Heater/peltier output is not reflected to temperature
     if (validStatusCount >= 6) {
-      bool isLidHeating = true; // "True" if lid is running with the maximum output
-      bool isWellHeating = true; // "True" if Peltier is heating with the maximum output
-      bool isWellCooling = true; // "True" if Peltier is cooling with the maximum output
+      bool isLidHeating = true; // "True" if lid is running with the maximum output for recent 6 checkpoints
+      bool isWellHeating = true; // "True" if Peltier is heating with the maximum output for recent 6 checkpoints
+      bool isWellCooling = true; // "True" if Peltier is cooling with the maximum output for recent 6 checkpoints
 
       for (int i=0; i<6; i++) {
         CyclerStatus *stat = recentStats[i];
@@ -873,11 +879,11 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
       }
 
       float wellTempDelta = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
+      float lidTempDelta = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
       PCR_DEBUG("w[0]=");
       PCR_DEBUG(recentStats[0]->wellTemp);
       PCR_DEBUG(", w[4]=");
       PCR_DEBUG_LINE(recentStats[4]->wellTemp);
-      float lidDiff = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
       
       if (isWellHeating) {
         if (wellTempDelta < -1.5) {
@@ -885,20 +891,20 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
           statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
         } else if (wellTempDelta < 1.0 && recentStats[0]->wellTemp < WELL_FAST_HEATING_LIMIT_TEMP) {
           // Heating speed is too slow
-          statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
+          statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;  // Error 9
         }
       }
       if (isWellCooling) {
         if (wellTempDelta > 2) {
           // Well temp is increasing
           statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
-        } else if (wellTempDelta > -1 && recentStats[0]->wellTemp > WELL_FAST_COOLING_LIMIT_TEMP) {
+        } else if (wellTempDelta > -0.5 && recentStats[0]->wellTemp > WELL_FAST_COOLING_LIMIT_TEMP) {
           // Cooling speed is too slow
-          statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;
+          statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;  // Error 9
         }
       }
       if (isLidHeating) {
-        if (lidDiff < 2) {
+        if (lidTempDelta < 2) {
           PCR_DEBUG_LINE("Lid is not heated.");
           statusBuff[statusIndex].hardwareStatus = HARD_ERROR_LID_NOT_REFLECTED;
         }
@@ -919,13 +925,14 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
 
   #define PWM_SWITCHING_THRESHOLD 10
   void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
-
+    
+    pwm = max(-MAX_PELTIER_PWM, min(MAX_PELTIER_PWM, (int)(pwm * iPowerOutputRatio)));
+    
+    // Considering balance of internal heat and cooling speed,
+    // it's better to limit output on lower temperature.
     // TODO Use table of internal heat & peltier efficiency
     if (dir == COOL) {
-      if (GetPlateTemp() < 30) {
-        pwm = pwm/8;
-      }
-      else if (GetPlateTemp() < 35) {
+      if (GetPlateTemp() < 35) {
         pwm = pwm/4;
       }
       else if (GetPlateTemp() < 40) {
@@ -935,7 +942,6 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
         pwm = pwm * 2 / 3;
       }
     }
-    pwm = max(-MAX_PELTIER_PWM, min(MAX_PELTIER_PWM, (int)(pwm * iPowerOutputRatio)));
     Thermocycler::ThermalDirection dirActual;
     int pwmActual;
     if (dir != OFF && prevActualDirection != OFF && dir != prevActualDirection && prevActualPWMDuty!=0) {
@@ -989,7 +995,7 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
     prevActualPWMDuty = pwmActual;
   }
   #else
-  void Thermocycler::SetPeltier(Thermocycler::ThermalDirection dir, int pwm /* Signed value of peltier */) {
+  void Thermocycler::SetPeltier(ThermalDirection dir, int pwm /* Signed value of peltier */) {
     if (dir == COOL) {
       digitalWrite(PIN_WELL_INA, HIGH);
       digitalWrite(PIN_WELL_INB, LOW);
