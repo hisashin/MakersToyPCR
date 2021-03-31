@@ -153,7 +153,6 @@ void setup_normal() {
 
 bool isSerialConnected = false;
 bool initDone = false;
-short INTERVAL_MSEC = 1000;
 
 int sec = 0;
 bool finishSent = false;

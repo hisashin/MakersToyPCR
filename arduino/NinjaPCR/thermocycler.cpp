@@ -877,28 +877,45 @@ const SPIDTuning LID_PID_GAIN_SCHEDULE[] = {
         if (stat->wellOutput!=MIN_PELTIER_PWM) { isWellCooling = false; }
         if (stat->wellOutput!=MAX_PELTIER_PWM) { isWellHeating = false; }
       }
+      
+      int DELTA_INTERVAL = 4; // 4sec
+      float WELL_HEATING_RATE_ALERT_LIMIT = 0.05; // Per second, absolute
+      float WELL_COOLING_RATE_ALERT_LIMIT = 0.025; // Per second, absolute
+      float WELL_HEATING_DELTA_ALERT_LIMIT = WELL_HEATING_RATE_ALERT_LIMIT * DELTA_INTERVAL * INTERVAL_MSEC / 1000;
+      float WELL_COOLINT_DELTA_ALERT_LIMIT = WELL_COOLING_RATE_ALERT_LIMIT * DELTA_INTERVAL * INTERVAL_MSEC / 1000;
+      
 
-      float wellTempDelta = recentStats[0]->wellTemp - recentStats[4]->wellTemp;
-      float lidTempDelta = recentStats[0]->lidTemp - recentStats[4]->lidTemp;
+      float wellTempDelta = recentStats[0]->wellTemp - recentStats[DELTA_INTERVAL]->wellTemp;
+      float lidTempDelta = recentStats[0]->lidTemp - recentStats[DELTA_INTERVAL]->lidTemp;
       PCR_DEBUG("w[0]=");
       PCR_DEBUG(recentStats[0]->wellTemp);
-      PCR_DEBUG(", w[4]=");
-      PCR_DEBUG_LINE(recentStats[4]->wellTemp);
+      PCR_DEBUG(", w[");
+      PCR_DEBUG(DELTA_INTERVAL);
+      PCR_DEBUG("]=");
+      PCR_DEBUG_LINE(recentStats[DELTA_INTERVAL]->wellTemp);
       
       if (isWellHeating) {
-        if (wellTempDelta < -1.5) {
+        PCR_DEBUG("Heat delta=");
+        PCR_DEBUG(wellTempDelta);
+        PCR_DEBUG("<=>");
+        PCR_DEBUG_LINE(WELL_HEATING_DELTA_ALERT_LIMIT);
+        if (wellTempDelta < -2) {
           // Well temp is decreasing
           statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
-        } else if (wellTempDelta < 1.0 && recentStats[0]->wellTemp < WELL_FAST_HEATING_LIMIT_TEMP) {
+        } else if (wellTempDelta < WELL_HEATING_DELTA_ALERT_LIMIT && recentStats[0]->wellTemp < WELL_FAST_HEATING_LIMIT_TEMP) {
           // Heating speed is too slow
           statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;  // Error 9
         }
       }
       if (isWellCooling) {
+        PCR_DEBUG("Cool delta=");
+        PCR_DEBUG(wellTempDelta);
+        PCR_DEBUG("<=>");
+        PCR_DEBUG_LINE(WELL_COOLING_RATE_ALERT_LIMIT);
         if (wellTempDelta > 2) {
           // Well temp is increasing
           statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_REVERSE;
-        } else if (wellTempDelta > -0.5 && recentStats[0]->wellTemp > WELL_FAST_COOLING_LIMIT_TEMP) {
+        } else if (wellTempDelta > -WELL_COOLING_RATE_ALERT_LIMIT && recentStats[0]->wellTemp > WELL_FAST_COOLING_LIMIT_TEMP) {
           // Cooling speed is too slow
           statusBuff[statusIndex].hardwareStatus = HARD_ERROR_WELL_NOT_REFLECTED;  // Error 9
         }

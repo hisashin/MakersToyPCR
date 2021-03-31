@@ -22,6 +22,7 @@
 #include "Arduino.h"
 #include "board_conf.h"
 
+#define INTERVAL_MSEC 1000
 /* Debug on/off */
 // #define DEBUG 1
 
@@ -57,8 +58,8 @@
 
 
 #define SERIAL_PREFIX "pcr"
-#define OPENPCR_FIRMWARE_VERSION_STRING "1.2.1"
-#define FIRMWARE_VERSION_DESCRIPTION "NinjaPCR_v1.2.1"
+#define OPENPCR_FIRMWARE_VERSION_STRING "1.2.2"
+#define FIRMWARE_VERSION_DESCRIPTION "NinjaPCR_v1.2.2"
 
 #ifndef USE_WIFI
 #include <avr/pgmspace.h>
