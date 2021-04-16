@@ -153,7 +153,6 @@ void setup_normal() {
 
 bool isSerialConnected = false;
 bool initDone = false;
-short INTERVAL_MSEC = 1000;
 
 int sec = 0;
 bool finishSent = false;
@@ -201,7 +200,6 @@ void loop() {
 
 bool startLamp = false;
 void checkSerialConnection() {
-    PCR_DEBUG("pcr1.2"); //TODO
     Serial.print("\n");
 #ifdef USE_STATUS_PINS
     digitalWrite(PIN_STATUS_A, (startLamp)?HIGH:LOW);
