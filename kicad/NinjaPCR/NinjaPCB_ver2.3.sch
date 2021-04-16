@@ -2308,21 +2308,21 @@ CONFIG
 Text Notes 1150 1050 0    215  ~ 0
 KEEP R9, R14 and R21 OPEN
 $Comp
-L NinjaPCR:ACTP212 U?
+L NinjaPCR:ACTP212 U1
 U 1 1 607DD8D8
 P 14750 1200
-F 0 "U?" H 15450 500 60  0000 C CNN
+F 0 "U1" H 15450 500 60  0000 C CNN
 F 1 "ACTP212" H 15600 400 60  0000 C CNN
-F 2 "RELAY_ACTP_1C8_PAN" H 15700 450 60  0001 C CNN
+F 2 "NinjaPCR:ACTP212" H 15700 450 60  0001 C CNN
 F 3 "" H 16650 950 60  0000 C CNN
 	1    14750 1200
 	1    0    0    -1  
 $EndComp
 $Comp
-L NinjaPCB_ver2.2-eagle-import:VCC #P+?
+L NinjaPCB_ver2.2-eagle-import:VCC #P+0101
 U 1 1 607DFAF8
 P 15050 750
-F 0 "#P+?" H 15050 750 50  0001 C CNN
+F 0 "#P+0101" H 15050 750 50  0001 C CNN
 F 1 "12V" V 14950 650 59  0000 L BNN
 F 2 "" H 15050 750 50  0001 C CNN
 F 3 "" H 15050 750 50  0001 C CNN
@@ -2403,4 +2403,6 @@ Text GLabel 15050 2000 0    50   Input ~ 0
 RELAY3
 Wire Wire Line
 	15050 1900 15050 2000
+Text Notes 9200 650  0    50   ~ 0
+Use Panasonic Electric Works ACTP212 instead of EP2 if you cannot get it : https://www.digikey.jp/product-detail/ja/panasonic-electric-works/ACTP212/255-5876-ND/4756498
 $EndSCHEMATC
